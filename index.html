@@ -34,7 +34,7 @@ main{padding:28px;max-width:1300px;margin:0 auto;}
 .sec-title{font-size:17px;font-weight:500;margin-bottom:4px;}
 .sec-desc{font-size:13px;color:var(--text2);}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:16px;}
-.card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
 .form-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:180px;}
 .form-group label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
@@ -51,9 +51,10 @@ input[type=text]::placeholder,textarea::placeholder{color:var(--text3);}
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{text-align:left;padding:9px 12px;color:var(--text2);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);white-space:nowrap;}
-tbody td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:rgba(255,255,255,0.02);}
+tfoot td{padding:10px 12px;font-weight:500;border-top:1px solid var(--border2);}
 .badge{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .b-fat{background:rgba(76,175,130,0.15);color:#4caf82;}
 .b-ter{background:rgba(232,160,69,0.15);color:#e8a045;}
@@ -63,24 +64,21 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 .alert{padding:12px 16px;border-radius:var(--r);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .alert-warn{background:rgba(232,160,69,0.1);border:1px solid rgba(232,160,69,0.2);color:#e8a045;}
 .alert-info{background:rgba(91,156,246,0.1);border:1px solid rgba(91,156,246,0.2);color:#5b9cf6;}
-.alert-success{background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.2);color:#4caf82;}
 .empty{text-align:center;padding:48px 24px;color:var(--text3);}
-.empty-icon{font-size:32px;margin-bottom:12px;}
 .empty p{font-size:13px;}
 .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
-.filter-bar label{font-size:12px;color:var(--text2);}
-.filter-bar select{width:auto;}
-.divider{width:1px;height:20px;background:var(--border2);}
+.filter-bar label{font-size:12px;color:var(--text2);white-space:nowrap;}
+.filter-bar select{width:auto;min-width:120px;}
+.divider{width:1px;height:20px;background:var(--border2);flex-shrink:0;}
 .mono{font-family:var(--mono);font-size:12px;}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:22px 20px;position:relative;overflow:hidden;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px;position:relative;overflow:hidden;}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent));}
-.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:10px;}
-.kpi-value{font-size:24px;font-weight:600;letter-spacing:-0.5px;line-height:1;}
-.kpi-sub{font-size:12px;color:var(--text3);margin-top:6px;}
-.kpi-icon{position:absolute;top:18px;right:18px;font-size:22px;opacity:0.12;}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:8px;}
+.kpi-value{font-size:22px;font-weight:600;letter-spacing:-0.5px;line-height:1;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:5px;}
 .dash-filters{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
-.dash-filters .fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px;}
+.dash-filters .fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px;}
 .dash-filters .fg label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
 .no-data{text-align:center;padding:60px 24px;color:var(--text3);}
 .no-data-icon{font-size:40px;margin-bottom:16px;opacity:0.4;}
@@ -95,7 +93,10 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="logo-icon">&#127959;</div>
     BI Construcao <span class="logo-sub">/ Welter</span>
   </div>
-  <span id="hdrBadge" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(232,160,69,0.12);color:var(--accent);border:1px solid rgba(232,160,69,0.2);display:none"></span>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span id="hdrClassif" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(232,160,69,0.12);color:var(--accent);border:1px solid rgba(232,160,69,0.2);display:none"></span>
+    <span id="hdrRecords" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(91,156,246,0.1);color:#5b9cf6;border:1px solid rgba(91,156,246,0.2);display:none"></span>
+  </div>
 </header>
 
 <nav>
@@ -110,14 +111,14 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 <div class="page active fade" id="page0">
   <div class="sec-header">
     <div class="sec-title">Classificacao de Despesas</div>
-    <div class="sec-desc">Associe cada conta contabil a uma classificacao. Esses dados serao usados para categorizar as despesas importadas.</div>
+    <div class="sec-desc">Associe cada conta contabil a uma classificacao.</div>
   </div>
   <div class="card">
     <div class="card-title">Nova classificacao</div>
     <div class="form-row">
       <div class="form-group" style="flex:2;">
         <label>Conta</label>
-        <input type="text" id="inConta" placeholder="Ex: 1.1.01 Materiais de Construcao" onkeydown="if(event.key==='Enter')addClassif()">
+        <input type="text" id="inConta" placeholder="Nome da conta" onkeydown="if(event.key==='Enter')addClassif()">
       </div>
       <div class="form-group" style="flex:1;">
         <label>Classificacao</label>
@@ -136,15 +137,15 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
   <div class="card">
     <div class="card-title">
       <span>Contas cadastradas <span id="classifCount" style="font-weight:400;color:var(--text3)"></span></span>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="searchConta" placeholder="Buscar..." style="width:200px;padding:6px 10px;font-size:12px;" oninput="renderClassifTable()">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="searchConta" placeholder="Buscar..." style="width:180px;padding:6px 10px;font-size:12px;" oninput="renderClassifTable()">
         <button class="btn btn-sm" onclick="exportClassif()">&#8595; Exportar</button>
         <button class="btn btn-sm" onclick="document.getElementById('importClassifInput').click()">&#8593; Importar</button>
         <input type="file" id="importClassifInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="importClassif(this)">
       </div>
     </div>
     <div id="classifTableWrap">
-      <div class="empty"><div class="empty-icon">&#128203;</div><p>Nenhuma conta cadastrada ainda.<br>Adicione acima ou importe uma planilha.</p></div>
+      <div class="empty"><p>Nenhuma conta cadastrada ainda.</p></div>
     </div>
   </div>
 </div>
@@ -153,47 +154,50 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 <div class="page fade" id="page1">
   <div class="sec-header">
     <div class="sec-title">Analitico de Apropriacoes</div>
-    <div class="sec-desc">Copie as celulas do Excel (incluindo o cabecalho) e cole abaixo. As contas serao classificadas automaticamente conforme a Aba 1.</div>
+    <div class="sec-desc">Cole os dados do Excel abaixo. Cada colagem <strong>adiciona</strong> aos registros existentes. Os dados ficam salvos no navegador.</div>
   </div>
   <div class="card">
     <div class="card-title">
       <span>Colar dados do Excel</span>
-      <button class="btn btn-accent btn-sm" onclick="processarCola()">&#10003; Processar</button>
+      <button class="btn btn-accent btn-sm" onclick="processarCola()">&#10003; Processar e adicionar</button>
     </div>
-    <textarea id="pasteArea" rows="6" placeholder="Copie as celulas do Excel (Ctrl+A, Ctrl+C) e cole aqui (Ctrl+V)..." style="font-family:var(--mono);font-size:12px;resize:vertical;" onpaste="setTimeout(processarCola,100)"></textarea>
+    <textarea id="pasteArea" rows="5" placeholder="Copie as celulas do Excel (incluindo o cabecalho) e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;"></textarea>
     <div id="pasteMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
   </div>
-  <div id="analiticoSection" style="display:none;">
+
+  <div class="card">
+    <div class="card-title">
+      <span>Registros <span id="analiticoCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="exportAnalitico()">&#8595; Exportar Excel</button>
+        <button class="btn btn-sm btn-danger" onclick="limparAnalitico()">&#10005; Limpar tudo</button>
+      </div>
+    </div>
     <div id="alertWrap"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px;">
-      <button class="btn btn-sm" onclick="exportAnalitico()">&#8595; Exportar Excel</button>
-      <button class="btn btn-sm btn-danger" onclick="limparAnalitico()">&#10005; Limpar dados</button>
+    <div class="filter-bar">
+      <label>Obra</label>
+      <select id="fObra" onchange="renderAnalitico()"></select>
+      <div class="divider"></div>
+      <label>Classificacao</label>
+      <select id="fClassif" onchange="renderAnalitico()">
+        <option value="all">Todas</option>
+        <option value="Faturamento">Faturamento</option>
+        <option value="Terreno">Terreno</option>
+        <option value="Empreendimento">Empreendimento</option>
+        <option value="Custo Construtivo">Custo Construtivo</option>
+        <option value="__nc">Nao classificadas</option>
+      </select>
+      <div class="divider"></div>
+      <input type="text" id="fBusca" placeholder="Buscar..." style="width:160px;padding:7px 10px;font-size:12px;" oninput="renderAnalitico()">
     </div>
-    <div class="card">
-      <div class="card-title"><span>Registros</span><span id="analiticoFooter" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;"></span></div>
-      <div class="filter-bar">
-        <label>Obra</label>
-        <select id="fObra" onchange="renderAnalitico()"></select>
-        <div class="divider"></div>
-        <label>Classificacao</label>
-        <select id="fClassif" onchange="renderAnalitico()">
-          <option value="all">Todas</option>
-          <option value="Faturamento">Faturamento</option>
-          <option value="Terreno">Terreno</option>
-          <option value="Empreendimento">Empreendimento</option>
-          <option value="Custo Construtivo">Custo Construtivo</option>
-          <option value="__nc">Nao classificadas</option>
-        </select>
-        <div class="divider"></div>
-        <input type="text" id="fBusca" placeholder="Buscar..." style="width:180px;padding:7px 10px;font-size:12px;" oninput="renderAnalitico()">
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Obra</th><th>Conta</th><th>Classificacao</th><th>Data</th><th>Documento</th><th>Or</th><th>Lanc.</th><th>Complemento</th><th style="text-align:right">Vl. Total Titulo</th><th style="text-align:right">Valor</th></tr></thead>
-          <tbody id="tbodyAnalitico"></tbody>
-        </table>
-      </div>
+    <div id="analiticoEmpty" class="empty" style="display:none;"><p>Nenhum dado ainda. Cole os dados do Excel acima.</p></div>
+    <div class="tbl-wrap" id="analiticoTableWrap" style="display:none;">
+      <table>
+        <thead><tr><th>Obra</th><th>Conta</th><th>Classif.</th><th>Data</th><th>Documento</th><th>Or</th><th>Lanc.</th><th>Complemento</th><th style="text-align:right">Vl.Titulo</th><th style="text-align:right">Valor</th></tr></thead>
+        <tbody id="tbodyAnalitico"></tbody>
+      </table>
     </div>
+    <div id="analiticoFooter" style="padding:8px 0 0;font-size:11px;color:var(--text3)"></div>
   </div>
 </div>
 
@@ -201,12 +205,12 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 <div class="page fade" id="page2">
   <div class="sec-header">
     <div class="sec-title">Dashboard</div>
-    <div class="sec-desc">KPIs calculados a partir do Analitico de Apropriacoes com base nas classificacoes cadastradas.</div>
+    <div class="sec-desc">KPIs e resumo por conta conforme filtros selecionados.</div>
   </div>
   <div id="dashNoData" class="no-data">
     <div class="no-data-icon">&#128202;</div>
-    <p>Nenhum dado importado ainda.</p>
-    <p style="font-size:12px;margin-top:6px;">Cole os dados na aba Analitico de Apropriacoes para visualizar os KPIs.</p>
+    <p>Nenhum dado ainda.</p>
+    <p style="font-size:12px;margin-top:6px;">Cole os dados na aba Analitico de Apropriacoes.</p>
     <button class="btn btn-accent" style="margin-top:20px;" onclick="goTab(1)">Ir para Analitico</button>
   </div>
   <div id="dashContent" style="display:none;">
@@ -225,9 +229,23 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
       <div class="fg"><label>Obra</label><select id="dObra" onchange="renderDash()"></select></div>
       <div class="fg"><label>Conta</label><select id="dConta" onchange="renderDash()"></select></div>
-      <button class="btn btn-sm" onclick="clearDashFilters()">&#10005; Limpar</button>
+      <button class="btn btn-sm" onclick="clearDashFilters()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Resumo por conta</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Conta</th><th>Classificacao</th><th style="text-align:right">Valor</th><th style="text-align:right">%</th></tr></thead>
+          <tbody id="tbodyContas"></tbody>
+          <tfoot><tr>
+            <td colspan="2" style="font-size:12px;color:var(--text2);">Total</td>
+            <td id="totalContas" class="mono" style="text-align:right;font-weight:600;"></td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
     <div class="card" id="obraBreakdown" style="display:none;">
       <div class="card-title">Detalhamento por obra</div>
       <div class="tbl-wrap">
@@ -239,406 +257,454 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
   </div>
 </div>
-
 </main>
 
 <script>
 // ============================================================
-// STATE
+// ESTADO GLOBAL — tudo em memoria, salvo em sessionStorage
+// (sessionStorage nao tem limite de quota como localStorage)
 // ============================================================
-var classifs = JSON.parse(localStorage.getItem('bi_classifs') || '[]');
+var classifs = [];
 var analiticoData = [];
+
+function salvarEstado() {
+  try {
+    sessionStorage.setItem('bi_classifs', JSON.stringify(classifs));
+    sessionStorage.setItem('bi_analitico', JSON.stringify(analiticoData));
+  } catch(e) { console.warn('Erro ao salvar:', e); }
+}
+
+function carregarEstado() {
+  try {
+    var c = sessionStorage.getItem('bi_classifs');
+    var a = sessionStorage.getItem('bi_analitico');
+    if (c) classifs = JSON.parse(c);
+    if (a) analiticoData = JSON.parse(a);
+  } catch(e) { classifs=[]; analiticoData=[]; }
+}
 
 // ============================================================
 // TABS
 // ============================================================
 function goTab(i) {
-  document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('active', i===j); });
-  document.querySelectorAll('.page').forEach(function(p,j){ p.classList.toggle('active', i===j); });
-  if (i === 2) renderDash();
+  document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('active',i===j); });
+  document.querySelectorAll('.page').forEach(function(p,j){ p.classList.toggle('active',i===j); });
+  if (i===2) renderDash();
 }
 
 // ============================================================
 // UTILS
 // ============================================================
 function fBRL(v) {
-  if (isNaN(v) || v === null) v = 0;
+  v = parseFloat(v) || 0;
   return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
 }
 
+// Converte valor de celula para numero
+// Suporta: 10400  /  10.400,00  /  R$ 10.400,00
 function parseValor(v) {
   if (v === null || v === undefined || v === '') return 0;
   if (typeof v === 'number') return v;
-  var s = String(v).trim().replace(/\s/g,'').replace(/R\$/g,'').replace(/\./g,'').replace(',','.');
+  var s = String(v).trim();
+  s = s.replace(/R\$/gi,'').replace(/\s/g,'');
+  // formato brasileiro: ponto como milhar, virgula como decimal
+  // ex: 10.400,50 => 10400.50
+  if (/\d\.\d{3},/.test(s) || /,\d{2}$/.test(s)) {
+    s = s.replace(/\./g,'').replace(',','.');
+  } else {
+    // sem virgula: remove pontos que sao milhar (ex: 10.400)
+    s = s.replace(/\./g,'');
+  }
   var n = parseFloat(s);
   return isNaN(n) ? 0 : n;
 }
 
-function parseData(v) {
-  if (!v) return null;
-  if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
-  var s = String(v).trim();
-  // dd/mm/yyyy or dd-mm-yyyy
-  var m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+// Converte data dd/mm/yyyy para objeto Date
+// Retorna null se invalido
+function parseData(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  // dd/mm/yyyy ou dd-mm-yyyy
+  var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
   if (m) {
-    var y = m[3].length === 2 ? 2000 + parseInt(m[3]) : parseInt(m[3]);
-    return new Date(y, parseInt(m[2])-1, parseInt(m[1]));
+    var d = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+    return isNaN(d.getTime()) ? null : d;
   }
-  // yyyy-mm-dd
-  m = s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})$/);
-  if (m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
-  var d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
+  return null;
 }
 
-function showMsg(elId, txt, type) {
+function showMsg(elId, html, type) {
   var el = document.getElementById(elId);
   if (!el) return;
-  el.style.display = 'flex';
-  el.style.alignItems = 'center';
-  el.style.gap = '6px';
-  el.style.color = type === 'warn' ? 'var(--accent)' : type === 'success' ? 'var(--green)' : 'var(--blue)';
-  el.innerHTML = txt;
+  el.style.display = 'block';
+  el.style.color = type==='warn' ? 'var(--accent)' : type==='success' ? 'var(--green)' : 'var(--blue)';
+  el.innerHTML = html;
   clearTimeout(el._t);
-  el._t = setTimeout(function(){ el.style.display = 'none'; }, 4000);
+  el._t = setTimeout(function(){ el.style.display='none'; }, 5000);
 }
 
-function updateHdrBadge() {
-  var b = document.getElementById('hdrBadge');
-  if (classifs.length) {
-    b.style.display = 'inline';
-    b.textContent = classifs.length + ' contas classificadas';
-  } else {
-    b.style.display = 'none';
-  }
+function getClassif(conta) {
+  var found = classifs.find(function(c){ return c.conta.toLowerCase()===conta.toLowerCase(); });
+  return found ? found.classif : 'Nao classificada';
+}
+
+function updateHeader() {
+  var hc = document.getElementById('hdrClassif');
+  var hr = document.getElementById('hdrRecords');
+  if (classifs.length) { hc.style.display='inline'; hc.textContent=classifs.length+' contas'; }
+  else hc.style.display='none';
+  if (analiticoData.length) { hr.style.display='inline'; hr.textContent=analiticoData.length+' registros'; }
+  else hr.style.display='none';
 }
 
 // ============================================================
-// ABA 1 - CLASSIFICACAO
+// ABA 1 — CLASSIFICACAO
 // ============================================================
-function saveClassifs() { localStorage.setItem('bi_classifs', JSON.stringify(classifs)); }
-
 function addClassif() {
   var conta = document.getElementById('inConta').value.trim();
   var classif = document.getElementById('inClassif').value;
-  if (!conta) { showMsg('addMsg', 'Informe o nome da conta.', 'warn'); return; }
-  if (!classif) { showMsg('addMsg', 'Selecione uma classificacao.', 'warn'); return; }
-  if (classifs.find(function(c){ return c.conta.toLowerCase() === conta.toLowerCase(); })) {
-    showMsg('addMsg', 'Essa conta ja esta cadastrada.', 'warn'); return;
+  if (!conta) { showMsg('addMsg','Informe o nome da conta.','warn'); return; }
+  if (!classif) { showMsg('addMsg','Selecione uma classificacao.','warn'); return; }
+  if (classifs.find(function(c){ return c.conta.toLowerCase()===conta.toLowerCase(); })) {
+    showMsg('addMsg','Essa conta ja esta cadastrada.','warn'); return;
   }
-  classifs.push({conta: conta, classif: classif});
-  saveClassifs();
-  document.getElementById('inConta').value = '';
-  document.getElementById('inClassif').value = '';
-  showMsg('addMsg', '&#10003; Conta adicionada!', 'success');
+  classifs.push({conta:conta, classif:classif});
+  // re-classifica dados existentes
+  analiticoData.forEach(function(r){ r.classif=getClassif(r.conta); });
+  salvarEstado();
+  document.getElementById('inConta').value='';
+  document.getElementById('inClassif').value='';
+  showMsg('addMsg','&#10003; Conta adicionada!','success');
   renderClassifTable();
-  updateHdrBadge();
+  renderAnalitico();
+  updateHeader();
 }
 
 function deleteClassif(i) {
-  classifs.splice(i, 1);
-  saveClassifs();
+  classifs.splice(i,1);
+  analiticoData.forEach(function(r){ r.classif=getClassif(r.conta); });
+  salvarEstado();
   renderClassifTable();
-  updateHdrBadge();
+  renderAnalitico();
+  updateHeader();
 }
 
 function renderClassifTable() {
-  var search = (document.getElementById('searchConta').value || '').toLowerCase();
-  var filtered = classifs.filter(function(c){
-    return !search || c.conta.toLowerCase().includes(search) || c.classif.toLowerCase().includes(search);
-  });
-  document.getElementById('classifCount').textContent = '(' + classifs.length + ')';
+  var search = (document.getElementById('searchConta').value||'').toLowerCase();
+  var filtered = classifs.filter(function(c){ return !search||c.conta.toLowerCase().includes(search)||c.classif.toLowerCase().includes(search); });
+  document.getElementById('classifCount').textContent='('+classifs.length+')';
   var wrap = document.getElementById('classifTableWrap');
-  if (!classifs.length) {
-    wrap.innerHTML = '<div class="empty"><div class="empty-icon">&#128203;</div><p>Nenhuma conta cadastrada ainda.<br>Adicione acima ou importe uma planilha.</p></div>';
-    return;
-  }
-  if (!filtered.length) {
-    wrap.innerHTML = '<div class="empty"><p>Nenhuma conta encontrada.</p></div>';
-    return;
-  }
-  var bMap = {'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
-  wrap.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Conta</th><th>Classificacao</th><th style="width:60px"></th></tr></thead><tbody>' +
+  if (!classifs.length) { wrap.innerHTML='<div class="empty"><p>Nenhuma conta cadastrada ainda.</p></div>'; return; }
+  if (!filtered.length) { wrap.innerHTML='<div class="empty"><p>Nenhuma conta encontrada.</p></div>'; return; }
+  var bMap={'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
+  wrap.innerHTML='<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Conta</th><th>Classificacao</th><th></th></tr></thead><tbody>'+
     filtered.map(function(c){
-      var ri = classifs.indexOf(c);
-      return '<tr><td class="mono" style="color:var(--text3)">' + String(ri+1).padStart(3,'0') + '</td><td>' + c.conta + '</td><td><span class="badge ' + (bMap[c.classif]||'b-gray') + '">' + c.classif + '</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteClassif(' + ri + ')">&#10005;</button></td></tr>';
-    }).join('') +
-  '</tbody></table></div>';
+      var ri=classifs.indexOf(c);
+      return '<tr><td class="mono" style="color:var(--text3)">'+String(ri+1).padStart(3,'0')+'</td><td>'+c.conta+'</td><td><span class="badge '+(bMap[c.classif]||'b-gray')+'">'+c.classif+'</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteClassif('+ri+')">&#10005;</button></td></tr>';
+    }).join('')+'</tbody></table></div>';
 }
 
 function exportClassif() {
   if (!classifs.length) { alert('Nenhuma classificacao para exportar.'); return; }
-  var ws = XLSX.utils.aoa_to_sheet([['Conta','Classificacao']].concat(classifs.map(function(c){ return [c.conta, c.classif]; })));
-  ws['!cols'] = [{wch:40},{wch:20}];
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Classificacoes');
-  XLSX.writeFile(wb, 'classificacoes.xlsx');
+  var ws=XLSX.utils.aoa_to_sheet([['Conta','Classificacao']].concat(classifs.map(function(c){return[c.conta,c.classif];})));
+  ws['!cols']=[{wch:40},{wch:20}];
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Classificacoes');
+  XLSX.writeFile(wb,'classificacoes.xlsx');
 }
 
 function importClassif(input) {
-  var f = input.files[0]; if (!f) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    try {
-      var rows = [];
-      if (f.name.toLowerCase().endsWith('.csv')) {
-        var lines = ev.target.result.split('\n').filter(function(l){ return l.trim(); });
-        var hdrs = lines[0].split(/[,;]/).map(function(h){ return h.trim().replace(/"/g,''); });
-        for (var i = 1; i < lines.length; i++) {
-          var v = lines[i].split(/[,;]/).map(function(x){ return x.trim().replace(/"/g,''); });
-          var r = {}; hdrs.forEach(function(h,j){ r[h] = v[j]||''; }); rows.push(r);
-        }
+  var f=input.files[0]; if(!f) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var rows=[];
+      if(f.name.toLowerCase().endsWith('.csv')){
+        var lines=ev.target.result.split('\n').filter(function(l){return l.trim();});
+        var hdrs=lines[0].split(/[,;]/).map(function(h){return h.trim().replace(/"/g,'');});
+        for(var i=1;i<lines.length;i++){var v=lines[i].split(/[,;]/).map(function(x){return x.trim().replace(/"/g,'');});var r={};hdrs.forEach(function(h,j){r[h]=v[j]||'';});rows.push(r);}
       } else {
-        var wb = XLSX.read(ev.target.result, {type:'array'});
-        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        var wb=XLSX.read(ev.target.result,{type:'array'}); rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
       }
-      var valid = ['Faturamento','Terreno','Empreendimento','Custo Construtivo'];
-      var added = 0, skipped = 0;
+      var valid=['Faturamento','Terreno','Empreendimento','Custo Construtivo'];
+      var added=0,skipped=0;
       rows.forEach(function(r){
-        var conta = String(r['Conta']||r['conta']||'').trim();
-        var classif = String(r['Classificacao']||r['Classificação']||r['classificacao']||r['classificação']||'').trim();
-        if (!conta || !valid.includes(classif)) { skipped++; return; }
-        if (classifs.find(function(c){ return c.conta.toLowerCase() === conta.toLowerCase(); })) { skipped++; return; }
-        classifs.push({conta:conta, classif:classif}); added++;
+        var conta=String(r['Conta']||r['conta']||'').trim();
+        var cl=String(r['Classificacao']||r['Classificação']||r['classificacao']||'').trim();
+        if(!conta||!valid.includes(cl)){skipped++;return;}
+        if(classifs.find(function(c){return c.conta.toLowerCase()===conta.toLowerCase();})){skipped++;return;}
+        classifs.push({conta:conta,classif:cl}); added++;
       });
-      saveClassifs(); renderClassifTable(); updateHdrBadge();
-      alert(added + ' conta(s) importada(s).' + (skipped ? ' ' + skipped + ' ignorada(s).' : ''));
-    } catch(e) { alert('Erro ao ler o arquivo.'); }
+      analiticoData.forEach(function(r){r.classif=getClassif(r.conta);});
+      salvarEstado(); renderClassifTable(); renderAnalitico(); updateHeader();
+      alert(added+' conta(s) importada(s).'+(skipped?' '+skipped+' ignorada(s).':''));
+    }catch(e){alert('Erro ao ler arquivo.');}
   };
-  if (f.name.toLowerCase().endsWith('.csv')) reader.readAsText(f, 'UTF-8');
-  else reader.readAsArrayBuffer(f);
-  input.value = '';
+  if(f.name.toLowerCase().endsWith('.csv')) reader.readAsText(f,'UTF-8'); else reader.readAsArrayBuffer(f);
+  input.value='';
 }
 
 // ============================================================
-// ABA 2 - ANALITICO
+// ABA 2 — ANALITICO
 // ============================================================
-function getClassif(conta) {
-  var found = classifs.find(function(c){ return c.conta.toLowerCase() === conta.toLowerCase(); });
-  return found ? found.classif : null;
+function findCol(keys, opts) {
+  return keys.find(function(k){ return opts.some(function(o){ return k.toLowerCase().trim()===o||k.toLowerCase().trim().includes(o); }); });
 }
 
 function normalizeRows(rows) {
   if (!rows.length) return [];
-  var keys = Object.keys(rows[0]);
-  function findCol(opts) {
-    return keys.find(function(k){ return opts.some(function(o){ return k.toLowerCase().trim().includes(o); }); });
-  }
-  // find Valor with exact match first to avoid conflict with Vl. Total Titulo
-  var cValor = keys.find(function(k){ return k.trim().toLowerCase() === 'valor'; }) || findCol(['valor']);
-  var cVlTit = findCol(['vl. total','vl total','total tit','total titulo','total título']);
-  // make sure cVlTit != cValor
-  if (cVlTit === cValor) cVlTit = null;
-  var cObra  = findCol(['obra']);
-  var cConta = findCol(['conta']);
-  var cData  = findCol(['data']);
-  var cDoc   = findCol(['documento','doc']);
-  var cOr    = keys.find(function(k){ return k.trim().toLowerCase() === 'or'; }) || findCol(['or ','or\t']);
-  var cLanc  = findCol(['lanc']);
-  var cComp  = findCol(['complemento','comp']);
+  var keys=Object.keys(rows[0]);
+
+  // Valor: match exato primeiro
+  var cValor=keys.find(function(k){return k.trim().toLowerCase()==='valor';});
+  if(!cValor) cValor=findCol(keys,['valor']);
+
+  // Vl. Total Titulo: deve ser diferente de cValor
+  var cVlTit=keys.find(function(k){return k.trim().toLowerCase().includes('vl. total')||k.trim().toLowerCase().includes('vl total')||k.trim().toLowerCase().includes('total tit');});
+  if(cVlTit===cValor) cVlTit=null;
+
+  var cObra =findCol(keys,['obra']);
+  var cConta=findCol(keys,['conta']);
+  var cData =findCol(keys,['data']);
+  var cDoc  =findCol(keys,['documento','doc']);
+  var cOr   =keys.find(function(k){return k.trim().toLowerCase()==='or';});
+  var cLanc =findCol(keys,['lanc']);
+  var cComp =findCol(keys,['complemento','comp']);
 
   return rows.map(function(r){
-    var conta = cConta ? String(r[cConta]||'').trim() : '';
-    var classif = getClassif(conta) || 'Nao classificada';
-    var dataRaw = cData ? r[cData] : '';
-    var dateParsed = parseData(dataRaw);
-    var dataStr = dateParsed ? dateParsed.toLocaleDateString('pt-BR') : String(dataRaw||'');
-    var valor = cValor ? parseValor(r[cValor]) : 0;
-    var vlTit = cVlTit ? parseValor(r[cVlTit]) : 0;
+    var conta=cConta?String(r[cConta]||'').trim():'';
+    var classif=getClassif(conta);
+    var dataStr=cData?String(r[cData]||'').trim():'';
+    var dp=parseData(dataStr);
     return {
-      obra: cObra ? String(r[cObra]||'').trim() : '',
+      obra:  cObra ?String(r[cObra ]||'').trim():'',
       conta: conta,
       classif: classif,
-      data: dataStr,
-      dateParsed: dateParsed,
-      doc: cDoc ? String(r[cDoc]||'').trim() : '',
-      or: cOr ? String(r[cOr]||'').trim() : '',
-      lanc: cLanc ? String(r[cLanc]||'').trim() : '',
-      comp: cComp ? String(r[cComp]||'').trim() : '',
-      vlTit: vlTit,
-      valor: valor
+      data:  dataStr,
+      ano:   dp?dp.getFullYear():null,
+      mes:   dp?dp.getMonth()+1:null,
+      doc:   cDoc  ?String(r[cDoc  ]||'').trim():'',
+      or:    cOr   ?String(r[cOr   ]||'').trim():'',
+      lanc:  cLanc ?String(r[cLanc ]||'').trim():'',
+      comp:  cComp ?String(r[cComp ]||'').trim():'',
+      vlTit: cVlTit?parseValor(r[cVlTit]):0,
+      valor: cValor?parseValor(r[cValor]):0
     };
-  }).filter(function(r){ return r.conta || r.obra; });
+  }).filter(function(r){return r.conta||r.obra;});
 }
 
 function processarCola() {
-  var txt = document.getElementById('pasteArea').value.trim();
-  if (!txt) { showMsg('pasteMsg', 'Cole os dados do Excel antes de processar.', 'warn'); return; }
-  var lines = txt.split('\n').filter(function(l){ return l.trim(); });
-  if (lines.length < 2) { showMsg('pasteMsg', 'Dados insuficientes. Copie o cabecalho e ao menos uma linha.', 'warn'); return; }
-  var hdrs = lines[0].split('\t').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
-  var rows = [];
-  for (var i = 1; i < lines.length; i++) {
-    var vals = lines[i].split('\t').map(function(v){ return v.trim().replace(/^"|"$/g,''); });
-    if (vals.every(function(v){ return !v; })) continue;
-    var r = {};
-    hdrs.forEach(function(h, j){ r[h] = vals[j] !== undefined ? vals[j] : ''; });
+  var txt=document.getElementById('pasteArea').value.trim();
+  if(!txt){showMsg('pasteMsg','Cole os dados antes de processar.','warn');return;}
+  var lines=txt.split('\n').filter(function(l){return l.trim();});
+  if(lines.length<2){showMsg('pasteMsg','Dados insuficientes.','warn');return;}
+  var hdrs=lines[0].split('\t').map(function(h){return h.trim().replace(/^"|"$/g,'');});
+  var rows=[];
+  for(var i=1;i<lines.length;i++){
+    var vals=lines[i].split('\t').map(function(v){return v.trim().replace(/^"|"$/g,'');});
+    if(vals.every(function(v){return !v;})) continue;
+    var r={};
+    hdrs.forEach(function(h,j){r[h]=vals[j]!==undefined?vals[j]:'';});
     rows.push(r);
   }
-  if (!rows.length) { showMsg('pasteMsg', 'Nenhuma linha valida encontrada.', 'warn'); return; }
-  analiticoData = normalizeRows(rows);
-  document.getElementById('analiticoSection').style.display = 'block';
+  if(!rows.length){showMsg('pasteMsg','Nenhuma linha valida.','warn');return;}
+  var novos=normalizeRows(rows);
+  analiticoData=analiticoData.concat(novos);
+  salvarEstado();
+  document.getElementById('pasteArea').value='';
   populateObras();
   renderAnalitico();
-  updateHdrBadge();
-  showMsg('pasteMsg', '&#10003; ' + analiticoData.length + ' registros carregados!', 'success');
+  updateHeader();
+  showMsg('pasteMsg','&#10003; '+novos.length+' registros adicionados! Total: '+analiticoData.length,'success');
 }
 
-function limparAnalitico() {
-  analiticoData = [];
-  document.getElementById('pasteArea').value = '';
-  document.getElementById('analiticoSection').style.display = 'none';
-  document.getElementById('pasteMsg').style.display = 'none';
-  updateHdrBadge();
+function limparAnalitico(){
+  if(!confirm('Apagar todos os '+analiticoData.length+' registros?')) return;
+  analiticoData=[];
+  salvarEstado();
+  populateObras();
+  renderAnalitico();
+  updateHeader();
 }
 
-function populateObras() {
-  var obras = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.obra; }).filter(Boolean))].sort());
-  document.getElementById('fObra').innerHTML = obras.map(function(o){
-    return '<option value="' + o + '">' + (o === 'all' ? 'Todas' : o) + '</option>';
-  }).join('');
+function populateObras(){
+  var obras=['all'].concat([...new Set(analiticoData.map(function(r){return r.obra;}).filter(Boolean))].sort());
+  var sel=document.getElementById('fObra');
+  var cur=sel?sel.value:'all';
+  sel.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
+  if(obras.includes(cur)) sel.value=cur;
 }
 
-function getFilteredAnalitico() {
-  var obra = document.getElementById('fObra').value;
-  var classif = document.getElementById('fClassif').value;
-  var busca = (document.getElementById('fBusca').value || '').toLowerCase();
+function getFilteredAnalitico(){
+  var obra=document.getElementById('fObra').value;
+  var classif=document.getElementById('fClassif').value;
+  var busca=(document.getElementById('fBusca').value||'').toLowerCase();
   return analiticoData.filter(function(r){
-    if (obra !== 'all' && r.obra !== obra) return false;
-    if (classif === '__nc' && r.classif !== 'Nao classificada') return false;
-    if (classif !== 'all' && classif !== '__nc' && r.classif !== classif) return false;
-    if (busca && !Object.values(r).some(function(v){ return String(v).toLowerCase().includes(busca); })) return false;
+    if(obra!=='all'&&r.obra!==obra) return false;
+    if(classif==='__nc'&&r.classif!=='Nao classificada') return false;
+    if(classif!=='all'&&classif!=='__nc'&&r.classif!==classif) return false;
+    if(busca&&![r.obra,r.conta,r.classif,r.data,r.doc,r.comp].some(function(v){return String(v).toLowerCase().includes(busca);})) return false;
     return true;
   });
 }
 
-function renderAnalitico() {
-  var data = getFilteredAnalitico();
-  var unclass = analiticoData.filter(function(r){ return r.classif === 'Nao classificada'; }).length;
-  var alertWrap = document.getElementById('alertWrap');
-  alertWrap.innerHTML = '';
-  if (!classifs.length) {
-    alertWrap.innerHTML = '<div class="alert alert-info">Nenhuma classificacao cadastrada. Acesse a aba Classificacao de Despesas.</div>';
-  } else if (unclass > 0) {
-    alertWrap.innerHTML = '<div class="alert alert-warn">&#9888; ' + unclass + ' registro(s) com conta nao classificada.</div>';
-  }
-  var bMap = {'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
-  var slice = data.slice(0, 500);
-  document.getElementById('analiticoFooter').textContent = data.length > 500 ? 'Exibindo 500 de ' + data.length : data.length + ' registros';
-  document.getElementById('tbodyAnalitico').innerHTML = slice.map(function(r){
-    return '<tr>' +
-      '<td>' + r.obra + '</td>' +
-      '<td class="mono" style="font-size:11px">' + r.conta + '</td>' +
-      '<td><span class="badge ' + (bMap[r.classif]||'b-gray') + '">' + r.classif + '</span></td>' +
-      '<td style="color:var(--text2);white-space:nowrap">' + r.data + '</td>' +
-      '<td class="mono" style="font-size:11px;color:var(--text2)">' + r.doc + '</td>' +
-      '<td style="color:var(--text2)">' + r.or + '</td>' +
-      '<td style="color:var(--text2)">' + r.lanc + '</td>' +
-      '<td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + r.comp + '">' + r.comp + '</td>' +
-      '<td class="mono" style="text-align:right">' + (r.vlTit ? fBRL(r.vlTit) : '') + '</td>' +
-      '<td class="mono" style="text-align:right;font-weight:500">' + fBRL(r.valor) + '</td>' +
+function renderAnalitico(){
+  var data=getFilteredAnalitico();
+  var unclass=analiticoData.filter(function(r){return r.classif==='Nao classificada';}).length;
+  var aw=document.getElementById('alertWrap'); aw.innerHTML='';
+  if(!classifs.length) aw.innerHTML='<div class="alert alert-info">Nenhuma classificacao cadastrada. Va para a aba Classificacao de Despesas.</div>';
+  else if(unclass>0) aw.innerHTML='<div class="alert alert-warn">&#9888; '+unclass+' registro(s) sem classificacao.</div>';
+
+  var bMap={'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
+  var empty=document.getElementById('analiticoEmpty');
+  var wrap=document.getElementById('analiticoTableWrap');
+  if(!analiticoData.length){empty.style.display='block';wrap.style.display='none';}
+  else{empty.style.display='none';wrap.style.display='block';}
+
+  var slice=data.slice(0,500);
+  document.getElementById('analiticoCount').textContent='('+analiticoData.length+' total)';
+  document.getElementById('analiticoFooter').textContent=data.length>500?'Exibindo 500 de '+data.length+' registros filtrados':data.length+' registros filtrados';
+  document.getElementById('tbodyAnalitico').innerHTML=slice.map(function(r){
+    return '<tr>'+
+      '<td>'+r.obra+'</td>'+
+      '<td class="mono" style="font-size:11px">'+r.conta+'</td>'+
+      '<td><span class="badge '+(bMap[r.classif]||'b-gray')+'">'+r.classif+'</span></td>'+
+      '<td style="color:var(--text2);white-space:nowrap">'+r.data+'</td>'+
+      '<td class="mono" style="font-size:11px;color:var(--text2)">'+r.doc+'</td>'+
+      '<td style="color:var(--text2)">'+r.or+'</td>'+
+      '<td style="color:var(--text2)">'+r.lanc+'</td>'+
+      '<td style="color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.comp+'">'+r.comp+'</td>'+
+      '<td class="mono" style="text-align:right">'+(r.vlTit?fBRL(r.vlTit):'')+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valor)+'</td>'+
     '</tr>';
   }).join('');
 }
 
-function exportAnalitico() {
-  if (!analiticoData.length) { alert('Nenhum dado para exportar.'); return; }
-  var data = getFilteredAnalitico();
-  var rows = [['Obra','Conta','Classificacao','Data','Documento','Or','Lanc.','Complemento','Vl. Total Titulo','Valor']];
-  data.forEach(function(r){ rows.push([r.obra,r.conta,r.classif,r.data,r.doc,r.or,r.lanc,r.comp,r.vlTit,r.valor]); });
-  var ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:20},{wch:20},{wch:18},{wch:12},{wch:14},{wch:6},{wch:10},{wch:30},{wch:16},{wch:14}];
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Analitico');
-  XLSX.writeFile(wb, 'analitico_apropriacoes.xlsx');
+function exportAnalitico(){
+  if(!analiticoData.length){alert('Nenhum dado para exportar.');return;}
+  var data=getFilteredAnalitico();
+  var rows=[['Obra','Conta','Classificacao','Data','Documento','Or','Lanc.','Complemento','Vl.Total Titulo','Valor']];
+  data.forEach(function(r){rows.push([r.obra,r.conta,r.classif,r.data,r.doc,r.or,r.lanc,r.comp,r.vlTit,r.valor]);});
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Analitico');
+  XLSX.writeFile(wb,'analitico.xlsx');
 }
 
 // ============================================================
-// ABA 3 - DASHBOARD
+// ABA 3 — DASHBOARD
 // ============================================================
-function populateDashFilters() {
-  var anos = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.dateParsed ? r.dateParsed.getFullYear() : null; }).filter(Boolean))].sort(function(a,b){ return b-a; }));
-  document.getElementById('dAno').innerHTML = anos.map(function(a){ return '<option value="' + a + '">' + (a==='all'?'Todos':a) + '</option>'; }).join('');
+function populateDashFilters(){
+  // Anos
+  var anosSet=new Set();
+  analiticoData.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
+  var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
+  var dAno=document.getElementById('dAno'); var curAno=dAno.value;
+  dAno.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
+  if(anos.map(String).includes(String(curAno))) dAno.value=curAno;
 
-  var obras = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.obra; }).filter(Boolean))].sort());
-  document.getElementById('dObra').innerHTML = obras.map(function(o){ return '<option value="' + o + '">' + (o==='all'?'Todas':o) + '</option>'; }).join('');
+  // Obras
+  var obras=['all'].concat([...new Set(analiticoData.map(function(r){return r.obra;}).filter(Boolean))].sort());
+  var dObra=document.getElementById('dObra'); var curObra=dObra.value;
+  dObra.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
+  if(obras.includes(curObra)) dObra.value=curObra;
 
-  var contas = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.conta; }).filter(Boolean))].sort());
-  document.getElementById('dConta').innerHTML = contas.map(function(c){ return '<option value="' + c + '">' + (c==='all'?'Todas':c) + '</option>'; }).join('');
+  // Contas
+  var contas=['all'].concat([...new Set(analiticoData.map(function(r){return r.conta;}).filter(Boolean))].sort());
+  var dConta=document.getElementById('dConta'); var curConta=dConta.value;
+  dConta.innerHTML=contas.map(function(c){return '<option value="'+c+'">'+(c==='all'?'Todas':c)+'</option>';}).join('');
+  if(contas.includes(curConta)) dConta.value=curConta;
 }
 
-function getDashFiltered() {
-  var ano = document.getElementById('dAno').value;
-  var mes = document.getElementById('dMes').value;
-  var obra = document.getElementById('dObra').value;
-  var conta = document.getElementById('dConta').value;
+function getDashFiltered(){
+  var ano=document.getElementById('dAno').value;
+  var mes=document.getElementById('dMes').value;
+  var obra=document.getElementById('dObra').value;
+  var conta=document.getElementById('dConta').value;
   return analiticoData.filter(function(r){
-    if (ano !== 'all' && (!r.dateParsed || r.dateParsed.getFullYear() !== parseInt(ano))) return false;
-    if (mes !== 'all' && (!r.dateParsed || r.dateParsed.getMonth()+1 !== parseInt(mes))) return false;
-    if (obra !== 'all' && r.obra !== obra) return false;
-    if (conta !== 'all' && r.conta !== conta) return false;
+    if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
+    if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
+    if(obra!=='all'&&r.obra!==obra) return false;
+    if(conta!=='all'&&r.conta!==conta) return false;
     return true;
   });
 }
 
-function clearDashFilters() {
-  document.getElementById('dAno').value = 'all';
-  document.getElementById('dMes').value = 'all';
-  document.getElementById('dObra').value = 'all';
-  document.getElementById('dConta').value = 'all';
+function clearDashFilters(){
+  document.getElementById('dAno').value='all';
+  document.getElementById('dMes').value='all';
+  document.getElementById('dObra').value='all';
+  document.getElementById('dConta').value='all';
   renderDash();
 }
 
-function sumBy(data, classif) {
-  return data.filter(function(r){ return r.classif === classif; }).reduce(function(s,r){ return s + r.valor; }, 0);
-}
+function sumBy(data,cl){return data.filter(function(r){return r.classif===cl;}).reduce(function(s,r){return s+r.valor;},0);}
 
-function renderDash() {
-  if (!analiticoData.length) {
-    document.getElementById('dashNoData').style.display = 'block';
-    document.getElementById('dashContent').style.display = 'none';
+function renderDash(){
+  if(!analiticoData.length){
+    document.getElementById('dashNoData').style.display='block';
+    document.getElementById('dashContent').style.display='none';
     return;
   }
-  document.getElementById('dashNoData').style.display = 'none';
-  document.getElementById('dashContent').style.display = 'block';
+  document.getElementById('dashNoData').style.display='none';
+  document.getElementById('dashContent').style.display='block';
   populateDashFilters();
 
-  var data = getDashFiltered();
-  var fat = sumBy(data, 'Faturamento');
-  var ter = sumBy(data, 'Terreno');
-  var emp = sumBy(data, 'Empreendimento');
-  var cus = sumBy(data, 'Custo Construtivo');
-  var saldo = fat - (ter + emp + cus);
-  var sc = saldo >= 0 ? 'var(--green)' : 'var(--red)';
+  var data=getDashFiltered();
+  var fat=sumBy(data,'Faturamento');
+  var ter=sumBy(data,'Terreno');
+  var emp=sumBy(data,'Empreendimento');
+  var cus=sumBy(data,'Custo Construtivo');
+  var saldo=fat-(ter+emp+cus);
+  var sc=saldo>=0?'var(--green)':'var(--red)';
+  function cnt(cl){return data.filter(function(r){return r.classif===cl;}).length;}
 
-  function kpiCount(cl) { return data.filter(function(r){ return r.classif === cl; }).length; }
+  document.getElementById('kpiGrid').innerHTML=
+    '<div class="kpi" style="--kc:#4caf82"><div class="kpi-label">Faturamento</div><div class="kpi-value">'+fBRL(fat)+'</div><div class="kpi-sub">'+cnt('Faturamento')+' lancamentos</div></div>'+
+    '<div class="kpi" style="--kc:#e8a045"><div class="kpi-label">Terreno</div><div class="kpi-value">'+fBRL(ter)+'</div><div class="kpi-sub">'+cnt('Terreno')+' lancamentos</div></div>'+
+    '<div class="kpi" style="--kc:#5b9cf6"><div class="kpi-label">Empreendimento</div><div class="kpi-value">'+fBRL(emp)+'</div><div class="kpi-sub">'+cnt('Empreendimento')+' lancamentos</div></div>'+
+    '<div class="kpi" style="--kc:#a78bfa"><div class="kpi-label">Custo Construtivo</div><div class="kpi-value">'+fBRL(cus)+'</div><div class="kpi-sub">'+cnt('Custo Construtivo')+' lancamentos</div></div>'+
+    '<div class="kpi" style="--kc:'+sc+'"><div class="kpi-label">Saldo</div><div class="kpi-value" style="color:'+sc+'">'+fBRL(saldo)+'</div><div class="kpi-sub">Faturamento menos custos</div></div>';
 
-  document.getElementById('kpiGrid').innerHTML =
-    '<div class="kpi" style="--kc:#4caf82"><div class="kpi-icon">&#128176;</div><div class="kpi-label">Faturamento</div><div class="kpi-value">' + fBRL(fat) + '</div><div class="kpi-sub">' + kpiCount('Faturamento') + ' lancamentos</div></div>' +
-    '<div class="kpi" style="--kc:#e8a045"><div class="kpi-icon">&#127795;</div><div class="kpi-label">Terreno</div><div class="kpi-value">' + fBRL(ter) + '</div><div class="kpi-sub">' + kpiCount('Terreno') + ' lancamentos</div></div>' +
-    '<div class="kpi" style="--kc:#5b9cf6"><div class="kpi-icon">&#127970;</div><div class="kpi-label">Empreendimento</div><div class="kpi-value">' + fBRL(emp) + '</div><div class="kpi-sub">' + kpiCount('Empreendimento') + ' lancamentos</div></div>' +
-    '<div class="kpi" style="--kc:#a78bfa"><div class="kpi-icon">&#128296;</div><div class="kpi-label">Custo Construtivo</div><div class="kpi-value">' + fBRL(cus) + '</div><div class="kpi-sub">' + kpiCount('Custo Construtivo') + ' lancamentos</div></div>' +
-    '<div class="kpi" style="--kc:' + sc + '"><div class="kpi-icon">&#128202;</div><div class="kpi-label">Saldo</div><div class="kpi-value" style="color:' + sc + '">' + fBRL(saldo) + '</div><div class="kpi-sub">Faturamento menos custos</div></div>';
+  // RESUMO POR CONTA
+  var bMap={'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
+  var cm={};
+  data.forEach(function(r){
+    if(!r.conta) return;
+    if(!cm[r.conta]) cm[r.conta]={conta:r.conta,classif:r.classif,valor:0};
+    cm[r.conta].valor+=r.valor;
+  });
+  var lista=Object.values(cm).sort(function(a,b){return b.valor-a.valor;});
+  var tot=lista.reduce(function(s,c){return s+c.valor;},0);
+  document.getElementById('totalContas').textContent=fBRL(tot);
+  document.getElementById('tbodyContas').innerHTML=lista.length?lista.map(function(c){
+    var pct=tot>0?((c.valor/tot)*100).toFixed(1):'0.0';
+    return '<tr><td>'+c.conta+'</td><td><span class="badge '+(bMap[c.classif]||'b-gray')+'">'+c.classif+'</span></td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(c.valor)+'</td><td class="mono" style="text-align:right;color:var(--text2)">'+pct+'%</td></tr>';
+  }).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">Nenhum dado para os filtros selecionados.</td></tr>';
 
-  var obraFiltro = document.getElementById('dObra').value;
-  var breakdown = document.getElementById('obraBreakdown');
-  if (obraFiltro === 'all') {
-    var obras = [...new Set(data.map(function(r){ return r.obra; }).filter(Boolean))].sort();
-    if (obras.length > 1) {
-      breakdown.style.display = 'block';
-      document.getElementById('tbodyObras').innerHTML = obras.map(function(o){
-        var od = data.filter(function(r){ return r.obra === o; });
-        var of2 = sumBy(od,'Faturamento'), ot = sumBy(od,'Terreno'), oe = sumBy(od,'Empreendimento'), oc = sumBy(od,'Custo Construtivo');
-        var os = of2-(ot+oe+oc);
-        return '<tr><td style="font-weight:500">' + o + '</td><td class="mono" style="text-align:right;color:#4caf82">' + fBRL(of2) + '</td><td class="mono" style="text-align:right;color:#e8a045">' + fBRL(ot) + '</td><td class="mono" style="text-align:right;color:#5b9cf6">' + fBRL(oe) + '</td><td class="mono" style="text-align:right;color:#a78bfa">' + fBRL(oc) + '</td><td class="mono" style="text-align:right;font-weight:500;color:' + (os>=0?'var(--green)':'var(--red)') + '">' + fBRL(os) + '</td></tr>';
+  // DETALHAMENTO POR OBRA
+  var obraFiltro=document.getElementById('dObra').value;
+  var breakdown=document.getElementById('obraBreakdown');
+  if(obraFiltro==='all'){
+    var obras=[...new Set(data.map(function(r){return r.obra;}).filter(Boolean))].sort();
+    if(obras.length>1){
+      breakdown.style.display='block';
+      document.getElementById('tbodyObras').innerHTML=obras.map(function(o){
+        var od=data.filter(function(r){return r.obra===o;});
+        var of2=sumBy(od,'Faturamento'),ot=sumBy(od,'Terreno'),oe=sumBy(od,'Empreendimento'),oc=sumBy(od,'Custo Construtivo');
+        var os=of2-(ot+oe+oc);
+        return '<tr><td style="font-weight:500">'+o+'</td><td class="mono" style="text-align:right;color:#4caf82">'+fBRL(of2)+'</td><td class="mono" style="text-align:right;color:#e8a045">'+fBRL(ot)+'</td><td class="mono" style="text-align:right;color:#5b9cf6">'+fBRL(oe)+'</td><td class="mono" style="text-align:right;color:#a78bfa">'+fBRL(oc)+'</td><td class="mono" style="text-align:right;font-weight:500;color:'+(os>=0?'var(--green)':'var(--red)')+'">'+fBRL(os)+'</td></tr>';
       }).join('');
-    } else { breakdown.style.display = 'none'; }
-  } else { breakdown.style.display = 'none'; }
+    } else { breakdown.style.display='none'; }
+  } else { breakdown.style.display='none'; }
 }
 
+// ============================================================
 // INIT
+// ============================================================
+carregarEstado();
 renderClassifTable();
-updateHdrBadge();
+populateObras();
+renderAnalitico();
+updateHeader();
 </script>
 </body>
 </html>
