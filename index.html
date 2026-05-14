@@ -448,7 +448,6 @@ function getDashFiltered() {
   var mes=document.getElementById('dMes').value;
   var obra=document.getElementById('dObra').value;
   return analiticoData.filter(function(r){
-    if(r.cc==='REAPROPFIN') return false;
     if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
     if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
     if(obra!=='all'&&r.obra!==obra) return false;
