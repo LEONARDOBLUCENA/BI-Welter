@@ -126,6 +126,9 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
     <div id="alertWrap"></div>
     <div class="filter-bar">
+      <label>Ano</label>
+      <select id="fAno" onchange="renderAnalitico()"><option value="all">Todos</option></select>
+      <div class="divider"></div>
       <label>Obra</label>
       <select id="fObra" onchange="renderAnalitico()"></select>
       <div class="divider"></div>
@@ -378,6 +381,15 @@ function limparAnalitico() {
 }
 
 function populateObras() {
+  // Anos
+  var anosSet=new Set();
+  analiticoData.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
+  var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
+  var fAno=document.getElementById('fAno'); var curAno=fAno?fAno.value:'all';
+  fAno.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
+  if(anos.map(String).includes(String(curAno))) fAno.value=curAno;
+
+  // Obras
   var obras=['all'].concat([...new Set(analiticoData.map(function(r){return r.obra;}).filter(Boolean))].sort());
   var sel=document.getElementById('fObra');
   var cur=sel?sel.value:'all';
@@ -386,13 +398,15 @@ function populateObras() {
 }
 
 function getFilteredAnalitico() {
+  var ano=document.getElementById('fAno').value;
   var obra=document.getElementById('fObra').value;
   var uc=document.getElementById('fUC').value;
   var busca=(document.getElementById('fBusca').value||'').toLowerCase();
   return analiticoData.filter(function(r){
+    if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
     if(obra!=='all'&&r.obra!==obra) return false;
     if(uc!=='all'&&r.uc!==uc) return false;
-    if(busca&&![r.credor,r.data,r.obra,r.uc,String(r.valor)].some(function(v){return String(v).toLowerCase().includes(busca);})) return false;
+    if(busca&&![r.credor,r.data,r.cc,r.obra,r.uc,r.codOrc,r.descOrc,String(r.valor)].some(function(v){return String(v).toLowerCase().includes(busca);})) return false;
     return true;
   });
 }
