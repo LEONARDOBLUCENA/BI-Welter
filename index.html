@@ -313,21 +313,27 @@ function normalizeRows(rows) {
   var keys = Object.keys(rows[0]);
   var cCredor = findCol(keys,['credor','nome do credor','fornecedor','nome']);
   var cData   = findCol(keys,['data pagamento','data pag','data','pagamento']);
+  var cCC     = findCol(keys,['conta corrente','conta','cc']);
   var cObra   = findCol(keys,['obra']);
   var cUC     = findCol(keys,['unidade construtiva','unidade','uc']);
+  var cCodOrc = findCol(keys,['codigo orcamento','cod. orcamento','cod orcamento','codigo','cod.']);
+  var cDescOrc= findCol(keys,['descricao orcamento','desc. orcamento','desc orcamento','descricao','descricao orc']);
   var cValor  = findCol(keys,['valor apropriado','valor aprop','valor']);
 
   return rows.map(function(r){
     var dataStr = cData ? String(r[cData]||'').trim() : '';
     var dp = parseData(dataStr);
     return {
-      credor: cCredor ? String(r[cCredor]||'').trim() : '',
-      data:   dataStr,
-      ano:    dp ? dp.getFullYear() : null,
-      mes:    dp ? dp.getMonth()+1 : null,
-      obra:   cObra  ? String(r[cObra ]||'').trim() : '',
-      uc:     cUC    ? normalizeUC(r[cUC]) : '',
-      valor:  cValor ? parseValor(r[cValor]) : 0
+      credor:   cCredor  ? String(r[cCredor ]||'').trim() : '',
+      data:     dataStr,
+      ano:      dp ? dp.getFullYear() : null,
+      mes:      dp ? dp.getMonth()+1 : null,
+      cc:       cCC      ? String(r[cCC     ]||'').trim().toUpperCase() : '',
+      obra:     cObra    ? String(r[cObra   ]||'').trim() : '',
+      uc:       cUC      ? normalizeUC(r[cUC]) : '',
+      codOrc:   cCodOrc  ? String(r[cCodOrc ]||'').trim() : '',
+      descOrc:  cDescOrc ? String(r[cDescOrc]||'').trim() : '',
+      valor:    cValor   ? parseValor(r[cValor]) : 0
     };
   }).filter(function(r){ return r.credor||r.obra||r.valor; });
 }
@@ -400,8 +406,11 @@ function renderAnalitico() {
     return '<tr>'+
       '<td>'+r.credor+'</td>'+
       '<td style="color:var(--text2);white-space:nowrap">'+r.data+'</td>'+
+      '<td class="mono" style="font-size:11px;color:'+(r.cc==='REAPROPFIN'?'var(--red)':'var(--text2)')+'">'+r.cc+'</td>'+
       '<td>'+r.obra+'</td>'+
       '<td><span class="badge '+(bMap[r.uc]||'b-gray')+'">'+r.uc+'</span></td>'+
+      '<td class="mono" style="font-size:11px;color:var(--text2)">'+r.codOrc+'</td>'+
+      '<td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.descOrc+'">'+r.descOrc+'</td>'+
       '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valor)+'</td>'+
     '</tr>';
   }).join('');
@@ -410,8 +419,8 @@ function renderAnalitico() {
 function exportAnalitico() {
   if (!analiticoData.length){alert('Nenhum dado para exportar.');return;}
   var data=getFilteredAnalitico();
-  var rows=[['Nome do Credor','Data Pagamento','Obra','Unidade Construtiva','Valor Apropriado']];
-  data.forEach(function(r){rows.push([r.credor,r.data,r.obra,r.uc,r.valor]);});
+  var rows=[['Nome do Credor','Data Pagamento','Conta Corrente','Obra','Unidade Construtiva','Cod. Orcamento','Desc. Orcamento','Valor Apropriado']];
+  data.forEach(function(r){rows.push([r.credor,r.data,r.cc,r.obra,r.uc,r.codOrc,r.descOrc,r.valor]);});
   var ws=XLSX.utils.aoa_to_sheet(rows);
   var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Analitico');
   XLSX.writeFile(wb,'analitico.xlsx');
@@ -439,6 +448,7 @@ function getDashFiltered() {
   var mes=document.getElementById('dMes').value;
   var obra=document.getElementById('dObra').value;
   return analiticoData.filter(function(r){
+    if(r.cc==='REAPROPFIN') return false;
     if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
     if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
     if(obra!=='all'&&r.obra!==obra) return false;
