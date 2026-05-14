@@ -86,7 +86,12 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="logo-icon">&#127959;</div>
     BI Construcao <span class="logo-sub">/ Welter</span>
   </div>
-  <span id="hdrRecords" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(91,156,246,0.1);color:#5b9cf6;border:1px solid rgba(91,156,246,0.2);display:none"></span>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span id="hdrRecords" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(91,156,246,0.1);color:#5b9cf6;border:1px solid rgba(91,156,246,0.2);display:none"></span>
+    <button class="btn btn-sm" onclick="salvarSessao()" title="Salvar todos os dados em arquivo">&#8595; Salvar sessao</button>
+    <button class="btn btn-sm" onclick="document.getElementById('loadSessaoInput').click()" title="Carregar dados de arquivo salvo anteriormente">&#8593; Carregar sessao</button>
+    <input type="file" id="loadSessaoInput" accept=".json" style="display:none" onchange="carregarSessaoArquivo(this)">
+  </div>
 </header>
 
 <nav>
@@ -568,6 +573,47 @@ function renderDash() {
       }).join('');
     } else { breakdown.style.display='none'; }
   } else { breakdown.style.display='none'; }
+}
+
+// ============================================================
+// SALVAR / CARREGAR SESSAO EM ARQUIVO
+// ============================================================
+function salvarSessao() {
+  if (!analiticoData.length) { alert('Nenhum dado para salvar.'); return; }
+  var sessao = {
+    versao: 1,
+    data: new Date().toISOString(),
+    analiticoData: analiticoData
+  };
+  var blob = new Blob([JSON.stringify(sessao, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'bi_sessao_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function carregarSessaoArquivo(input) {
+  var f = input.files[0]; if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var sessao = JSON.parse(ev.target.result);
+      if (!sessao.analiticoData) { alert('Arquivo invalido.'); return; }
+      if (analiticoData.length > 0) {
+        if (!confirm('Ja existem ' + analiticoData.length + ' registros. Deseja substituir pelos dados do arquivo?')) return;
+      }
+      analiticoData = sessao.analiticoData;
+      salvarEstado();
+      populateObras();
+      renderAnalitico();
+      updateHeader();
+      alert('&#10003; ' + analiticoData.length + ' registros carregados com sucesso!');
+    } catch(e) { alert('Erro ao ler o arquivo. Certifique-se de usar um arquivo .json salvo por este sistema.'); }
+  };
+  reader.readAsText(f, 'UTF-8');
+  input.value = '';
 }
 
 // INIT
