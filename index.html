@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BI Construção</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>BI Construcao</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2333;--bg4:#242840;
+  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2333;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
   --text:#edecea;--text2:#9a9897;--text3:#4a4948;
   --accent:#e8a045;--green:#4caf82;--blue:#5b9cf6;--red:#e05c5c;--purple:#a78bfa;
@@ -17,37 +17,30 @@
   --r:10px;--rl:16px;
 }
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;}
-
 header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:200;}
-.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;letter-spacing:-0.3px;}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;}
 .logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
 .logo-sub{color:var(--text2);font-weight:300;}
-
 nav{display:flex;gap:2px;padding:0 28px;background:var(--bg);border-bottom:1px solid var(--border);}
 .tab{padding:12px 18px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
 .tab:hover{color:var(--text);}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .tab-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
 .tab.active .tab-dot{background:var(--accent);}
-
 main{padding:28px;max-width:1300px;margin:0 auto;}
 .page{display:none;}
 .page.active{display:block;}
-
 .sec-header{margin-bottom:24px;}
 .sec-title{font-size:17px;font-weight:500;margin-bottom:4px;}
 .sec-desc{font-size:13px;color:var(--text2);}
-
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:16px;}
 .card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
-
 .form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
 .form-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:180px;}
 .form-group label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
-input[type=text],select{background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:var(--font);font-size:13px;transition:border-color 0.15s;width:100%;}
-input[type=text]:focus,select:focus{outline:none;border-color:var(--accent);}
-input[type=text]::placeholder{color:var(--text3);}
-
+input[type=text],select,textarea{background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:var(--font);font-size:13px;transition:border-color 0.15s;width:100%;}
+input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+input[type=text]::placeholder,textarea::placeholder{color:var(--text3);}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
 .btn:hover{border-color:var(--accent);color:var(--accent);}
 .btn-accent{background:var(--accent);color:#0f1117;border-color:var(--accent);font-weight:500;}
@@ -55,67 +48,42 @@ input[type=text]::placeholder{color:var(--text3);}
 .btn-sm{padding:6px 12px;font-size:12px;}
 .btn-danger{border-color:var(--red);color:var(--red);}
 .btn-danger:hover{background:rgba(224,92,92,0.1);}
-
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{text-align:left;padding:9px 12px;color:var(--text2);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);white-space:nowrap;}
 tbody td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:rgba(255,255,255,0.02);}
-
 .badge{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .b-fat{background:rgba(76,175,130,0.15);color:#4caf82;}
 .b-ter{background:rgba(232,160,69,0.15);color:#e8a045;}
 .b-emp{background:rgba(91,156,246,0.15);color:#5b9cf6;}
 .b-cus{background:rgba(167,139,250,0.15);color:#a78bfa;}
 .b-gray{background:rgba(154,152,151,0.12);color:#9a9897;}
-
-.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--rl);padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg2);}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(232,160,69,0.04);}
-.upload-zone h3{font-size:15px;font-weight:500;margin-bottom:6px;}
-.upload-zone p{font-size:13px;color:var(--text2);}
-.upload-zone small{font-size:11px;color:var(--text3);display:block;margin-top:4px;}
-
-.stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-.stat{background:var(--bg3);border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--text2);}
-.stat strong{color:var(--text);font-size:14px;display:block;}
-
 .alert{padding:12px 16px;border-radius:var(--r);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .alert-warn{background:rgba(232,160,69,0.1);border:1px solid rgba(232,160,69,0.2);color:#e8a045;}
 .alert-info{background:rgba(91,156,246,0.1);border:1px solid rgba(91,156,246,0.2);color:#5b9cf6;}
-
+.alert-success{background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.2);color:#4caf82;}
 .empty{text-align:center;padding:48px 24px;color:var(--text3);}
 .empty-icon{font-size:32px;margin-bottom:12px;}
 .empty p{font-size:13px;}
-
 .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
 .filter-bar label{font-size:12px;color:var(--text2);}
 .filter-bar select{width:auto;}
 .divider{width:1px;height:20px;background:var(--border2);}
-
 .mono{font-family:var(--mono);font-size:12px;}
-
-/* KPI CARDS */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
 .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:22px 20px;position:relative;overflow:hidden;}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-color,var(--accent));}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent));}
 .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:10px;}
-.kpi-value{font-size:24px;font-weight:600;letter-spacing:-0.5px;line-height:1;color:var(--text);}
+.kpi-value{font-size:24px;font-weight:600;letter-spacing:-0.5px;line-height:1;}
 .kpi-sub{font-size:12px;color:var(--text3);margin-top:6px;}
 .kpi-icon{position:absolute;top:18px;right:18px;font-size:22px;opacity:0.12;}
-.kpi.saldo .kpi-value{color:var(--saldo-color,var(--green));}
-
-/* DASH FILTERS */
 .dash-filters{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
-.dash-filters .form-group{min-width:140px;flex:1;}
-.dash-filters .form-group label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px;}
-
-/* NO DATA */
+.dash-filters .fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px;}
+.dash-filters .fg label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
 .no-data{text-align:center;padding:60px 24px;color:var(--text3);}
 .no-data-icon{font-size:40px;margin-bottom:16px;opacity:0.4;}
-.no-data p{font-size:14px;}
-.no-data small{font-size:12px;display:block;margin-top:6px;}
-
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .fade{animation:fadeUp 0.25s ease both;}
 </style>
@@ -124,37 +92,35 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 
 <header>
   <div class="logo">
-    <div class="logo-icon">🏗️</div>
-    BI Construção <span class="logo-sub">/ Welter</span>
+    <div class="logo-icon">&#127959;</div>
+    BI Construcao <span class="logo-sub">/ Welter</span>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <span id="hdrBadge" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(232,160,69,0.12);color:var(--accent);border:1px solid rgba(232,160,69,0.2);display:none"></span>
-  </div>
+  <span id="hdrBadge" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(232,160,69,0.12);color:var(--accent);border:1px solid rgba(232,160,69,0.2);display:none"></span>
 </header>
 
 <nav>
-  <div class="tab active" onclick="goTab(0)" id="tab0"><span class="tab-dot"></span>Classificação de Despesas</div>
-  <div class="tab" onclick="goTab(1)" id="tab1"><span class="tab-dot"></span>Analítico de Apropriações</div>
+  <div class="tab active" onclick="goTab(0)" id="tab0"><span class="tab-dot"></span>Classificacao de Despesas</div>
+  <div class="tab" onclick="goTab(1)" id="tab1"><span class="tab-dot"></span>Analitico de Apropriacoes</div>
   <div class="tab" onclick="goTab(2)" id="tab2"><span class="tab-dot"></span>Dashboard</div>
 </nav>
 
 <main>
 
-<!-- ===== ABA 1: CLASSIFICAÇÃO ===== -->
+<!-- ABA 1 -->
 <div class="page active fade" id="page0">
   <div class="sec-header">
-    <div class="sec-title">Classificação de Despesas</div>
-    <div class="sec-desc">Associe cada conta contábil a uma classificação. Esses dados serão usados para categorizar as despesas importadas.</div>
+    <div class="sec-title">Classificacao de Despesas</div>
+    <div class="sec-desc">Associe cada conta contabil a uma classificacao. Esses dados serao usados para categorizar as despesas importadas.</div>
   </div>
   <div class="card">
-    <div class="card-title">Nova classificação</div>
+    <div class="card-title">Nova classificacao</div>
     <div class="form-row">
       <div class="form-group" style="flex:2;">
         <label>Conta</label>
-        <input type="text" id="inConta" placeholder="Ex: 1.1.01 — Materiais de Construção" onkeydown="if(event.key==='Enter')addClassif()">
+        <input type="text" id="inConta" placeholder="Ex: 1.1.01 Materiais de Construcao" onkeydown="if(event.key==='Enter')addClassif()">
       </div>
       <div class="form-group" style="flex:1;">
-        <label>Classificação</label>
+        <label>Classificacao</label>
         <select id="inClassif">
           <option value="">Selecione...</option>
           <option value="Faturamento">Faturamento</option>
@@ -171,117 +137,97 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="card-title">
       <span>Contas cadastradas <span id="classifCount" style="font-weight:400;color:var(--text3)"></span></span>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="searchConta" placeholder="Buscar conta..." style="width:220px;padding:6px 10px;font-size:12px;" oninput="renderClassifTable()">
-        <button class="btn btn-sm" onclick="exportClassif()">⬇ Exportar</button>
-        <button class="btn btn-sm" onclick="document.getElementById('importClassifInput').click()">⬆ Importar</button>
+        <input type="text" id="searchConta" placeholder="Buscar..." style="width:200px;padding:6px 10px;font-size:12px;" oninput="renderClassifTable()">
+        <button class="btn btn-sm" onclick="exportClassif()">&#8595; Exportar</button>
+        <button class="btn btn-sm" onclick="document.getElementById('importClassifInput').click()">&#8593; Importar</button>
         <input type="file" id="importClassifInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="importClassif(this)">
       </div>
     </div>
     <div id="classifTableWrap">
-      <div class="empty"><div class="empty-icon">📋</div><p>Nenhuma conta cadastrada ainda.<br>Adicione acima ou importe uma planilha.</p></div>
+      <div class="empty"><div class="empty-icon">&#128203;</div><p>Nenhuma conta cadastrada ainda.<br>Adicione acima ou importe uma planilha.</p></div>
     </div>
   </div>
 </div>
 
-<!-- ===== ABA 2: ANALÍTICO ===== -->
+<!-- ABA 2 -->
 <div class="page fade" id="page1">
   <div class="sec-header">
-    <div class="sec-title">Analítico de Apropriações</div>
-    <div class="sec-desc">Copie as células do Excel (incluindo o cabeçalho) e cole abaixo. As contas serão classificadas automaticamente conforme a Aba 1.</div>
+    <div class="sec-title">Analitico de Apropriacoes</div>
+    <div class="sec-desc">Copie as celulas do Excel (incluindo o cabecalho) e cole abaixo. As contas serao classificadas automaticamente conforme a Aba 1.</div>
   </div>
-  <div class="card" id="pasteWrap">
+  <div class="card">
     <div class="card-title">
       <span>Colar dados do Excel</span>
       <button class="btn btn-accent btn-sm" onclick="processarCola()">&#10003; Processar</button>
     </div>
-    <textarea id="pasteArea" placeholder="Copie as células do Excel (Ctrl+A, Ctrl+C) e cole aqui (Ctrl+V)..." style="width:100%;height:160px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:12px;font-family:var(--mono);font-size:12px;resize:vertical;line-height:1.5;" onpaste="setTimeout(processarCola,100)"></textarea>
-    <div id="pasteMsg" style="margin-top:8px;font-size:12px;display:none;"></div>
+    <textarea id="pasteArea" rows="6" placeholder="Copie as celulas do Excel (Ctrl+A, Ctrl+C) e cole aqui (Ctrl+V)..." style="font-family:var(--mono);font-size:12px;resize:vertical;" onpaste="setTimeout(processarCola,100)"></textarea>
+    <div id="pasteMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
   </div>
   <div id="analiticoSection" style="display:none;">
     <div id="alertWrap"></div>
-    <div style="display:flex;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;justify-content:flex-end;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px;">
       <button class="btn btn-sm" onclick="exportAnalitico()">&#8595; Exportar Excel</button>
-      <button class="btn btn-sm" onclick="limparAnalitico()">&#10005; Limpar dados</button>
+      <button class="btn btn-sm btn-danger" onclick="limparAnalitico()">&#10005; Limpar dados</button>
     </div>
     <div class="card">
-      <div class="card-title"><span>Registros importados</span></div>
+      <div class="card-title"><span>Registros</span><span id="analiticoFooter" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;"></span></div>
       <div class="filter-bar">
         <label>Obra</label>
         <select id="fObra" onchange="renderAnalitico()"></select>
         <div class="divider"></div>
-        <label>Classificação</label>
+        <label>Classificacao</label>
         <select id="fClassif" onchange="renderAnalitico()">
           <option value="all">Todas</option>
           <option value="Faturamento">Faturamento</option>
           <option value="Terreno">Terreno</option>
           <option value="Empreendimento">Empreendimento</option>
           <option value="Custo Construtivo">Custo Construtivo</option>
-          <option value="—">Não classificadas</option>
+          <option value="__nc">Nao classificadas</option>
         </select>
         <div class="divider"></div>
         <input type="text" id="fBusca" placeholder="Buscar..." style="width:180px;padding:7px 10px;font-size:12px;" oninput="renderAnalitico()">
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Obra</th><th>Conta</th><th>Classificação</th><th>Data</th><th>Documento</th><th>Or</th><th>Lanc.</th><th>Complemento</th><th>Vl. Total Título</th><th>Valor</th></tr></thead>
+          <thead><tr><th>Obra</th><th>Conta</th><th>Classificacao</th><th>Data</th><th>Documento</th><th>Or</th><th>Lanc.</th><th>Complemento</th><th style="text-align:right">Vl. Total Titulo</th><th style="text-align:right">Valor</th></tr></thead>
           <tbody id="tbodyAnalitico"></tbody>
         </table>
       </div>
-      <div style="padding:10px 0 0;font-size:12px;color:var(--text3)" id="analiticoFooter"></div>
     </div>
   </div>
 </div>
 
-<!-- ===== ABA 3: DASHBOARD ===== -->
+<!-- ABA 3 -->
 <div class="page fade" id="page2">
   <div class="sec-header">
     <div class="sec-title">Dashboard</div>
-    <div class="sec-desc">KPIs calculados a partir do Analítico de Apropriações com base nas classificações cadastradas.</div>
+    <div class="sec-desc">KPIs calculados a partir do Analitico de Apropriacoes com base nas classificacoes cadastradas.</div>
   </div>
-
   <div id="dashNoData" class="no-data">
-    <div class="no-data-icon">📊</div>
+    <div class="no-data-icon">&#128202;</div>
     <p>Nenhum dado importado ainda.</p>
-    <small>Importe o Analítico de Apropriações na aba anterior para visualizar os KPIs.</small>
-    <br>
-    <button class="btn btn-accent" style="margin-top:16px;" onclick="goTab(1)">Ir para Analítico →</button>
+    <p style="font-size:12px;margin-top:6px;">Cole os dados na aba Analitico de Apropriacoes para visualizar os KPIs.</p>
+    <button class="btn btn-accent" style="margin-top:20px;" onclick="goTab(1)">Ir para Analitico</button>
   </div>
-
   <div id="dashContent" style="display:none;">
-
-    <!-- FILTROS -->
     <div class="dash-filters">
-      <div class="form-group">
-        <label>Ano</label>
-        <select id="dAno" onchange="renderDash()"></select>
-      </div>
-      <div class="form-group">
-        <label>Mês</label>
+      <div class="fg"><label>Ano</label><select id="dAno" onchange="renderDash()"></select></div>
+      <div class="fg"><label>Mes</label>
         <select id="dMes" onchange="renderDash()">
           <option value="all">Todos</option>
           <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-          <option value="3">Março</option><option value="4">Abril</option>
+          <option value="3">Marco</option><option value="4">Abril</option>
           <option value="5">Maio</option><option value="6">Junho</option>
           <option value="7">Julho</option><option value="8">Agosto</option>
           <option value="9">Setembro</option><option value="10">Outubro</option>
           <option value="11">Novembro</option><option value="12">Dezembro</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Obra</label>
-        <select id="dObra" onchange="renderDash()"></select>
-      </div>
-      <div class="form-group">
-        <label>Conta</label>
-        <select id="dConta" onchange="renderDash()"></select>
-      </div>
-      <button class="btn btn-sm" onclick="clearDashFilters()" style="margin-bottom:1px;">✕ Limpar filtros</button>
+      <div class="fg"><label>Obra</label><select id="dObra" onchange="renderDash()"></select></div>
+      <div class="fg"><label>Conta</label><select id="dConta" onchange="renderDash()"></select></div>
+      <button class="btn btn-sm" onclick="clearDashFilters()">&#10005; Limpar</button>
     </div>
-
-    <!-- KPIs -->
     <div class="kpi-grid" id="kpiGrid"></div>
-
-    <!-- DETALHAMENTO POR OBRA -->
     <div class="card" id="obraBreakdown" style="display:none;">
       <div class="card-title">Detalhamento por obra</div>
       <div class="tbl-wrap">
@@ -291,7 +237,6 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
         </table>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -301,334 +246,394 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 // ============================================================
 // STATE
 // ============================================================
-let classifs = JSON.parse(localStorage.getItem('bi_classifs')||'[]');
-let analiticoData = [];
+var classifs = JSON.parse(localStorage.getItem('bi_classifs') || '[]');
+var analiticoData = [];
 
 // ============================================================
 // TABS
 // ============================================================
-function goTab(i){
-  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
-  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',i===j));
-  if(i===2) renderDash();
+function goTab(i) {
+  document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('active', i===j); });
+  document.querySelectorAll('.page').forEach(function(p,j){ p.classList.toggle('active', i===j); });
+  if (i === 2) renderDash();
 }
 
 // ============================================================
-// ABA 1 — CLASSIFICAÇÃO
+// UTILS
 // ============================================================
-function saveClassifs(){ localStorage.setItem('bi_classifs',JSON.stringify(classifs)); }
-
-function addClassif(){
-  const conta=document.getElementById('inConta').value.trim();
-  const classif=document.getElementById('inClassif').value;
-  const msg=document.getElementById('addMsg');
-  if(!conta){ showMsg(msg,'⚠️ Informe o nome da conta.','warn'); return; }
-  if(!classif){ showMsg(msg,'⚠️ Selecione uma classificação.','warn'); return; }
-  if(classifs.find(c=>c.conta.toLowerCase()===conta.toLowerCase())){ showMsg(msg,'⚠️ Essa conta já está cadastrada.','warn'); return; }
-  classifs.push({conta,classif});
-  saveClassifs();
-  document.getElementById('inConta').value='';
-  document.getElementById('inClassif').value='';
-  showMsg(msg,'✅ Conta adicionada com sucesso!','success');
-  renderClassifTable(); updateHdrBadge();
+function fBRL(v) {
+  if (isNaN(v) || v === null) v = 0;
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
 }
 
-function showMsg(el,txt,type){
-  el.style.display='flex'; el.style.alignItems='center'; el.style.gap='6px';
-  el.style.color=type==='warn'?'var(--accent)':type==='success'?'var(--green)':'var(--blue)';
-  el.textContent=txt;
-  clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.display='none'; },3000);
+function parseValor(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  if (typeof v === 'number') return v;
+  var s = String(v).trim().replace(/\s/g,'').replace(/R\$/g,'').replace(/\./g,'').replace(',','.');
+  var n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
 }
 
-function deleteClassif(i){ classifs.splice(i,1); saveClassifs(); renderClassifTable(); updateHdrBadge(); }
-
-function renderClassifTable(){
-  const search=(document.getElementById('searchConta').value||'').toLowerCase();
-  const filtered=classifs.filter(c=>!search||c.conta.toLowerCase().includes(search)||c.classif.toLowerCase().includes(search));
-  document.getElementById('classifCount').textContent='('+classifs.length+')';
-  const wrap=document.getElementById('classifTableWrap');
-  if(!classifs.length){ wrap.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma conta cadastrada ainda.<br>Adicione acima ou importe uma planilha.</p></div>'; return; }
-  if(!filtered.length){ wrap.innerHTML='<div class="empty"><p>Nenhuma conta encontrada.</p></div>'; return; }
-  const bMap={'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
-  wrap.innerHTML=`<div class="tbl-wrap"><table>
-    <thead><tr><th>#</th><th>Conta</th><th>Classificação</th><th style="width:60px"></th></tr></thead>
-    <tbody>${filtered.map(c=>{
-      const ri=classifs.indexOf(c);
-      return `<tr><td class="mono" style="color:var(--text3)">${String(ri+1).padStart(3,'0')}</td><td>${c.conta}</td><td><span class="badge ${bMap[c.classif]||'b-gray'}">${c.classif}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteClassif(${ri})">✕</button></td></tr>`;
-    }).join('')}</tbody>
-  </table></div>`;
-}
-
-function exportClassif(){
-  if(!classifs.length){ alert('Nenhuma classificação para exportar.'); return; }
-  const ws=XLSX.utils.aoa_to_sheet([['Conta','Classificação'],...classifs.map(c=>[c.conta,c.classif])]);
-  ws['!cols']=[{wch:40},{wch:20}];
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Classificações');
-  XLSX.writeFile(wb,'classificacoes.xlsx');
-}
-
-function importClassif(input){
-  const f=input.files[0]; if(!f) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      let rows=[];
-      if(f.name.toLowerCase().endsWith('.csv')){
-        const lines=ev.target.result.split('\n').filter(l=>l.trim());
-        const hdrs=lines[0].split(/[,;]/).map(h=>h.trim().replace(/"/g,''));
-        for(let i=1;i<lines.length;i++){ const v=lines[i].split(/[,;]/).map(x=>x.trim().replace(/"/g,'')); const r={}; hdrs.forEach((h,j)=>r[h]=v[j]||''); rows.push(r); }
-      } else {
-        const wb=XLSX.read(ev.target.result,{type:'array'}); rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-      }
-      const valid=['Faturamento','Terreno','Empreendimento','Custo Construtivo'];
-      let added=0,skipped=0;
-      rows.forEach(r=>{
-        const conta=String(r['Conta']||r['conta']||'').trim();
-        const classif=String(r['Classificação']||r['Classificacao']||r['classificacao']||r['classificação']||'').trim();
-        if(!conta||!valid.includes(classif)){ skipped++; return; }
-        if(classifs.find(c=>c.conta.toLowerCase()===conta.toLowerCase())){ skipped++; return; }
-        classifs.push({conta,classif}); added++;
-      });
-      saveClassifs(); renderClassifTable(); updateHdrBadge();
-      alert(`✅ ${added} conta(s) importada(s).${skipped>0?' '+skipped+' linha(s) ignorada(s).':''}`);
-    } catch(e){ alert('Erro ao ler o arquivo.'); }
-  };
-  if(f.name.toLowerCase().endsWith('.csv')) reader.readAsText(f,'UTF-8'); else reader.readAsArrayBuffer(f);
-  input.value='';
-}
-
-// ============================================================
-// ABA 2 — ANALÍTICO (colar do Excel)
-// ============================================================
-function processarCola(){
-  const txt=document.getElementById('pasteArea').value.trim();
-  const msg=document.getElementById('pasteMsg');
-  if(!txt){ showMsg(msg,'Cole os dados do Excel antes de processar.','warn'); return; }
-  const lines=txt.split('\n').filter(l=>l.trim());
-  if(lines.length<2){ showMsg(msg,'Dados insuficientes. Certifique-se de copiar o cabeçalho e ao menos uma linha.','warn'); return; }
-  const hdrs=lines[0].split('\t').map(h=>h.trim().replace(/^"|"$/g,''));
-  const rows=[];
-  for(let i=1;i<lines.length;i++){
-    const vals=lines[i].split('\t').map(v=>v.trim().replace(/^"|"$/g,''));
-    if(vals.every(v=>!v)) continue;
-    const r={}; hdrs.forEach((h,j)=>r[h]=vals[j]||''); rows.push(r);
+function parseData(v) {
+  if (!v) return null;
+  if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+  var s = String(v).trim();
+  // dd/mm/yyyy or dd-mm-yyyy
+  var m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+  if (m) {
+    var y = m[3].length === 2 ? 2000 + parseInt(m[3]) : parseInt(m[3]);
+    return new Date(y, parseInt(m[2])-1, parseInt(m[1]));
   }
-  if(!rows.length){ showMsg(msg,'Nenhuma linha válida encontrada.','warn'); return; }
-  analiticoData=normalizeAnalitico(rows);
-  document.getElementById('analiticoSection').style.display='block';
-  populateObras(); renderAnalitico(); updateHdrBadge();
-  showMsg(msg,'&#10003; '+rows.length+' registros carregados com sucesso!','success');
+  // yyyy-mm-dd
+  m = s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})$/);
+  if (m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
 }
 
-function limparAnalitico(){
-  analiticoData=[];
-  document.getElementById('pasteArea').value='';
-  document.getElementById('analiticoSection').style.display='none';
-  document.getElementById('pasteMsg').style.display='none';
+function showMsg(elId, txt, type) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.gap = '6px';
+  el.style.color = type === 'warn' ? 'var(--accent)' : type === 'success' ? 'var(--green)' : 'var(--blue)';
+  el.innerHTML = txt;
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.style.display = 'none'; }, 4000);
+}
+
+function updateHdrBadge() {
+  var b = document.getElementById('hdrBadge');
+  if (classifs.length) {
+    b.style.display = 'inline';
+    b.textContent = classifs.length + ' contas classificadas';
+  } else {
+    b.style.display = 'none';
+  }
+}
+
+// ============================================================
+// ABA 1 - CLASSIFICACAO
+// ============================================================
+function saveClassifs() { localStorage.setItem('bi_classifs', JSON.stringify(classifs)); }
+
+function addClassif() {
+  var conta = document.getElementById('inConta').value.trim();
+  var classif = document.getElementById('inClassif').value;
+  if (!conta) { showMsg('addMsg', 'Informe o nome da conta.', 'warn'); return; }
+  if (!classif) { showMsg('addMsg', 'Selecione uma classificacao.', 'warn'); return; }
+  if (classifs.find(function(c){ return c.conta.toLowerCase() === conta.toLowerCase(); })) {
+    showMsg('addMsg', 'Essa conta ja esta cadastrada.', 'warn'); return;
+  }
+  classifs.push({conta: conta, classif: classif});
+  saveClassifs();
+  document.getElementById('inConta').value = '';
+  document.getElementById('inClassif').value = '';
+  showMsg('addMsg', '&#10003; Conta adicionada!', 'success');
+  renderClassifTable();
   updateHdrBadge();
 }
 
-function findCol(keys,opts){ return keys.find(k=>opts.some(o=>k.toLowerCase().includes(o))); }
+function deleteClassif(i) {
+  classifs.splice(i, 1);
+  saveClassifs();
+  renderClassifTable();
+  updateHdrBadge();
+}
 
-function normalizeAnalitico(rows){
-  if(!rows.length) return [];
-  const keys=Object.keys(rows[0]);
-  const cObra=findCol(keys,['obra']);
-  const cConta=findCol(keys,['conta']);
-  const cData=findCol(keys,['data']);
-  const cDoc=findCol(keys,['documento','doc']);
-  const cOr=findCol(keys,['or','ord']);
-  const cLanc=findCol(keys,['lanc','lançamento','lancamento']);
-  const cComp=findCol(keys,['complemento','comp','descricao','descrição']);
-  const cVlTit=findCol(keys,['vl. total','vl total','total tit','total título','total titulo']);
-  const cValor=keys.find(k=>k.trim().toLowerCase()==='valor') || findCol(keys,['valor']);
-  return rows.map(r=>{
-    const conta=cConta?String(r[cConta]||'').trim():'';
-    const classifObj=classifs.find(c=>c.conta.toLowerCase()===conta.toLowerCase());
-    const classif=classifObj?classifObj.classif:'—';
-    const dataRaw=cData?r[cData]:'';
-    const dateParsed=parseDate(dataRaw);
-    const dataStr=dateParsed?dateParsed.toLocaleDateString('pt-BR'):String(dataRaw||'—');
-    return { obra:cObra?String(r[cObra]||'').trim():'—', conta, classif, data:dataStr, dateParsed, doc:cDoc?String(r[cDoc]||'').trim():'—', or:cOr?String(r[cOr]||'').trim():'—', lanc:cLanc?String(r[cLanc]||'').trim():'—', comp:cComp?String(r[cComp]||'').trim():'—', vlTit:cVlTit?parseVal(r[cVlTit]):0, valor:cValor?parseVal(r[cValor]):0 };
+function renderClassifTable() {
+  var search = (document.getElementById('searchConta').value || '').toLowerCase();
+  var filtered = classifs.filter(function(c){
+    return !search || c.conta.toLowerCase().includes(search) || c.classif.toLowerCase().includes(search);
   });
-}
-
-function parseVal(v){
-  if(v===null||v===undefined||v==='') return 0;
-  if(typeof v==='number') return v;
-  return parseFloat(String(v).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.'))||0;
-}
-
-function parseDate(v){
-  if(!v) return null;
-  if(v instanceof Date) return isNaN(v.getTime())?null:v;
-  if(typeof v==='number'){
-    // Excel serial date
-    const d=new Date(Math.round((v-25569)*86400*1000));
-    return isNaN(d.getTime())?null:d;
+  document.getElementById('classifCount').textContent = '(' + classifs.length + ')';
+  var wrap = document.getElementById('classifTableWrap');
+  if (!classifs.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">&#128203;</div><p>Nenhuma conta cadastrada ainda.<br>Adicione acima ou importe uma planilha.</p></div>';
+    return;
   }
-  const s=String(v).trim();
-  const m=s.match(/(\d{1,4})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
-  if(m){
-    const[,a,b,c]=m;
-    if(a.length===4) return new Date(+a,+b-1,+c);
-    if(c.length===4) return new Date(+c,+b-1,+a);
-    return new Date(2000+Number(c),+b-1,+a);
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty"><p>Nenhuma conta encontrada.</p></div>';
+    return;
   }
-  const d=new Date(s); return isNaN(d.getTime())?null:d;
-}
+  var bMap = {'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
+  wrap.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Conta</th><th>Classificacao</th><th style="width:60px"></th></tr></thead><tbody>' +
+    filtered.map(function(c){
+      var ri = classifs.indexOf(c);
+      return '<tr><td class="mono" style="color:var(--text3)">' + String(ri+1).padStart(3,'0') + '</td><td>' + c.conta + '</td><td><span class="badge ' + (bMap[c.classif]||'b-gray') + '">' + c.classif + '</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteClassif(' + ri + ')">&#10005;</button></td></tr>';
+    }).join('') +
+  '</tbody></table></div>';
 }
 
-function populateObras(){
-  const obras=['all',...new Set(analiticoData.map(r=>r.obra).filter(Boolean).sort())];
-  document.getElementById('fObra').innerHTML=obras.map(o=>`<option value="${o}">${o==='all'?'Todas':o}</option>`).join('');
+function exportClassif() {
+  if (!classifs.length) { alert('Nenhuma classificacao para exportar.'); return; }
+  var ws = XLSX.utils.aoa_to_sheet([['Conta','Classificacao']].concat(classifs.map(function(c){ return [c.conta, c.classif]; })));
+  ws['!cols'] = [{wch:40},{wch:20}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Classificacoes');
+  XLSX.writeFile(wb, 'classificacoes.xlsx');
 }
 
-function getFilteredAnalitico(){
-  const obra=document.getElementById('fObra').value;
-  const classif=document.getElementById('fClassif').value;
-  const busca=(document.getElementById('fBusca').value||'').toLowerCase();
-  return analiticoData.filter(r=>{
-    if(obra!=='all'&&r.obra!==obra) return false;
-    if(classif!=='all'&&r.classif!==classif) return false;
-    if(busca&&!Object.values(r).some(v=>String(v).toLowerCase().includes(busca))) return false;
+function importClassif(input) {
+  var f = input.files[0]; if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var rows = [];
+      if (f.name.toLowerCase().endsWith('.csv')) {
+        var lines = ev.target.result.split('\n').filter(function(l){ return l.trim(); });
+        var hdrs = lines[0].split(/[,;]/).map(function(h){ return h.trim().replace(/"/g,''); });
+        for (var i = 1; i < lines.length; i++) {
+          var v = lines[i].split(/[,;]/).map(function(x){ return x.trim().replace(/"/g,''); });
+          var r = {}; hdrs.forEach(function(h,j){ r[h] = v[j]||''; }); rows.push(r);
+        }
+      } else {
+        var wb = XLSX.read(ev.target.result, {type:'array'});
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      }
+      var valid = ['Faturamento','Terreno','Empreendimento','Custo Construtivo'];
+      var added = 0, skipped = 0;
+      rows.forEach(function(r){
+        var conta = String(r['Conta']||r['conta']||'').trim();
+        var classif = String(r['Classificacao']||r['Classificação']||r['classificacao']||r['classificação']||'').trim();
+        if (!conta || !valid.includes(classif)) { skipped++; return; }
+        if (classifs.find(function(c){ return c.conta.toLowerCase() === conta.toLowerCase(); })) { skipped++; return; }
+        classifs.push({conta:conta, classif:classif}); added++;
+      });
+      saveClassifs(); renderClassifTable(); updateHdrBadge();
+      alert(added + ' conta(s) importada(s).' + (skipped ? ' ' + skipped + ' ignorada(s).' : ''));
+    } catch(e) { alert('Erro ao ler o arquivo.'); }
+  };
+  if (f.name.toLowerCase().endsWith('.csv')) reader.readAsText(f, 'UTF-8');
+  else reader.readAsArrayBuffer(f);
+  input.value = '';
+}
+
+// ============================================================
+// ABA 2 - ANALITICO
+// ============================================================
+function getClassif(conta) {
+  var found = classifs.find(function(c){ return c.conta.toLowerCase() === conta.toLowerCase(); });
+  return found ? found.classif : null;
+}
+
+function normalizeRows(rows) {
+  if (!rows.length) return [];
+  var keys = Object.keys(rows[0]);
+  function findCol(opts) {
+    return keys.find(function(k){ return opts.some(function(o){ return k.toLowerCase().trim().includes(o); }); });
+  }
+  // find Valor with exact match first to avoid conflict with Vl. Total Titulo
+  var cValor = keys.find(function(k){ return k.trim().toLowerCase() === 'valor'; }) || findCol(['valor']);
+  var cVlTit = findCol(['vl. total','vl total','total tit','total titulo','total título']);
+  // make sure cVlTit != cValor
+  if (cVlTit === cValor) cVlTit = null;
+  var cObra  = findCol(['obra']);
+  var cConta = findCol(['conta']);
+  var cData  = findCol(['data']);
+  var cDoc   = findCol(['documento','doc']);
+  var cOr    = keys.find(function(k){ return k.trim().toLowerCase() === 'or'; }) || findCol(['or ','or\t']);
+  var cLanc  = findCol(['lanc']);
+  var cComp  = findCol(['complemento','comp']);
+
+  return rows.map(function(r){
+    var conta = cConta ? String(r[cConta]||'').trim() : '';
+    var classif = getClassif(conta) || 'Nao classificada';
+    var dataRaw = cData ? r[cData] : '';
+    var dateParsed = parseData(dataRaw);
+    var dataStr = dateParsed ? dateParsed.toLocaleDateString('pt-BR') : String(dataRaw||'');
+    var valor = cValor ? parseValor(r[cValor]) : 0;
+    var vlTit = cVlTit ? parseValor(r[cVlTit]) : 0;
+    return {
+      obra: cObra ? String(r[cObra]||'').trim() : '',
+      conta: conta,
+      classif: classif,
+      data: dataStr,
+      dateParsed: dateParsed,
+      doc: cDoc ? String(r[cDoc]||'').trim() : '',
+      or: cOr ? String(r[cOr]||'').trim() : '',
+      lanc: cLanc ? String(r[cLanc]||'').trim() : '',
+      comp: cComp ? String(r[cComp]||'').trim() : '',
+      vlTit: vlTit,
+      valor: valor
+    };
+  }).filter(function(r){ return r.conta || r.obra; });
+}
+
+function processarCola() {
+  var txt = document.getElementById('pasteArea').value.trim();
+  if (!txt) { showMsg('pasteMsg', 'Cole os dados do Excel antes de processar.', 'warn'); return; }
+  var lines = txt.split('\n').filter(function(l){ return l.trim(); });
+  if (lines.length < 2) { showMsg('pasteMsg', 'Dados insuficientes. Copie o cabecalho e ao menos uma linha.', 'warn'); return; }
+  var hdrs = lines[0].split('\t').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = lines[i].split('\t').map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+    if (vals.every(function(v){ return !v; })) continue;
+    var r = {};
+    hdrs.forEach(function(h, j){ r[h] = vals[j] !== undefined ? vals[j] : ''; });
+    rows.push(r);
+  }
+  if (!rows.length) { showMsg('pasteMsg', 'Nenhuma linha valida encontrada.', 'warn'); return; }
+  analiticoData = normalizeRows(rows);
+  document.getElementById('analiticoSection').style.display = 'block';
+  populateObras();
+  renderAnalitico();
+  updateHdrBadge();
+  showMsg('pasteMsg', '&#10003; ' + analiticoData.length + ' registros carregados!', 'success');
+}
+
+function limparAnalitico() {
+  analiticoData = [];
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('analiticoSection').style.display = 'none';
+  document.getElementById('pasteMsg').style.display = 'none';
+  updateHdrBadge();
+}
+
+function populateObras() {
+  var obras = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.obra; }).filter(Boolean))].sort());
+  document.getElementById('fObra').innerHTML = obras.map(function(o){
+    return '<option value="' + o + '">' + (o === 'all' ? 'Todas' : o) + '</option>';
+  }).join('');
+}
+
+function getFilteredAnalitico() {
+  var obra = document.getElementById('fObra').value;
+  var classif = document.getElementById('fClassif').value;
+  var busca = (document.getElementById('fBusca').value || '').toLowerCase();
+  return analiticoData.filter(function(r){
+    if (obra !== 'all' && r.obra !== obra) return false;
+    if (classif === '__nc' && r.classif !== 'Nao classificada') return false;
+    if (classif !== 'all' && classif !== '__nc' && r.classif !== classif) return false;
+    if (busca && !Object.values(r).some(function(v){ return String(v).toLowerCase().includes(busca); })) return false;
     return true;
   });
 }
 
-function fBRL(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
-
-function renderAnalitico(){
-  const data=getFilteredAnalitico();
-  const unclass=data.filter(r=>r.classif==='—').length;
-  const bMap={'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus','—':'b-gray'};
-  const alertWrap=document.getElementById('alertWrap');
-  alertWrap.innerHTML='';
-  if(!classifs.length) alertWrap.innerHTML=`<div class="alert alert-info">ℹ️ Nenhuma classificação cadastrada. Acesse a aba <strong>Classificação de Despesas</strong>.</div>`;
-  else if(unclass>0) alertWrap.innerHTML=`<div class="alert alert-warn">⚠️ ${unclass} registro(s) com conta não classificada.</div>`;
-  const slice=data.slice(0,500);
-  document.getElementById('tbodyAnalitico').innerHTML=slice.map(r=>`<tr>
-    <td>${r.obra}</td>
-    <td class="mono" style="font-size:12px">${r.conta}</td>
-    <td><span class="badge ${bMap[r.classif]||'b-gray'}">${r.classif}</span></td>
-    <td style="color:var(--text2);white-space:nowrap">${r.data}</td>
-    <td class="mono" style="font-size:12px;color:var(--text2)">${r.doc}</td>
-    <td style="color:var(--text2)">${r.or}</td>
-    <td style="color:var(--text2)">${r.lanc}</td>
-    <td style="color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.comp}">${r.comp}</td>
-    <td class="mono" style="text-align:right">${r.vlTit?fBRL(r.vlTit):''}</td>
-    <td class="mono" style="text-align:right;font-weight:500">${fBRL(r.valor)}</td>
-  </tr>`).join('');
-  document.getElementById('analiticoFooter').textContent=data.length>500?`Exibindo 500 de ${data.length} registros`:`${data.length} registros`;
+function renderAnalitico() {
+  var data = getFilteredAnalitico();
+  var unclass = analiticoData.filter(function(r){ return r.classif === 'Nao classificada'; }).length;
+  var alertWrap = document.getElementById('alertWrap');
+  alertWrap.innerHTML = '';
+  if (!classifs.length) {
+    alertWrap.innerHTML = '<div class="alert alert-info">Nenhuma classificacao cadastrada. Acesse a aba Classificacao de Despesas.</div>';
+  } else if (unclass > 0) {
+    alertWrap.innerHTML = '<div class="alert alert-warn">&#9888; ' + unclass + ' registro(s) com conta nao classificada.</div>';
+  }
+  var bMap = {'Faturamento':'b-fat','Terreno':'b-ter','Empreendimento':'b-emp','Custo Construtivo':'b-cus'};
+  var slice = data.slice(0, 500);
+  document.getElementById('analiticoFooter').textContent = data.length > 500 ? 'Exibindo 500 de ' + data.length : data.length + ' registros';
+  document.getElementById('tbodyAnalitico').innerHTML = slice.map(function(r){
+    return '<tr>' +
+      '<td>' + r.obra + '</td>' +
+      '<td class="mono" style="font-size:11px">' + r.conta + '</td>' +
+      '<td><span class="badge ' + (bMap[r.classif]||'b-gray') + '">' + r.classif + '</span></td>' +
+      '<td style="color:var(--text2);white-space:nowrap">' + r.data + '</td>' +
+      '<td class="mono" style="font-size:11px;color:var(--text2)">' + r.doc + '</td>' +
+      '<td style="color:var(--text2)">' + r.or + '</td>' +
+      '<td style="color:var(--text2)">' + r.lanc + '</td>' +
+      '<td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + r.comp + '">' + r.comp + '</td>' +
+      '<td class="mono" style="text-align:right">' + (r.vlTit ? fBRL(r.vlTit) : '') + '</td>' +
+      '<td class="mono" style="text-align:right;font-weight:500">' + fBRL(r.valor) + '</td>' +
+    '</tr>';
+  }).join('');
 }
 
-function exportAnalitico(){
-  if(!analiticoData.length){ alert('Nenhum dado para exportar.'); return; }
-  const data=getFilteredAnalitico();
-  const rows=[['Obra','Conta','Classificação','Data','Documento','Or','Lanc.','Complemento','Vl. Total Título','Valor']];
-  data.forEach(r=>rows.push([r.obra,r.conta,r.classif,r.data,r.doc,r.or,r.lanc,r.comp,r.vlTit,r.valor]));
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:20},{wch:20},{wch:18},{wch:12},{wch:14},{wch:6},{wch:10},{wch:30},{wch:16},{wch:14}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Analítico');
-  XLSX.writeFile(wb,'analitico_apropriacoes.xlsx');
-}
-
-function updateHdrBadge(){
-  const b=document.getElementById('hdrBadge');
-  if(classifs.length){ b.style.display='inline'; b.textContent=classifs.length+' contas classificadas'; }
-  else b.style.display='none';
+function exportAnalitico() {
+  if (!analiticoData.length) { alert('Nenhum dado para exportar.'); return; }
+  var data = getFilteredAnalitico();
+  var rows = [['Obra','Conta','Classificacao','Data','Documento','Or','Lanc.','Complemento','Vl. Total Titulo','Valor']];
+  data.forEach(function(r){ rows.push([r.obra,r.conta,r.classif,r.data,r.doc,r.or,r.lanc,r.comp,r.vlTit,r.valor]); });
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:20},{wch:20},{wch:18},{wch:12},{wch:14},{wch:6},{wch:10},{wch:30},{wch:16},{wch:14}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Analitico');
+  XLSX.writeFile(wb, 'analitico_apropriacoes.xlsx');
 }
 
 // ============================================================
-// ABA 3 — DASHBOARD
+// ABA 3 - DASHBOARD
 // ============================================================
-function populateDashFilters(){
-  // Anos
-  const anos=['all',...new Set(analiticoData.map(r=>r.dateParsed?r.dateParsed.getFullYear():null).filter(Boolean)).values()].sort((a,b)=>a==='all'?-1:b-a);
-  document.getElementById('dAno').innerHTML=anos.map(a=>`<option value="${a}">${a==='all'?'Todos':a}</option>`).join('');
+function populateDashFilters() {
+  var anos = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.dateParsed ? r.dateParsed.getFullYear() : null; }).filter(Boolean))].sort(function(a,b){ return b-a; }));
+  document.getElementById('dAno').innerHTML = anos.map(function(a){ return '<option value="' + a + '">' + (a==='all'?'Todos':a) + '</option>'; }).join('');
 
-  // Obras
-  const obras=['all',...new Set(analiticoData.map(r=>r.obra).filter(o=>o&&o!=='—').sort())];
-  document.getElementById('dObra').innerHTML=obras.map(o=>`<option value="${o}">${o==='all'?'Todas':o}</option>`).join('');
+  var obras = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.obra; }).filter(Boolean))].sort());
+  document.getElementById('dObra').innerHTML = obras.map(function(o){ return '<option value="' + o + '">' + (o==='all'?'Todas':o) + '</option>'; }).join('');
 
-  // Contas
-  const contas=['all',...new Set(analiticoData.map(r=>r.conta).filter(Boolean).sort())];
-  document.getElementById('dConta').innerHTML=contas.map(c=>`<option value="${c}">${c==='all'?'Todas':c}</option>`).join('');
+  var contas = ['all'].concat([...new Set(analiticoData.map(function(r){ return r.conta; }).filter(Boolean))].sort());
+  document.getElementById('dConta').innerHTML = contas.map(function(c){ return '<option value="' + c + '">' + (c==='all'?'Todas':c) + '</option>'; }).join('');
 }
 
-function getDashFiltered(){
-  const ano=document.getElementById('dAno').value;
-  const mes=document.getElementById('dMes').value;
-  const obra=document.getElementById('dObra').value;
-  const conta=document.getElementById('dConta').value;
-  return analiticoData.filter(r=>{
-    if(ano!=='all'&&(!r.dateParsed||r.dateParsed.getFullYear()!==Number(ano))) return false;
-    if(mes!=='all'&&(!r.dateParsed||r.dateParsed.getMonth()+1!==Number(mes))) return false;
-    if(obra!=='all'&&r.obra!==obra) return false;
-    if(conta!=='all'&&r.conta!==conta) return false;
+function getDashFiltered() {
+  var ano = document.getElementById('dAno').value;
+  var mes = document.getElementById('dMes').value;
+  var obra = document.getElementById('dObra').value;
+  var conta = document.getElementById('dConta').value;
+  return analiticoData.filter(function(r){
+    if (ano !== 'all' && (!r.dateParsed || r.dateParsed.getFullYear() !== parseInt(ano))) return false;
+    if (mes !== 'all' && (!r.dateParsed || r.dateParsed.getMonth()+1 !== parseInt(mes))) return false;
+    if (obra !== 'all' && r.obra !== obra) return false;
+    if (conta !== 'all' && r.conta !== conta) return false;
     return true;
   });
 }
 
-function clearDashFilters(){
-  document.getElementById('dAno').value='all';
-  document.getElementById('dMes').value='all';
-  document.getElementById('dObra').value='all';
-  document.getElementById('dConta').value='all';
+function clearDashFilters() {
+  document.getElementById('dAno').value = 'all';
+  document.getElementById('dMes').value = 'all';
+  document.getElementById('dObra').value = 'all';
+  document.getElementById('dConta').value = 'all';
   renderDash();
 }
 
-function sumBy(data, classif){ return data.filter(r=>r.classif===classif).reduce((s,r)=>s+r.valor,0); }
+function sumBy(data, classif) {
+  return data.filter(function(r){ return r.classif === classif; }).reduce(function(s,r){ return s + r.valor; }, 0);
+}
 
-function renderDash(){
-  if(!analiticoData.length){
-    document.getElementById('dashNoData').style.display='block';
-    document.getElementById('dashContent').style.display='none';
+function renderDash() {
+  if (!analiticoData.length) {
+    document.getElementById('dashNoData').style.display = 'block';
+    document.getElementById('dashContent').style.display = 'none';
     return;
   }
-  document.getElementById('dashNoData').style.display='none';
-  document.getElementById('dashContent').style.display='block';
+  document.getElementById('dashNoData').style.display = 'none';
+  document.getElementById('dashContent').style.display = 'block';
   populateDashFilters();
 
-  const data=getDashFiltered();
-  const fat=sumBy(data,'Faturamento');
-  const ter=sumBy(data,'Terreno');
-  const emp=sumBy(data,'Empreendimento');
-  const cus=sumBy(data,'Custo Construtivo');
-  const saldo=fat-(ter+emp+cus);
-  const saldoColor=saldo>=0?'var(--green)':'var(--red)';
+  var data = getDashFiltered();
+  var fat = sumBy(data, 'Faturamento');
+  var ter = sumBy(data, 'Terreno');
+  var emp = sumBy(data, 'Empreendimento');
+  var cus = sumBy(data, 'Custo Construtivo');
+  var saldo = fat - (ter + emp + cus);
+  var sc = saldo >= 0 ? 'var(--green)' : 'var(--red)';
 
-  document.getElementById('kpiGrid').innerHTML=`
-    <div class="kpi" style="--kpi-color:#4caf82"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento</div><div class="kpi-value">${fBRL(fat)}</div><div class="kpi-sub">${data.filter(r=>r.classif==='Faturamento').length} lançamentos</div></div>
-    <div class="kpi" style="--kpi-color:#e8a045"><div class="kpi-icon">🏕️</div><div class="kpi-label">Terreno</div><div class="kpi-value">${fBRL(ter)}</div><div class="kpi-sub">${data.filter(r=>r.classif==='Terreno').length} lançamentos</div></div>
-    <div class="kpi" style="--kpi-color:#5b9cf6"><div class="kpi-icon">🏢</div><div class="kpi-label">Empreendimento</div><div class="kpi-value">${fBRL(emp)}</div><div class="kpi-sub">${data.filter(r=>r.classif==='Empreendimento').length} lançamentos</div></div>
-    <div class="kpi" style="--kpi-color:#a78bfa"><div class="kpi-icon">🔨</div><div class="kpi-label">Custo Construtivo</div><div class="kpi-value">${fBRL(cus)}</div><div class="kpi-sub">${data.filter(r=>r.classif==='Custo Construtivo').length} lançamentos</div></div>
-    <div class="kpi saldo" style="--kpi-color:${saldoColor};--saldo-color:${saldoColor}"><div class="kpi-icon">📊</div><div class="kpi-label">Saldo</div><div class="kpi-value">${fBRL(saldo)}</div><div class="kpi-sub">Faturamento − (Terreno + Empreendimento + Custo Construtivo)</div></div>
-  `;
+  function kpiCount(cl) { return data.filter(function(r){ return r.classif === cl; }).length; }
 
-  // Detalhamento por obra (só quando filtro de obra = Todas)
-  const obraFiltro=document.getElementById('dObra').value;
-  const breakdown=document.getElementById('obraBreakdown');
-  if(obraFiltro==='all'){
-    const obras=[...new Set(data.map(r=>r.obra).filter(o=>o&&o!=='—'))].sort();
-    if(obras.length>1){
-      breakdown.style.display='block';
-      document.getElementById('tbodyObras').innerHTML=obras.map(o=>{
-        const od=data.filter(r=>r.obra===o);
-        const of=sumBy(od,'Faturamento'), ot=sumBy(od,'Terreno'), oe=sumBy(od,'Empreendimento'), oc=sumBy(od,'Custo Construtivo');
-        const os=of-(ot+oe+oc);
-        return `<tr>
-          <td style="font-weight:500">${o}</td>
-          <td class="mono" style="text-align:right;color:#4caf82">${fBRL(of)}</td>
-          <td class="mono" style="text-align:right;color:#e8a045">${fBRL(ot)}</td>
-          <td class="mono" style="text-align:right;color:#5b9cf6">${fBRL(oe)}</td>
-          <td class="mono" style="text-align:right;color:#a78bfa">${fBRL(oc)}</td>
-          <td class="mono" style="text-align:right;font-weight:500;color:${os>=0?'var(--green)':'var(--red)'}">${fBRL(os)}</td>
-        </tr>`;
+  document.getElementById('kpiGrid').innerHTML =
+    '<div class="kpi" style="--kc:#4caf82"><div class="kpi-icon">&#128176;</div><div class="kpi-label">Faturamento</div><div class="kpi-value">' + fBRL(fat) + '</div><div class="kpi-sub">' + kpiCount('Faturamento') + ' lancamentos</div></div>' +
+    '<div class="kpi" style="--kc:#e8a045"><div class="kpi-icon">&#127795;</div><div class="kpi-label">Terreno</div><div class="kpi-value">' + fBRL(ter) + '</div><div class="kpi-sub">' + kpiCount('Terreno') + ' lancamentos</div></div>' +
+    '<div class="kpi" style="--kc:#5b9cf6"><div class="kpi-icon">&#127970;</div><div class="kpi-label">Empreendimento</div><div class="kpi-value">' + fBRL(emp) + '</div><div class="kpi-sub">' + kpiCount('Empreendimento') + ' lancamentos</div></div>' +
+    '<div class="kpi" style="--kc:#a78bfa"><div class="kpi-icon">&#128296;</div><div class="kpi-label">Custo Construtivo</div><div class="kpi-value">' + fBRL(cus) + '</div><div class="kpi-sub">' + kpiCount('Custo Construtivo') + ' lancamentos</div></div>' +
+    '<div class="kpi" style="--kc:' + sc + '"><div class="kpi-icon">&#128202;</div><div class="kpi-label">Saldo</div><div class="kpi-value" style="color:' + sc + '">' + fBRL(saldo) + '</div><div class="kpi-sub">Faturamento menos custos</div></div>';
+
+  var obraFiltro = document.getElementById('dObra').value;
+  var breakdown = document.getElementById('obraBreakdown');
+  if (obraFiltro === 'all') {
+    var obras = [...new Set(data.map(function(r){ return r.obra; }).filter(Boolean))].sort();
+    if (obras.length > 1) {
+      breakdown.style.display = 'block';
+      document.getElementById('tbodyObras').innerHTML = obras.map(function(o){
+        var od = data.filter(function(r){ return r.obra === o; });
+        var of2 = sumBy(od,'Faturamento'), ot = sumBy(od,'Terreno'), oe = sumBy(od,'Empreendimento'), oc = sumBy(od,'Custo Construtivo');
+        var os = of2-(ot+oe+oc);
+        return '<tr><td style="font-weight:500">' + o + '</td><td class="mono" style="text-align:right;color:#4caf82">' + fBRL(of2) + '</td><td class="mono" style="text-align:right;color:#e8a045">' + fBRL(ot) + '</td><td class="mono" style="text-align:right;color:#5b9cf6">' + fBRL(oe) + '</td><td class="mono" style="text-align:right;color:#a78bfa">' + fBRL(oc) + '</td><td class="mono" style="text-align:right;font-weight:500;color:' + (os>=0?'var(--green)':'var(--red)') + '">' + fBRL(os) + '</td></tr>';
       }).join('');
-    } else { breakdown.style.display='none'; }
-  } else { breakdown.style.display='none'; }
+    } else { breakdown.style.display = 'none'; }
+  } else { breakdown.style.display = 'none'; }
 }
 
 // INIT
