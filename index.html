@@ -114,7 +114,16 @@ tfoot td{padding:10px 12px;font-weight:500;border-top:1px solid var(--border2);}
     <div class="sec-desc">Associe cada conta contabil a uma classificacao.</div>
   </div>
   <div class="card">
-    <div class="card-title">Nova classificacao</div>
+    <div class="card-title">Colar do Excel</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Copie duas colunas do Excel: <strong>Conta</strong> e <strong>Classificacao</strong> (com cabecalho) e cole abaixo.</div>
+    <textarea id="pasteClassif" rows="4" placeholder="Conta&#9;Classificacao&#10;Materiais&#9;Custo Construtivo&#10;Terreno Lote A&#9;Terreno" style="font-family:var(--mono);font-size:12px;resize:vertical;"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-accent btn-sm" onclick="processarClassifCola()">&#10003; Processar e adicionar</button>
+      <span id="classifPasteMsg" style="font-size:12px;display:none;"></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Adicionar manualmente</div>
     <div class="form-row">
       <div class="form-group" style="flex:2;">
         <label>Conta</label>
@@ -378,6 +387,34 @@ function addClassif() {
   renderClassifTable();
   renderAnalitico();
   updateHeader();
+}
+
+function processarClassifCola() {
+  var txt = document.getElementById('pasteClassif').value.trim();
+  if (!txt) { showMsg('classifPasteMsg','Cole os dados antes de processar.','warn'); return; }
+  var lines = txt.split('\n').filter(function(l){ return l.trim(); });
+  if (lines.length < 2) { showMsg('classifPasteMsg','Dados insuficientes.','warn'); return; }
+  var hdrs = lines[0].split('\t').map(function(h){ return h.trim().toLowerCase().replace(/"/g,''); });
+  var iConta = hdrs.findIndex(function(h){ return h.includes('conta'); });
+  var iClassif = hdrs.findIndex(function(h){ return h.includes('classif'); });
+  if (iConta < 0) iConta = 0;
+  if (iClassif < 0) iClassif = 1;
+  var valid = ['Faturamento','Terreno','Empreendimento','Custo Construtivo'];
+  var added = 0, skipped = 0;
+  for (var i = 1; i < lines.length; i++) {
+    var vals = lines[i].split('\t').map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+    if (vals.every(function(v){ return !v; })) continue;
+    var conta = (vals[iConta] || '').trim();
+    var cl = (vals[iClassif] || '').trim();
+    if (!conta || !valid.includes(cl)) { skipped++; continue; }
+    if (classifs.find(function(c){ return c.conta.toLowerCase()===conta.toLowerCase(); })) { skipped++; continue; }
+    classifs.push({conta:conta, classif:cl}); added++;
+  }
+  analiticoData.forEach(function(r){ r.classif=getClassif(r.conta); });
+  salvarEstado();
+  document.getElementById('pasteClassif').value='';
+  renderClassifTable(); renderAnalitico(); updateHeader();
+  showMsg('classifPasteMsg','&#10003; '+added+' adicionada(s).'+(skipped?' '+skipped+' ignorada(s).':''),'success');
 }
 
 function deleteClassif(i) {
