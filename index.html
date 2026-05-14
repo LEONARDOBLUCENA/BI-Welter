@@ -421,7 +421,7 @@ function loadAnalitico(input){
         for(let i=1;i<lines.length;i++){ const v=lines[i].split(/[,;]/).map(x=>x.trim().replace(/"/g,'')); const r={}; hdrs.forEach((h,j)=>r[h]=v[j]||''); rows.push(r); }
       } else {
         const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
-        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{raw:false,dateNF:'dd/mm/yyyy'});
+        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{raw:true,defval:''});
       }
       analiticoData=normalizeAnalitico(rows);
       document.getElementById('uploadWrap').style.display='none';
@@ -450,16 +450,28 @@ function normalizeAnalitico(rows){
     const conta=cConta?String(r[cConta]||'').trim():'';
     const classifObj=classifs.find(c=>c.conta.toLowerCase()===conta.toLowerCase());
     const classif=classifObj?classifObj.classif:'—';
-    const dataStr=cData?String(r[cData]||'').trim():'';
-    const dateParsed=parseDate(dataStr);
+    const dataRaw=cData?r[cData]:'';
+    const dateParsed=parseDate(dataRaw);
+    const dataStr=dateParsed?dateParsed.toLocaleDateString('pt-BR'):String(dataRaw||'—');
     return { obra:cObra?String(r[cObra]||'').trim():'—', conta, classif, data:dataStr, dateParsed, doc:cDoc?String(r[cDoc]||'').trim():'—', or:cOr?String(r[cOr]||'').trim():'—', lanc:cLanc?String(r[cLanc]||'').trim():'—', comp:cComp?String(r[cComp]||'').trim():'—', vlTit:cVlTit?parseVal(r[cVlTit]):0, valor:cValor?parseVal(r[cValor]):0 };
   });
 }
 
-function parseVal(v){ return parseFloat(String(v||0).replace(/[R$\s.]/g,'').replace(',','.'))||0; }
+function parseVal(v){
+  if(v===null||v===undefined||v==='') return 0;
+  if(typeof v==='number') return v;
+  return parseFloat(String(v).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.'))||0;
+}
 
-function parseDate(s){
-  if(!s) return null;
+function parseDate(v){
+  if(!v) return null;
+  if(v instanceof Date) return isNaN(v.getTime())?null:v;
+  if(typeof v==='number'){
+    // Excel serial date
+    const d=new Date(Math.round((v-25569)*86400*1000));
+    return isNaN(d.getTime())?null:d;
+  }
+  const s=String(v).trim();
   const m=s.match(/(\d{1,4})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
   if(m){
     const[,a,b,c]=m;
@@ -467,7 +479,8 @@ function parseDate(s){
     if(c.length===4) return new Date(+c,+b-1,+a);
     return new Date(2000+Number(c),+b-1,+a);
   }
-  const d=new Date(s); return isNaN(d)?null:d;
+  const d=new Date(s); return isNaN(d.getTime())?null:d;
+}
 }
 
 function populateObras(){
