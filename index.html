@@ -187,22 +187,21 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 <div class="page fade" id="page1">
   <div class="sec-header">
     <div class="sec-title">Analítico de Apropriações</div>
-    <div class="sec-desc">Importe o relatório exportado do seu sistema. As contas serão classificadas automaticamente conforme a Aba 1.</div>
+    <div class="sec-desc">Copie as células do Excel (incluindo o cabeçalho) e cole abaixo. As contas serão classificadas automaticamente conforme a Aba 1.</div>
   </div>
-  <div id="uploadWrap">
-    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileAnalitico').click()">
-      <div style="font-size:36px;margin-bottom:12px;opacity:0.4;">📂</div>
-      <h3>Importar Analítico de Apropriações</h3>
-      <p>Arraste o arquivo aqui ou clique para selecionar</p>
-      <small>Formatos aceitos: .xlsx · .xls · .csv</small>
+  <div class="card" id="pasteWrap">
+    <div class="card-title">
+      <span>Colar dados do Excel</span>
+      <button class="btn btn-accent btn-sm" onclick="processarCola()">&#10003; Processar</button>
     </div>
-    <input type="file" id="fileAnalitico" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadAnalitico(this)">
+    <textarea id="pasteArea" placeholder="Copie as células do Excel (Ctrl+A, Ctrl+C) e cole aqui (Ctrl+V)..." style="width:100%;height:160px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:12px;font-family:var(--mono);font-size:12px;resize:vertical;line-height:1.5;" onpaste="setTimeout(processarCola,100)"></textarea>
+    <div id="pasteMsg" style="margin-top:8px;font-size:12px;display:none;"></div>
   </div>
   <div id="analiticoSection" style="display:none;">
     <div id="alertWrap"></div>
-    <div style="display:flex;justify-content:flex-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;justify-content:flex-end;">
-      <button class="btn btn-sm" onclick="exportAnalitico()">⬇ Exportar Excel</button>
-      <button class="btn btn-sm" onclick="document.getElementById('fileAnalitico').click()">⬆ Trocar arquivo</button>
+    <div style="display:flex;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-sm" onclick="exportAnalitico()">&#8595; Exportar Excel</button>
+      <button class="btn btn-sm" onclick="limparAnalitico()">&#10005; Limpar dados</button>
     </div>
     <div class="card">
       <div class="card-title"><span>Registros importados</span></div>
@@ -399,37 +398,34 @@ function importClassif(input){
 }
 
 // ============================================================
-// ABA 2 — ANALÍTICO
+// ABA 2 — ANALÍTICO (colar do Excel)
 // ============================================================
-const dropZone=document.getElementById('dropZone');
-dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag');});
-dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag'));
-dropZone.addEventListener('drop',e=>{
-  e.preventDefault(); dropZone.classList.remove('drag');
-  const f=e.dataTransfer.files[0]; if(f){ const dt=new DataTransfer(); dt.items.add(f); document.getElementById('fileAnalitico').files=dt.files; loadAnalitico(document.getElementById('fileAnalitico')); }
-});
+function processarCola(){
+  const txt=document.getElementById('pasteArea').value.trim();
+  const msg=document.getElementById('pasteMsg');
+  if(!txt){ showMsg(msg,'Cole os dados do Excel antes de processar.','warn'); return; }
+  const lines=txt.split('\n').filter(l=>l.trim());
+  if(lines.length<2){ showMsg(msg,'Dados insuficientes. Certifique-se de copiar o cabeçalho e ao menos uma linha.','warn'); return; }
+  const hdrs=lines[0].split('\t').map(h=>h.trim().replace(/^"|"$/g,''));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=lines[i].split('\t').map(v=>v.trim().replace(/^"|"$/g,''));
+    if(vals.every(v=>!v)) continue;
+    const r={}; hdrs.forEach((h,j)=>r[h]=vals[j]||''); rows.push(r);
+  }
+  if(!rows.length){ showMsg(msg,'Nenhuma linha válida encontrada.','warn'); return; }
+  analiticoData=normalizeAnalitico(rows);
+  document.getElementById('analiticoSection').style.display='block';
+  populateObras(); renderAnalitico(); updateHdrBadge();
+  showMsg(msg,'&#10003; '+rows.length+' registros carregados com sucesso!','success');
+}
 
-function loadAnalitico(input){
-  const f=input.files[0]; if(!f) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      let rows=[];
-      if(f.name.toLowerCase().endsWith('.csv')){
-        const lines=ev.target.result.split('\n').filter(l=>l.trim());
-        const hdrs=lines[0].split(/[,;]/).map(h=>h.trim().replace(/"/g,''));
-        for(let i=1;i<lines.length;i++){ const v=lines[i].split(/[,;]/).map(x=>x.trim().replace(/"/g,'')); const r={}; hdrs.forEach((h,j)=>r[h]=v[j]||''); rows.push(r); }
-      } else {
-        const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
-        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{raw:true,defval:''});
-      }
-      analiticoData=normalizeAnalitico(rows);
-      document.getElementById('uploadWrap').style.display='none';
-      document.getElementById('analiticoSection').style.display='block';
-      populateObras(); renderAnalitico(); updateHdrBadge();
-    } catch(e){ alert('Erro ao ler o arquivo.'); }
-  };
-  if(f.name.toLowerCase().endsWith('.csv')) reader.readAsText(f,'UTF-8'); else reader.readAsArrayBuffer(f);
+function limparAnalitico(){
+  analiticoData=[];
+  document.getElementById('pasteArea').value='';
+  document.getElementById('analiticoSection').style.display='none';
+  document.getElementById('pasteMsg').style.display='none';
+  updateHdrBadge();
 }
 
 function findCol(keys,opts){ return keys.find(k=>opts.some(o=>k.toLowerCase().includes(o))); }
