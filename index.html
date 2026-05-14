@@ -200,8 +200,8 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
   </div>
   <div id="analiticoSection" style="display:none;">
     <div id="alertWrap"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-      <div class="stats-row" style="margin:0;" id="statsRow"></div>
+    <div style="display:flex;justify-content:flex-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-sm" onclick="exportAnalitico()">⬇ Exportar Excel</button>
       <button class="btn btn-sm" onclick="document.getElementById('fileAnalitico').click()">⬆ Trocar arquivo</button>
     </div>
     <div class="card">
@@ -444,8 +444,8 @@ function normalizeAnalitico(rows){
   const cOr=findCol(keys,['or','ord']);
   const cLanc=findCol(keys,['lanc','lançamento','lancamento']);
   const cComp=findCol(keys,['complemento','comp','descricao','descrição']);
-  const cVlTit=findCol(keys,['vl. total','vl total','valor total','total tit','total título']);
-  const cValor=findCol(keys,['valor']);
+  const cVlTit=findCol(keys,['vl. total','vl total','total tit','total título','total titulo']);
+  const cValor=keys.find(k=>k.trim().toLowerCase()==='valor') || findCol(keys,['valor']);
   return rows.map(r=>{
     const conta=cConta?String(r[cConta]||'').trim():'';
     const classifObj=classifs.find(c=>c.conta.toLowerCase()===conta.toLowerCase());
@@ -497,14 +497,6 @@ function renderAnalitico(){
   alertWrap.innerHTML='';
   if(!classifs.length) alertWrap.innerHTML=`<div class="alert alert-info">ℹ️ Nenhuma classificação cadastrada. Acesse a aba <strong>Classificação de Despesas</strong>.</div>`;
   else if(unclass>0) alertWrap.innerHTML=`<div class="alert alert-warn">⚠️ ${unclass} registro(s) com conta não classificada.</div>`;
-  const totalVal=data.reduce((s,r)=>s+r.valor,0);
-  const totalTit=data.reduce((s,r)=>s+r.vlTit,0);
-  document.getElementById('statsRow').innerHTML=`
-    <div class="stat"><strong>${data.length.toLocaleString('pt-BR')}</strong>registros</div>
-    <div class="stat"><strong>${fBRL(totalVal)}</strong>total Valor</div>
-    <div class="stat"><strong>${fBRL(totalTit)}</strong>total Vl. Título</div>
-    ${unclass?`<div class="stat" style="color:var(--red)"><strong>${unclass}</strong>não classificadas</div>`:''}
-  `;
   const slice=data.slice(0,500);
   document.getElementById('tbodyAnalitico').innerHTML=slice.map(r=>`<tr>
     <td>${r.obra}</td>
@@ -519,6 +511,18 @@ function renderAnalitico(){
     <td class="mono" style="text-align:right;font-weight:500">${fBRL(r.valor)}</td>
   </tr>`).join('');
   document.getElementById('analiticoFooter').textContent=data.length>500?`Exibindo 500 de ${data.length} registros`:`${data.length} registros`;
+}
+
+function exportAnalitico(){
+  if(!analiticoData.length){ alert('Nenhum dado para exportar.'); return; }
+  const data=getFilteredAnalitico();
+  const rows=[['Obra','Conta','Classificação','Data','Documento','Or','Lanc.','Complemento','Vl. Total Título','Valor']];
+  data.forEach(r=>rows.push([r.obra,r.conta,r.classif,r.data,r.doc,r.or,r.lanc,r.comp,r.vlTit,r.valor]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:20},{wch:20},{wch:18},{wch:12},{wch:14},{wch:6},{wch:10},{wch:30},{wch:16},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Analítico');
+  XLSX.writeFile(wb,'analitico_apropriacoes.xlsx');
 }
 
 function updateHdrBadge(){
