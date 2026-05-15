@@ -154,7 +154,7 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
           <span>Colar dados do Excel</span>
           <button class="btn btn-accent btn-sm" onclick="processarCola()">&#10003; Processar e adicionar</button>
         </div>
-        <textarea id="pasteArea" rows="5" placeholder="Copie as celulas do Excel (incluindo o cabecalho) e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;" onpaste="setTimeout(processarCola,100)"></textarea>
+        <textarea id="pasteArea" rows="5" placeholder="Copie as celulas do Excel (incluindo o cabecalho) e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;"></textarea>
         <div id="pasteMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
       </div>
       <div class="card">
@@ -232,7 +232,6 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
           </div>
           <div class="fg"><label>Centro de Custo</label>
             <select id="admCC" onchange="renderAdm()">
-              <option value="all">Todos</option>
               <option value="Administrativo">Administrativo</option>
               <option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option>
               <option value="Geral (Robert ME)">Geral (Robert ME)</option>
