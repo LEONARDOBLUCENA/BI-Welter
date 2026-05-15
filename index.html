@@ -691,12 +691,19 @@ function populateObraFiltros(){
   elA.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
   if(anos.map(String).includes(String(curA))) elA.value=curA;
 
-  var obras=['all'].concat([...new Set(dados.map(function(r){return r.obra;}).filter(Boolean))].sort());
+  var OBRAS_PERMITIDAS=["L'adret","Monte Sollaro","Lavi","You","Le Monde"];
+  var obrasSet=[...new Set(dados.map(function(r){return r.obra;}).filter(function(o){
+    return o && OBRAS_PERMITIDAS.some(function(p){ return o.toLowerCase().includes(p.toLowerCase()); });
+  }))].sort();
+  var obras=['all'].concat(obrasSet);
   var elO=document.getElementById('obraObra'); var curO=elO.value;
   elO.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
   if(obras.includes(curO)) elO.value=curO;
 
-  var ucs=['all'].concat([...new Set(dados.map(function(r){return r.uc;}).filter(Boolean))].sort());
+  var OBRAS_PERM2=["L'adret","Monte Sollaro","Lavi","You","Le Monde"];
+  var ucs=['all'].concat([...new Set(dados.filter(function(r){
+    return r.obra && OBRAS_PERM2.some(function(p){ return r.obra.toLowerCase().includes(p.toLowerCase()); });
+  }).map(function(r){return r.uc;}).filter(Boolean))].sort());
   var elU=document.getElementById('obraUC'); var curU=elU.value;
   elU.innerHTML=ucs.map(function(u){return '<option value="'+u+'">'+(u==='all'?'Todas':u)+'</option>';}).join('');
   if(ucs.includes(curU)) elU.value=curU;
@@ -708,12 +715,16 @@ function populateObraFiltros(){
 }
 
 function getObraFiltered(){
+  var OBRAS_PERMITIDAS=["L'adret","Monte Sollaro","Lavi","You","Le Monde"];
   var ano=document.getElementById('obraAno').value;
   var mes=document.getElementById('obraMes').value;
   var obra=document.getElementById('obraObra').value;
   var uc=document.getElementById('obraUC').value;
   var conta=document.getElementById('obraConta').value;
   return dados.filter(function(r){
+    // sempre limita as obras permitidas
+    var obraPermitida = r.obra && OBRAS_PERMITIDAS.some(function(p){ return r.obra.toLowerCase().includes(p.toLowerCase()); });
+    if(!obraPermitida) return false;
     if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
     if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
     if(obra!=='all'&&r.obra!==obra) return false;
