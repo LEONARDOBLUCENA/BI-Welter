@@ -590,6 +590,7 @@ function getAdmFiltered(){
   var cc=document.getElementById('admCC').value;
   var conta=document.getElementById('admConta').value;
   return dados.filter(function(r){
+    if(r.conta==='REAPROPFIN') return false;
     if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
     if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
     if(cc!=='all'&&r.cc!==cc) return false;
