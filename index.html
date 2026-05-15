@@ -253,6 +253,7 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
             <table>
               <thead><tr>
                 <th>Centro de Custo</th>
+                <th>Descricao Plano Financeiro</th>
                 <th style="text-align:right">Valor Pago</th>
                 <th style="text-align:right">Lancamentos</th>
               </tr></thead>
@@ -589,17 +590,33 @@ function renderAdm(){
     }
   });
 
-  // TABELA CENTRO CUSTO
+  // TABELA CENTRO CUSTO x PLANO FINANCEIRO
   var ccMap={};
   data.forEach(function(r){
     if(!r.cc) return;
-    if(!ccMap[r.cc]) ccMap[r.cc]={cc:r.cc,val:0,cnt:0};
-    ccMap[r.cc].val+=r.valFin; ccMap[r.cc].cnt++;
+    var key = r.cc + '||' + (r.descFin||'Sem descricao');
+    if(!ccMap[key]) ccMap[key]={cc:r.cc, descFin:r.descFin||'Sem descricao', val:0, cnt:0};
+    ccMap[key].val+=r.valFin; ccMap[key].cnt++;
   });
-  var ccList=Object.values(ccMap).sort(function(a,b){return b.val-a.val;});
+  var ccList=Object.values(ccMap).sort(function(a,b){
+    if(a.cc < b.cc) return -1; if(a.cc > b.cc) return 1;
+    return b.val - a.val;
+  });
+  var lastCC = '';
   document.getElementById('admTbody').innerHTML=ccList.map(function(c){
-    return '<tr><td>'+c.cc+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(c.val)+'</td><td class="mono" style="text-align:right;color:var(--text2)">'+c.cnt+'</td></tr>';
-  }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:20px;">Nenhum dado para os filtros selecionados.</td></tr>';
+    var ccCell = '';
+    if(c.cc !== lastCC){
+      // count rows for this cc to set rowspan
+      var span = ccList.filter(function(x){return x.cc===c.cc;}).length;
+      ccCell = '<td rowspan="'+span+'" style="font-weight:500;vertical-align:top;border-right:1px solid var(--border2)">'+c.cc+'</td>';
+      lastCC = c.cc;
+    }
+    return '<tr>'+ccCell+
+      '<td style="color:var(--text2)">'+c.descFin+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(c.val)+'</td>'+
+      '<td class="mono" style="text-align:right;color:var(--text2)">'+c.cnt+'</td>'+
+    '</tr>';
+  }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">Nenhum dado para os filtros selecionados.</td></tr>';
 }
 
 // ============================================================
