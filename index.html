@@ -619,9 +619,7 @@ function renderAdm(){
   }
   document.getElementById('admNoData').style.display='none';
   document.getElementById('admContent').style.display='block';
-  if(!document.getElementById('admConta').options.length || document.getElementById('admConta').options.length<=1){
-    populateAdmFiltros();
-  }
+  populateAdmFiltros();
 
   var data=getAdmFiltered();
   var total=data.reduce(function(s,r){return s+r.valFin;},0);
@@ -690,34 +688,47 @@ function renderAdm(){
 // ============================================================
 // ABA 2 — DASHBOARD DE OBRA
 // ============================================================
+var _obraFiltrosPopulados = false;
+
 function populateObraFiltros(){
+  var OP=["L'adret","Monte Sollaro","Lavi","You","Le Monde"];
+
+  // Anos
   var anosSet=new Set(); dados.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
   var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
-  var elA=document.getElementById('obraAno'); var curA=elA.value;
+  var elA=document.getElementById('obraAno');
+  var curA=elA.value;
   elA.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
   if(anos.map(String).includes(String(curA))) elA.value=curA;
 
-  var OBRAS_PERMITIDAS=["L'adret","Monte Sollaro","Lavi","You","Le Monde"];
-  var obrasSet=[...new Set(dados.map(function(r){return r.obra;}).filter(function(o){
-    return o && OBRAS_PERMITIDAS.some(function(p){ return o.toLowerCase().includes(p.toLowerCase()); });
-  }))].sort();
+  // Obras (apenas permitidas)
+  var dadosObra=dados.filter(function(r){
+    return r.obra && OP.some(function(p){return r.obra.toLowerCase().includes(p.toLowerCase());});
+  });
+  var obrasSet=[...new Set(dadosObra.map(function(r){return r.obra;}))].sort();
   var obras=['all'].concat(obrasSet);
-  var elO=document.getElementById('obraObra'); var curO=elO.value;
+  var elO=document.getElementById('obraObra');
+  var curO=elO.value;
   elO.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
-  if(obras.includes(curO)) elO.value=curO;
+  if(obras.includes(curO)) elO.value=curO; else elO.value='all';
 
-  var OBRAS_PERM2=["L'adret","Monte Sollaro","Lavi","You","Le Monde"];
-  var ucs=['all'].concat([...new Set(dados.filter(function(r){
-    return r.obra && OBRAS_PERM2.some(function(p){ return r.obra.toLowerCase().includes(p.toLowerCase()); });
-  }).map(function(r){return r.uc;}).filter(Boolean))].sort());
-  var elU=document.getElementById('obraUC'); var curU=elU.value;
+  // UCs (apenas das obras permitidas)
+  var ucsSet=[...new Set(dadosObra.map(function(r){return r.uc;}).filter(Boolean))].sort();
+  var ucs=['all'].concat(ucsSet);
+  var elU=document.getElementById('obraUC');
+  var curU=elU.value;
   elU.innerHTML=ucs.map(function(u){return '<option value="'+u+'">'+(u==='all'?'Todas':u)+'</option>';}).join('');
-  if(ucs.includes(curU)) elU.value=curU;
+  if(ucs.includes(curU)) elU.value=curU; else elU.value='all';
 
-  var contas=['all'].concat([...new Set(dados.map(function(r){return r.conta;}).filter(Boolean))].sort());
-  var elC=document.getElementById('obraConta'); var curC=elC.value;
+  // Contas correntes
+  var contasSet=[...new Set(dadosObra.map(function(r){return r.conta;}).filter(Boolean))].sort();
+  var contas=['all'].concat(contasSet);
+  var elC=document.getElementById('obraConta');
+  var curC=elC.value;
   elC.innerHTML=contas.map(function(c){return '<option value="'+c+'">'+(c==='all'?'Todas':c)+'</option>';}).join('');
-  if(contas.includes(curC)) elC.value=curC;
+  if(contas.includes(curC)) elC.value=curC; else elC.value='all';
+
+  _obraFiltrosPopulados=true;
 }
 
 function getObraFiltered(){
@@ -757,10 +768,7 @@ function renderObra(){
   }
   document.getElementById('obraNoData').style.display='none';
   document.getElementById('obraContent').style.display='block';
-  // only repopulate filters if selects are empty (first load)
-  if(!document.getElementById('obraObra').options.length || document.getElementById('obraObra').options.length<=1){
-    populateObraFiltros();
-  }
+  populateObraFiltros();
 
   var data=getObraFiltered();
   var total=data.reduce(function(s,r){return s+r.valObra;},0);
