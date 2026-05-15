@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BI Construcao</title>
+<title>BI Construcao Welter</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2333;--sidebar:160px;
+  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2333;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
   --text:#edecea;--text2:#9a9897;--text3:#4a4948;
   --accent:#e8a045;--green:#4caf82;--blue:#5b9cf6;--red:#e05c5c;--purple:#a78bfa;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
-  --r:10px;--rl:16px;
+  --r:10px;--rl:16px;--sw:200px;
 }
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;display:flex;flex-direction:column;}
 
@@ -23,19 +23,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:200;flex-shrink:0;}
 .logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;}
 .logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
-.logo-sub{color:var(--text2);font-weight:300;}
+.logo-sub{color:var(--text2);font-weight:300;font-size:13px;}
 
 /* LAYOUT */
-.layout{display:flex;flex:1;min-height:0;}
+.layout{display:flex;flex:1;}
 
 /* SIDEBAR */
-aside{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;flex-shrink:0;position:sticky;top:57px;height:calc(100vh - 57px);}
-.nav-item{display:flex;align-items:center;gap:10px;padding:11px 18px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;user-select:none;}
+aside{width:var(--sw);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:12px 0;flex-shrink:0;position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto;}
+.nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);padding:12px 16px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;}
 .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
 .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(232,160,69,0.06);}
-.nav-icon{font-size:16px;flex-shrink:0;}
+.nav-icon{font-size:15px;flex-shrink:0;}
 .nav-label{font-size:12px;font-weight:500;line-height:1.3;}
-.nav-divider{height:1px;background:var(--border);margin:8px 16px;}
+.nav-divider{height:1px;background:var(--border);margin:8px 0;}
 
 /* MAIN */
 main{flex:1;padding:28px;overflow-y:auto;min-width:0;}
@@ -71,17 +72,18 @@ tbody td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--tex
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:rgba(255,255,255,0.02);}
 
-/* BADGES */
-.badge{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;}
-.b-ter{background:rgba(232,160,69,0.15);color:#e8a045;}
-.b-emp{background:rgba(91,156,246,0.15);color:#5b9cf6;}
-.b-cus{background:rgba(167,139,250,0.15);color:#a78bfa;}
-.b-gray{background:rgba(154,152,151,0.12);color:#9a9897;}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:22px 20px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent));}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:10px;}
+.kpi-value{font-size:26px;font-weight:600;letter-spacing:-0.5px;line-height:1;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:6px;}
 
-/* ALERTS */
-.alert{padding:12px 16px;border-radius:var(--r);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.alert-warn{background:rgba(232,160,69,0.1);border:1px solid rgba(232,160,69,0.2);color:#e8a045;}
-.alert-info{background:rgba(91,156,246,0.1);border:1px solid rgba(91,156,246,0.2);color:#5b9cf6;}
+/* DASH FILTERS */
+.dash-filters{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px;}
+.fg label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
 
 /* FILTER BAR */
 .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
@@ -90,22 +92,14 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 .divider{width:1px;height:20px;background:var(--border2);flex-shrink:0;}
 .mono{font-family:var(--mono);font-size:12px;}
 
-/* KPI */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px;position:relative;overflow:hidden;}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent));}
-.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text2);margin-bottom:8px;}
-.kpi-value{font-size:22px;font-weight:600;letter-spacing:-0.5px;line-height:1;}
-.kpi-sub{font-size:11px;color:var(--text3);margin-top:5px;}
-
-/* DASH FILTERS */
-.dash-filters{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
-.dash-filters .fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:110px;}
-.dash-filters .fg label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
-
 /* NO DATA */
 .no-data{text-align:center;padding:60px 24px;color:var(--text3);}
 .no-data-icon{font-size:40px;margin-bottom:16px;opacity:0.4;}
+.no-data p{font-size:13px;}
+
+/* CHART */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:16px;}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:var(--text2);}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .fade{animation:fadeUp 0.25s ease both;}
@@ -119,10 +113,10 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
     BI Construcao <span class="logo-sub">/ Welter</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
-    <span id="hdrRecords" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(91,156,246,0.1);color:#5b9cf6;border:1px solid rgba(91,156,246,0.2);display:none"></span>
+    <span id="hdrRecords" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(91,156,246,0.1);color:#5b9cf6;border:1px solid rgba(91,156,246,0.2);display:none;"></span>
     <button class="btn btn-sm" onclick="salvarSessao()">&#8595; Salvar sessao</button>
-    <button class="btn btn-sm" onclick="document.getElementById('loadSessaoInput').click()">&#8593; Carregar sessao</button>
-    <input type="file" id="loadSessaoInput" accept=".json" style="display:none" onchange="carregarSessaoArquivo(this)">
+    <button class="btn btn-sm" onclick="document.getElementById('loadInput').click()">&#8593; Carregar sessao</button>
+    <input type="file" id="loadInput" accept=".json" style="display:none" onchange="carregarSessao(this)">
   </div>
 </header>
 
@@ -130,29 +124,30 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 
   <!-- SIDEBAR -->
   <aside>
+    <div class="nav-section">Dados</div>
     <div class="nav-item active" onclick="goTab(0)" id="tab0">
       <span class="nav-icon">&#128203;</span>
-      <span class="nav-label">Analitico de Apropriacoes</span>
-    </div>
-    <div class="nav-item" onclick="goTab(1)" id="tab1">
-      <span class="nav-icon">&#128196;</span>
-      <span class="nav-label">Orcamento da Obra</span>
+      <span class="nav-label">Contas Pagas</span>
     </div>
     <div class="nav-divider"></div>
+    <div class="nav-section">Dashboards</div>
+    <div class="nav-item" onclick="goTab(1)" id="tab1">
+      <span class="nav-icon">&#128200;</span>
+      <span class="nav-label">Dashboard Adm Fin.</span>
+    </div>
     <div class="nav-item" onclick="goTab(2)" id="tab2">
-      <span class="nav-icon">&#128202;</span>
-      <span class="nav-label">Dashboard</span>
+      <span class="nav-icon">&#127959;</span>
+      <span class="nav-label">Dashboard de Obra</span>
     </div>
   </aside>
 
-  <!-- CONTENT -->
   <main>
 
-    <!-- ABA 0: ANALITICO -->
+    <!-- ABA 0: DADOS - CONTAS PAGAS -->
     <div class="page active fade" id="page0">
       <div class="sec-header">
-        <div class="sec-title">Analitico de Apropriacoes</div>
-        <div class="sec-desc">Cole os dados do Excel abaixo. Cada colagem <strong>adiciona</strong> aos registros existentes.</div>
+        <div class="sec-title">Dados - Contas Pagas</div>
+        <div class="sec-desc">Cole os dados do Excel abaixo. Cada colagem <strong>adiciona</strong> aos registros existentes. Colunas utilizadas: Data Pagamento, Conta Corrente, Desc Centro Custo, Valor Aprop Fin, Desc Obra, Desc Unid Construtiva, Cod/Desc Item Orcamento, Valor Aprop Obra, Codigo/Descricao Plano Financeiro.</div>
       </div>
       <div class="card">
         <div class="card-title">
@@ -164,151 +159,158 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
       <div class="card">
         <div class="card-title">
-          <span>Registros <span id="analiticoCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+          <span>Registros <span id="dadosCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
           <div style="display:flex;gap:8px;">
-            <button class="btn btn-sm" onclick="exportAnalitico()">&#8595; Exportar Excel</button>
-            <button class="btn btn-sm btn-danger" onclick="limparAnalitico()">&#10005; Limpar tudo</button>
+            <button class="btn btn-sm" onclick="exportDados()">&#8595; Exportar Excel</button>
+            <button class="btn btn-sm btn-danger" onclick="limparDados()">&#10005; Limpar tudo</button>
           </div>
         </div>
-        <div id="alertWrap"></div>
         <div class="filter-bar">
           <label>Ano</label>
-          <select id="fAno" onchange="renderAnalitico()"><option value="all">Todos</option></select>
+          <select id="fAno" onchange="renderDados()"><option value="all">Todos</option></select>
           <div class="divider"></div>
-          <label>Obra</label>
-          <select id="fObra" onchange="renderAnalitico()"><option value="all">Todas</option></select>
-          <div class="divider"></div>
-          <label>Unidade Construtiva</label>
-          <select id="fUC" onchange="renderAnalitico()">
-            <option value="all">Todas</option>
-            <option value="TERRENO">TERRENO</option>
-            <option value="EMPREENDIMENTO">EMPREENDIMENTO</option>
-            <option value="CUSTO CONSTRUTIVO">CUSTO CONSTRUTIVO</option>
+          <label>Mes</label>
+          <select id="fMes" onchange="renderDados()">
+            <option value="all">Todos</option>
+            <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+            <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+            <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
           </select>
           <div class="divider"></div>
-          <input type="text" id="fBusca" placeholder="Buscar..." style="width:150px;padding:7px 10px;font-size:12px;" oninput="renderAnalitico()">
+          <input type="text" id="fBusca" placeholder="Buscar..." style="width:160px;padding:7px 10px;font-size:12px;" oninput="renderDados()">
         </div>
-        <div id="analiticoEmpty" class="no-data" style="display:none;padding:40px 0;">
+        <div id="dadosEmpty" class="no-data" style="display:none;padding:32px 0;">
           <div class="no-data-icon">&#128203;</div>
           <p>Nenhum dado ainda. Cole os dados do Excel acima.</p>
         </div>
-        <div class="tbl-wrap" id="analiticoTableWrap" style="display:none;">
+        <div class="tbl-wrap" id="dadosTableWrap" style="display:none;">
           <table>
             <thead><tr>
-              <th>Nome do Credor</th>
               <th>Data Pagamento</th>
               <th>Conta Corrente</th>
-              <th>Obra</th>
-              <th>Unidade Construtiva</th>
-              <th>Cod. Orcamento</th>
-              <th>Desc. Orcamento</th>
-              <th style="text-align:right">Valor Apropriado</th>
+              <th>Desc Centro Custo</th>
+              <th>Cod Plano Fin.</th>
+              <th>Desc Plano Fin.</th>
+              <th style="text-align:right">Valor Aprop Fin.</th>
+              <th>Desc Obra</th>
+              <th>Desc Unid Construtiva</th>
+              <th>Cod Item Orc.</th>
+              <th>Desc Item Orc.</th>
+              <th style="text-align:right">Valor Aprop Obra</th>
             </tr></thead>
-            <tbody id="tbodyAnalitico"></tbody>
+            <tbody id="tbodyDados"></tbody>
           </table>
         </div>
-        <div id="analiticoFooter" style="padding:8px 0 0;font-size:11px;color:var(--text3)"></div>
+        <div id="dadosFooter" style="padding:8px 0 0;font-size:11px;color:var(--text3)"></div>
       </div>
     </div>
 
-    <!-- ABA 1: ORCAMENTO -->
+    <!-- ABA 1: DASHBOARD ADM FIN -->
     <div class="page fade" id="page1">
       <div class="sec-header">
-        <div class="sec-title">Orcamento da Obra</div>
-        <div class="sec-desc">Cole os dados do orcamento do Excel abaixo. Cada colagem <strong>adiciona</strong> aos registros existentes.</div>
+        <div class="sec-title">Dashboard Adm Fin.</div>
+        <div class="sec-desc">Visao financeira administrativa. Valores baseados na coluna Valor Aprop Fin.</div>
       </div>
-      <div class="card">
-        <div class="card-title">
-          <span>Colar dados do Excel</span>
-          <button class="btn btn-accent btn-sm" onclick="processarOrcamento()">&#10003; Processar e adicionar</button>
+      <div id="admNoData" class="no-data">
+        <div class="no-data-icon">&#128200;</div>
+        <p>Nenhum dado ainda.</p>
+        <p style="font-size:12px;margin-top:6px;">Importe os dados na aba Contas Pagas.</p>
+        <button class="btn btn-accent" style="margin-top:20px;" onclick="goTab(0)">Ir para Contas Pagas</button>
+      </div>
+      <div id="admContent" style="display:none;">
+        <div class="dash-filters">
+          <div class="fg"><label>Ano</label><select id="admAno" onchange="renderAdm()"></select></div>
+          <div class="fg"><label>Mes</label>
+            <select id="admMes" onchange="renderAdm()">
+              <option value="all">Todos</option>
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option>
+              <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+              <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+          </div>
+          <div class="fg"><label>Centro de Custo</label>
+            <select id="admCC" onchange="renderAdm()">
+              <option value="all">Todos</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option>
+              <option value="Geral (Robert ME)">Geral (Robert ME)</option>
+            </select>
+          </div>
+          <div class="fg"><label>Conta Corrente</label><select id="admConta" onchange="renderAdm()"></select></div>
+          <button class="btn btn-sm" onclick="clearAdmFilters()" style="align-self:flex-end;">&#10005; Limpar</button>
         </div>
-        <textarea id="pasteOrc" rows="5" placeholder="Copie as celulas do Excel (incluindo o cabecalho: Obra, Codigo do Orcamento, Descricao Orcamento, Valor Orcado) e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;" onpaste="setTimeout(processarOrcamento,100)"></textarea>
-        <div id="pasteOrcMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <span>Itens do Orcamento <span id="orcCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-sm" onclick="exportOrcamento()">&#8595; Exportar Excel</button>
-            <button class="btn btn-sm btn-danger" onclick="limparOrcamento()">&#10005; Limpar tudo</button>
+        <div class="kpi-grid" id="admKpis"></div>
+        <div class="chart-card">
+          <div class="card-title">Valor Pago por mes</div>
+          <div style="position:relative;width:100%;height:300px;">
+            <canvas id="admChart"></canvas>
           </div>
         </div>
-        <div class="filter-bar">
-          <label>Obra</label>
-          <select id="fOrcObra" onchange="renderOrcamento()"><option value="all">Todas</option></select>
-          <div class="divider"></div>
-          <input type="text" id="fOrcBusca" placeholder="Buscar..." style="width:150px;padding:7px 10px;font-size:12px;" oninput="renderOrcamento()">
+        <div class="card">
+          <div class="card-title">Detalhamento por Centro de Custo</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Centro de Custo</th>
+                <th style="text-align:right">Valor Pago</th>
+                <th style="text-align:right">Lancamentos</th>
+              </tr></thead>
+              <tbody id="admTbody"></tbody>
+            </table>
+          </div>
         </div>
-        <div id="orcEmpty" class="no-data" style="display:none;padding:40px 0;">
-          <div class="no-data-icon">&#128196;</div>
-          <p>Nenhum dado ainda. Cole os dados do Excel acima.</p>
-        </div>
-        <div class="tbl-wrap" id="orcTableWrap" style="display:none;">
-          <table>
-            <thead><tr>
-              <th>Obra</th>
-              <th>Cod. Orcamento</th>
-              <th>Descricao Orcamento</th>
-              <th style="text-align:right">Valor Orcado</th>
-            </tr></thead>
-            <tbody id="tbodyOrc"></tbody>
-          </table>
-        </div>
-        <div id="orcFooter" style="padding:8px 0 0;font-size:11px;color:var(--text3)"></div>
       </div>
     </div>
 
-    <!-- ABA 2: DASHBOARD -->
+    <!-- ABA 2: DASHBOARD DE OBRA -->
     <div class="page fade" id="page2">
       <div class="sec-header">
-        <div class="sec-title">Dashboard</div>
-        <div class="sec-desc">KPIs e evolucao mensal por Unidade Construtiva.</div>
+        <div class="sec-title">Dashboard de Obra</div>
+        <div class="sec-desc">Visao de obras e unidades construtivas. Valores baseados na coluna Valor Aprop Obra.</div>
       </div>
-      <div id="dashNoData" class="no-data">
-        <div class="no-data-icon">&#128202;</div>
+      <div id="obraNoData" class="no-data">
+        <div class="no-data-icon">&#127959;</div>
         <p>Nenhum dado ainda.</p>
-        <p style="font-size:12px;margin-top:6px;">Cole os dados na aba Analitico de Apropriacoes.</p>
-        <button class="btn btn-accent" style="margin-top:20px;" onclick="goTab(0)">Ir para Analitico</button>
+        <p style="font-size:12px;margin-top:6px;">Importe os dados na aba Contas Pagas.</p>
+        <button class="btn btn-accent" style="margin-top:20px;" onclick="goTab(0)">Ir para Contas Pagas</button>
       </div>
-      <div id="dashContent" style="display:none;">
+      <div id="obraContent" style="display:none;">
         <div class="dash-filters">
-          <div class="fg"><label>Ano</label><select id="dAno" onchange="renderDash()"></select></div>
+          <div class="fg"><label>Ano</label><select id="obraAno" onchange="renderObra()"></select></div>
           <div class="fg"><label>Mes</label>
-            <select id="dMes" onchange="renderDash()">
+            <select id="obraMes" onchange="renderObra()">
               <option value="all">Todos</option>
-              <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-              <option value="3">Marco</option><option value="4">Abril</option>
-              <option value="5">Maio</option><option value="6">Junho</option>
-              <option value="7">Julho</option><option value="8">Agosto</option>
-              <option value="9">Setembro</option><option value="10">Outubro</option>
-              <option value="11">Novembro</option><option value="12">Dezembro</option>
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option>
+              <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+              <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
             </select>
           </div>
-          <div class="fg"><label>Obra</label><select id="dObra" onchange="renderDash()"></select></div>
-          <button class="btn btn-sm" onclick="clearDashFilters()" style="align-self:flex-end;">&#10005; Limpar</button>
+          <div class="fg"><label>Obra</label><select id="obraObra" onchange="renderObra()"></select></div>
+          <div class="fg"><label>Unid. Construtiva</label><select id="obraUC" onchange="renderObra()"></select></div>
+          <div class="fg"><label>Conta Corrente</label><select id="obraConta" onchange="renderObra()"></select></div>
+          <button class="btn btn-sm" onclick="clearObraFilters()" style="align-self:flex-end;">&#10005; Limpar</button>
         </div>
-        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="kpi-grid" id="obraKpis"></div>
+        <div class="chart-card">
+          <div class="card-title">Valor Pago por mes</div>
+          <div style="position:relative;width:100%;height:300px;">
+            <canvas id="obraChart"></canvas>
+          </div>
+        </div>
         <div class="card">
-          <div class="card-title">
-            <span>Evolucao mensal por Unidade Construtiva</span>
-          </div>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:var(--text2);" id="chartLegend"></div>
-          <div style="position:relative;width:100%;height:320px;">
-            <canvas id="chartBarras"></canvas>
-          </div>
-        </div>
-        <div class="card" id="obraBreakdown" style="display:none;">
-          <div class="card-title">Detalhamento por obra</div>
+          <div class="card-title">Detalhamento por Obra</div>
           <div class="tbl-wrap">
             <table>
               <thead><tr>
                 <th>Obra</th>
-                <th style="text-align:right">Terreno</th>
-                <th style="text-align:right">Empreendimento</th>
-                <th style="text-align:right">Custo Construtivo</th>
-                <th style="text-align:right">Total</th>
+                <th>Unid. Construtiva</th>
+                <th style="text-align:right">Valor Pago</th>
+                <th style="text-align:right">Lancamentos</th>
               </tr></thead>
-              <tbody id="tbodyObras"></tbody>
+              <tbody id="obraTbody"></tbody>
             </table>
           </div>
         </div>
@@ -319,28 +321,21 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 </div>
 
 <script>
-var analiticoData = [];
-var orcamentoData = [];
-var chartBarrasInstance = null;
+var dados = [];
+var admChartInst = null;
+var obraChartInst = null;
+var MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-function salvarEstado() {
-  try {
-    sessionStorage.setItem('bi_analitico2', JSON.stringify(analiticoData));
-    sessionStorage.setItem('bi_orcamento', JSON.stringify(orcamentoData));
-  } catch(e){}
-}
-function carregarEstado() {
-  try {
-    var a=sessionStorage.getItem('bi_analitico2'); if(a) analiticoData=JSON.parse(a);
-    var o=sessionStorage.getItem('bi_orcamento');  if(o) orcamentoData=JSON.parse(o);
-  } catch(e){ analiticoData=[]; orcamentoData=[]; }
-}
+// SESSION
+function salvarEstado(){ try{ sessionStorage.setItem('bi_dados', JSON.stringify(dados)); }catch(e){} }
+function carregarEstado(){ try{ var d=sessionStorage.getItem('bi_dados'); if(d) dados=JSON.parse(d); }catch(e){ dados=[]; } }
 
 // TABS
-function goTab(i) {
+function goTab(i){
   document.querySelectorAll('.nav-item').forEach(function(t,j){ t.classList.toggle('active',i===j); });
   document.querySelectorAll('.page').forEach(function(p,j){ p.classList.toggle('active',i===j); });
-  if(i===2) renderDash();
+  if(i===1) renderAdm();
+  if(i===2) renderObra();
 }
 
 // UTILS
@@ -372,53 +367,52 @@ function showMsg(elId,html,type){
 
 function updateHeader(){
   var hr=document.getElementById('hdrRecords');
-  if(analiticoData.length){ hr.style.display='inline'; hr.textContent=analiticoData.length+' registros'; }
+  if(dados.length){ hr.style.display='inline'; hr.textContent=dados.length+' registros'; }
   else hr.style.display='none';
 }
 
-function normalizeUC(v){
-  if(!v) return '';
-  var s=String(v).trim().toUpperCase();
-  if(s.includes('TERRENO')) return 'TERRENO';
-  if(s.includes('EMPREENDIMENTO')) return 'EMPREENDIMENTO';
-  if(s.includes('CUSTO')) return 'CUSTO CONSTRUTIVO';
-  return s;
-}
-
 function findCol(keys,opts){
-  return keys.find(function(k){ return opts.some(function(o){ return k.toLowerCase().trim().includes(o); }); });
+  return keys.find(function(k){ return opts.some(function(o){ return k.toLowerCase().trim().includes(o.toLowerCase()); }); });
 }
 
 // ============================================================
-// ABA 0 — ANALITICO
+// ABA 0 — DADOS CONTAS PAGAS
 // ============================================================
-function normalizeAnaliticoRows(rows){
+function normalizeRows(rows){
   if(!rows.length) return [];
   var keys=Object.keys(rows[0]);
-  var cCredor =findCol(keys,['credor','nome do credor','fornecedor','nome']);
-  var cData   =findCol(keys,['data pagamento','data pag','data','pagamento']);
-  var cCC     =findCol(keys,['conta corrente','conta','cc']);
-  var cObra   =findCol(keys,['obra']);
-  var cUC     =findCol(keys,['unidade construtiva','unidade','uc']);
-  var cCodOrc =findCol(keys,['codigo orcamento','cod. orcamento','cod orcamento','codigo orc']);
-  var cDescOrc=findCol(keys,['descricao orcamento','desc. orcamento','desc orcamento','descricao orc','descricao']);
-  var cValor  =keys.find(function(k){return k.trim().toLowerCase()==='valor apropriado';}) || findCol(keys,['valor apropriado','valor aprop','valor']);
+
+  var cData   = findCol(keys,['data pagamento','data pag']);
+  var cConta  = findCol(keys,['conta corrente','conta corr']);
+  var cCC     = findCol(keys,['desc centro custo','centro custo','desc centro']);
+  var cCodFin = findCol(keys,['codigo plano financeiro','cod plano fin','codigo plano fin']);
+  var cDescFin= findCol(keys,['descricao plano financeiro','desc plano financeiro','descricao plano fin']);
+  var cValFin = findCol(keys,['valor aprop fin','valor aprop financeiro']);
+  var cObra   = findCol(keys,['desc obra','descricao obra','obra']);
+  var cUC     = findCol(keys,['desc unid construtiva','unid construtiva','unidade construtiva']);
+  var cCodOrc = findCol(keys,['codigo item orcamento','cod item orc','codigo item orc']);
+  var cDescOrc= findCol(keys,['descricao item orcamento','desc item orc','descricao item orc']);
+  var cValObra= findCol(keys,['valor aprop obra','valor aprop obra']);
+
   return rows.map(function(r){
-    var dataStr=cData?String(r[cData]||'').trim():'';
-    var dp=parseData(dataStr);
+    var dataStr = cData ? String(r[cData]||'').trim() : '';
+    var dp = parseData(dataStr);
     return {
-      credor:  cCredor ?String(r[cCredor ]||'').trim():'',
       data:    dataStr,
-      ano:     dp?dp.getFullYear():null,
-      mes:     dp?dp.getMonth()+1:null,
-      cc:      cCC     ?String(r[cCC     ]||'').trim().toUpperCase():'',
-      obra:    cObra   ?String(r[cObra   ]||'').trim():'',
-      uc:      cUC     ?normalizeUC(r[cUC]):'',
-      codOrc:  cCodOrc ?String(r[cCodOrc ]||'').trim():'',
-      descOrc: cDescOrc?String(r[cDescOrc]||'').trim():'',
-      valor:   cValor  ?parseValor(r[cValor]):0
+      ano:     dp ? dp.getFullYear() : null,
+      mes:     dp ? dp.getMonth()+1  : null,
+      conta:   cConta  ? String(r[cConta ]||'').trim() : '',
+      cc:      cCC     ? String(r[cCC    ]||'').trim() : '',
+      codFin:  cCodFin ? String(r[cCodFin]||'').trim() : '',
+      descFin: cDescFin? String(r[cDescFin]||'').trim(): '',
+      valFin:  cValFin ? parseValor(r[cValFin])  : 0,
+      obra:    cObra   ? String(r[cObra  ]||'').trim() : '',
+      uc:      cUC     ? String(r[cUC    ]||'').trim() : '',
+      codOrc:  cCodOrc ? String(r[cCodOrc]||'').trim() : '',
+      descOrc: cDescOrc? String(r[cDescOrc]||'').trim(): '',
+      valObra: cValObra? parseValor(r[cValObra]) : 0
     };
-  }).filter(function(r){return r.credor||r.obra||r.valor;});
+  }).filter(function(r){ return r.data||r.valFin||r.valObra; });
 }
 
 function parsePaste(txt){
@@ -440,292 +434,289 @@ function processarCola(){
   if(!txt) return;
   var rows=parsePaste(txt);
   if(!rows||!rows.length){showMsg('pasteMsg','Dados insuficientes.','warn');return;}
-  var novos=normalizeAnaliticoRows(rows);
-  analiticoData=analiticoData.concat(novos);
+  var novos=normalizeRows(rows);
+  if(!novos.length){showMsg('pasteMsg','Nenhum registro valido encontrado. Verifique os cabecalhos.','warn');return;}
+  dados=dados.concat(novos);
   salvarEstado();
   document.getElementById('pasteArea').value='';
-  populateAnaliticoFilters();
-  renderAnalitico();
+  populateDadosFiltros();
+  renderDados();
   updateHeader();
-  showMsg('pasteMsg','&#10003; '+novos.length+' registros adicionados! Total: '+analiticoData.length,'success');
+  showMsg('pasteMsg','&#10003; '+novos.length+' registros adicionados! Total: '+dados.length,'success');
 }
 
-function limparAnalitico(){
-  if(!confirm('Apagar todos os '+analiticoData.length+' registros?')) return;
-  analiticoData=[];
+function limparDados(){
+  if(!confirm('Apagar todos os '+dados.length+' registros?')) return;
+  dados=[];
   salvarEstado();
-  populateAnaliticoFilters();
-  renderAnalitico();
+  populateDadosFiltros();
+  renderDados();
   updateHeader();
 }
 
-function populateAnaliticoFilters(){
-  // Ano
+function populateDadosFiltros(){
   var anosSet=new Set();
-  analiticoData.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
+  dados.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
   var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
   var fAno=document.getElementById('fAno'); var curAno=fAno.value;
   fAno.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
   if(anos.map(String).includes(String(curAno))) fAno.value=curAno;
-  // Obra
-  var obras=['all'].concat([...new Set(analiticoData.map(function(r){return r.obra;}).filter(Boolean))].sort());
-  var fObra=document.getElementById('fObra'); var curObra=fObra.value;
-  fObra.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
-  if(obras.includes(curObra)) fObra.value=curObra;
 }
 
-function getFilteredAnalitico(){
+function getFilteredDados(){
   var ano=document.getElementById('fAno').value;
-  var obra=document.getElementById('fObra').value;
-  var uc=document.getElementById('fUC').value;
+  var mes=document.getElementById('fMes').value;
   var busca=(document.getElementById('fBusca').value||'').toLowerCase();
-  return analiticoData.filter(function(r){
-    if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
-    if(obra!=='all'&&r.obra!==obra) return false;
-    if(uc!=='all'&&r.uc!==uc) return false;
-    if(busca&&![r.credor,r.data,r.cc,r.obra,r.uc,r.codOrc,r.descOrc,String(r.valor)].some(function(v){return String(v).toLowerCase().includes(busca);})) return false;
-    return true;
-  });
-}
-
-function renderAnalitico(){
-  var data=getFilteredAnalitico();
-  var bMap={'TERRENO':'b-ter','EMPREENDIMENTO':'b-emp','CUSTO CONSTRUTIVO':'b-cus'};
-  document.getElementById('analiticoEmpty').style.display=analiticoData.length?'none':'block';
-  document.getElementById('analiticoTableWrap').style.display=analiticoData.length?'block':'none';
-  document.getElementById('analiticoCount').textContent='('+analiticoData.length+' total)';
-  document.getElementById('analiticoFooter').textContent=data.length>500?'Exibindo 500 de '+data.length+' registros':data.length+' registros filtrados';
-  document.getElementById('tbodyAnalitico').innerHTML=data.slice(0,500).map(function(r){
-    return '<tr>'+
-      '<td>'+r.credor+'</td>'+
-      '<td style="color:var(--text2);white-space:nowrap">'+r.data+'</td>'+
-      '<td class="mono" style="font-size:11px;color:'+(r.cc==='REAPROPFIN'?'var(--red)':'var(--text2)')+'">'+r.cc+'</td>'+
-      '<td>'+r.obra+'</td>'+
-      '<td><span class="badge '+(bMap[r.uc]||'b-gray')+'">'+r.uc+'</span></td>'+
-      '<td class="mono" style="font-size:11px;color:var(--text2)">'+r.codOrc+'</td>'+
-      '<td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.descOrc+'">'+r.descOrc+'</td>'+
-      '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valor)+'</td>'+
-    '</tr>';
-  }).join('');
-}
-
-function exportAnalitico(){
-  if(!analiticoData.length){alert('Nenhum dado para exportar.');return;}
-  var data=getFilteredAnalitico();
-  var rows=[['Nome do Credor','Data Pagamento','Conta Corrente','Obra','Unidade Construtiva','Cod. Orcamento','Desc. Orcamento','Valor Apropriado']];
-  data.forEach(function(r){rows.push([r.credor,r.data,r.cc,r.obra,r.uc,r.codOrc,r.descOrc,r.valor]);});
-  var ws=XLSX.utils.aoa_to_sheet(rows);
-  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Analitico');
-  XLSX.writeFile(wb,'analitico.xlsx');
-}
-
-// ============================================================
-// ABA 1 — ORCAMENTO
-// ============================================================
-function normalizeOrcRows(rows){
-  if(!rows.length) return [];
-  var keys=Object.keys(rows[0]);
-  var cObra   =findCol(keys,['obra']);
-  var cCod    =findCol(keys,['codigo','cod.','cod orcamento','codigo orcamento']);
-  var cDesc   =findCol(keys,['descricao','desc.','descricao orcamento']);
-  var cValor  =findCol(keys,['valor orcado','valor orc','valor']);
-  return rows.map(function(r){
-    return {
-      obra:   cObra ?String(r[cObra ]||'').trim():'',
-      cod:    cCod  ?String(r[cCod  ]||'').trim():'',
-      desc:   cDesc ?String(r[cDesc ]||'').trim():'',
-      valor:  cValor?parseValor(r[cValor]):0
-    };
-  }).filter(function(r){return r.obra||r.cod||r.valor;});
-}
-
-function processarOrcamento(){
-  var txt=document.getElementById('pasteOrc').value.trim();
-  if(!txt) return;
-  var rows=parsePaste(txt);
-  if(!rows||!rows.length){showMsg('pasteOrcMsg','Dados insuficientes.','warn');return;}
-  var novos=normalizeOrcRows(rows);
-  orcamentoData=orcamentoData.concat(novos);
-  salvarEstado();
-  document.getElementById('pasteOrc').value='';
-  populateOrcFiltros();
-  renderOrcamento();
-  showMsg('pasteOrcMsg','&#10003; '+novos.length+' itens adicionados! Total: '+orcamentoData.length,'success');
-}
-
-function limparOrcamento(){
-  if(!confirm('Apagar todos os '+orcamentoData.length+' itens do orcamento?')) return;
-  orcamentoData=[];
-  salvarEstado();
-  populateOrcFiltros();
-  renderOrcamento();
-}
-
-function populateOrcFiltros(){
-  var obras=['all'].concat([...new Set(orcamentoData.map(function(r){return r.obra;}).filter(Boolean))].sort());
-  var sel=document.getElementById('fOrcObra'); var cur=sel.value;
-  sel.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
-  if(obras.includes(cur)) sel.value=cur;
-}
-
-function getFilteredOrc(){
-  var obra=document.getElementById('fOrcObra').value;
-  var busca=(document.getElementById('fOrcBusca').value||'').toLowerCase();
-  return orcamentoData.filter(function(r){
-    if(obra!=='all'&&r.obra!==obra) return false;
-    if(busca&&![r.obra,r.cod,r.desc,String(r.valor)].some(function(v){return String(v).toLowerCase().includes(busca);})) return false;
-    return true;
-  });
-}
-
-function renderOrcamento(){
-  var data=getFilteredOrc();
-  document.getElementById('orcEmpty').style.display=orcamentoData.length?'none':'block';
-  document.getElementById('orcTableWrap').style.display=orcamentoData.length?'block':'none';
-  document.getElementById('orcCount').textContent='('+orcamentoData.length+' total)';
-  document.getElementById('orcFooter').textContent=data.length+' itens filtrados';
-  document.getElementById('tbodyOrc').innerHTML=data.slice(0,500).map(function(r){
-    return '<tr>'+
-      '<td>'+r.obra+'</td>'+
-      '<td class="mono" style="font-size:11px;color:var(--text2)">'+r.cod+'</td>'+
-      '<td style="color:var(--text2)">'+r.desc+'</td>'+
-      '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valor)+'</td>'+
-    '</tr>';
-  }).join('');
-}
-
-function exportOrcamento(){
-  if(!orcamentoData.length){alert('Nenhum dado para exportar.');return;}
-  var data=getFilteredOrc();
-  var rows=[['Obra','Cod. Orcamento','Descricao Orcamento','Valor Orcado']];
-  data.forEach(function(r){rows.push([r.obra,r.cod,r.desc,r.valor]);});
-  var ws=XLSX.utils.aoa_to_sheet(rows);
-  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Orcamento');
-  XLSX.writeFile(wb,'orcamento.xlsx');
-}
-
-// ============================================================
-// ABA 2 — DASHBOARD
-// ============================================================
-var MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-var UC_COLORS={'TERRENO':'#e8a045','EMPREENDIMENTO':'#5b9cf6','CUSTO CONSTRUTIVO':'#a78bfa'};
-var UC_LIST=['TERRENO','EMPREENDIMENTO','CUSTO CONSTRUTIVO'];
-
-function populateDashFilters(){
-  var anosSet=new Set();
-  analiticoData.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
-  var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
-  var dAno=document.getElementById('dAno'); var curAno=dAno.value;
-  dAno.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
-  if(anos.map(String).includes(String(curAno))) dAno.value=curAno;
-
-  var obras=['all'].concat([...new Set(analiticoData.map(function(r){return r.obra;}).filter(Boolean))].sort());
-  var dObra=document.getElementById('dObra'); var curObra=dObra.value;
-  dObra.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
-  if(obras.includes(curObra)) dObra.value=curObra;
-}
-
-function getDashFiltered(){
-  var ano=document.getElementById('dAno').value;
-  var mes=document.getElementById('dMes').value;
-  var obra=document.getElementById('dObra').value;
-  return analiticoData.filter(function(r){
+  return dados.filter(function(r){
     if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
     if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
-    if(obra!=='all'&&r.obra!==obra) return false;
+    if(busca&&![r.data,r.conta,r.cc,r.obra,r.uc,r.descFin,r.descOrc].some(function(v){return String(v).toLowerCase().includes(busca);})) return false;
     return true;
   });
 }
 
-function clearDashFilters(){
-  document.getElementById('dAno').value='all';
-  document.getElementById('dMes').value='all';
-  document.getElementById('dObra').value='all';
-  renderDash();
+function renderDados(){
+  var data=getFilteredDados();
+  document.getElementById('dadosEmpty').style.display=dados.length?'none':'block';
+  document.getElementById('dadosTableWrap').style.display=dados.length?'block':'none';
+  document.getElementById('dadosCount').textContent='('+dados.length+' total)';
+  document.getElementById('dadosFooter').textContent=data.length>500?'Exibindo 500 de '+data.length+' registros':data.length+' registros filtrados';
+  document.getElementById('tbodyDados').innerHTML=data.slice(0,500).map(function(r){
+    return '<tr>'+
+      '<td style="white-space:nowrap;color:var(--text2)">'+r.data+'</td>'+
+      '<td class="mono" style="font-size:11px">'+r.conta+'</td>'+
+      '<td>'+r.cc+'</td>'+
+      '<td class="mono" style="font-size:11px;color:var(--text2)">'+r.codFin+'</td>'+
+      '<td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.descFin+'">'+r.descFin+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valFin)+'</td>'+
+      '<td>'+r.obra+'</td>'+
+      '<td style="color:var(--text2)">'+r.uc+'</td>'+
+      '<td class="mono" style="font-size:11px;color:var(--text2)">'+r.codOrc+'</td>'+
+      '<td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.descOrc+'">'+r.descOrc+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valObra)+'</td>'+
+    '</tr>';
+  }).join('');
 }
 
-function sumByUC(data,uc){return data.filter(function(r){return r.uc===uc;}).reduce(function(s,r){return s+r.valor;},0);}
+function exportDados(){
+  if(!dados.length){alert('Nenhum dado para exportar.');return;}
+  var data=getFilteredDados();
+  var rows=[['Data Pagamento','Conta Corrente','Desc Centro Custo','Cod Plano Fin','Desc Plano Fin','Valor Aprop Fin','Desc Obra','Desc Unid Construtiva','Cod Item Orc','Desc Item Orc','Valor Aprop Obra']];
+  data.forEach(function(r){rows.push([r.data,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Contas Pagas');
+  XLSX.writeFile(wb,'contas_pagas.xlsx');
+}
 
-function renderDash(){
-  if(!analiticoData.length){
-    document.getElementById('dashNoData').style.display='block';
-    document.getElementById('dashContent').style.display='none';
+// ============================================================
+// ABA 1 — DASHBOARD ADM FIN
+// ============================================================
+function populateAdmFiltros(){
+  var anosSet=new Set(); dados.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
+  var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
+  var el=document.getElementById('admAno'); var cur=el.value;
+  el.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
+  if(anos.map(String).includes(String(cur))) el.value=cur;
+
+  var contas=['all'].concat([...new Set(dados.map(function(r){return r.conta;}).filter(Boolean))].sort());
+  var elC=document.getElementById('admConta'); var curC=elC.value;
+  elC.innerHTML=contas.map(function(c){return '<option value="'+c+'">'+(c==='all'?'Todas':c)+'</option>';}).join('');
+  if(contas.includes(curC)) elC.value=curC;
+}
+
+function getAdmFiltered(){
+  var ano=document.getElementById('admAno').value;
+  var mes=document.getElementById('admMes').value;
+  var cc=document.getElementById('admCC').value;
+  var conta=document.getElementById('admConta').value;
+  return dados.filter(function(r){
+    if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
+    if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
+    if(cc!=='all'&&r.cc!==cc) return false;
+    if(conta!=='all'&&r.conta!==conta) return false;
+    return true;
+  });
+}
+
+function clearAdmFilters(){
+  document.getElementById('admAno').value='all';
+  document.getElementById('admMes').value='all';
+  document.getElementById('admCC').value='all';
+  document.getElementById('admConta').value='all';
+  renderAdm();
+}
+
+function renderAdm(){
+  if(!dados.length){
+    document.getElementById('admNoData').style.display='block';
+    document.getElementById('admContent').style.display='none';
     return;
   }
-  document.getElementById('dashNoData').style.display='none';
-  document.getElementById('dashContent').style.display='block';
-  populateDashFilters();
+  document.getElementById('admNoData').style.display='none';
+  document.getElementById('admContent').style.display='block';
+  populateAdmFiltros();
 
-  var data=getDashFiltered();
-  var ter=sumByUC(data,'TERRENO');
-  var emp=sumByUC(data,'EMPREENDIMENTO');
-  var cus=sumByUC(data,'CUSTO CONSTRUTIVO');
-  var total=ter+emp+cus;
-  function cnt(uc){return data.filter(function(r){return r.uc===uc;}).length;}
+  var data=getAdmFiltered();
+  var total=data.reduce(function(s,r){return s+r.valFin;},0);
 
-  document.getElementById('kpiGrid').innerHTML=
-    '<div class="kpi" style="--kc:#e8a045"><div class="kpi-label">Terreno</div><div class="kpi-value">'+fBRL(ter)+'</div><div class="kpi-sub">'+cnt('TERRENO')+' lancamentos</div></div>'+
-    '<div class="kpi" style="--kc:#5b9cf6"><div class="kpi-label">Empreendimento</div><div class="kpi-value">'+fBRL(emp)+'</div><div class="kpi-sub">'+cnt('EMPREENDIMENTO')+' lancamentos</div></div>'+
-    '<div class="kpi" style="--kc:#a78bfa"><div class="kpi-label">Custo Construtivo</div><div class="kpi-value">'+fBRL(cus)+'</div><div class="kpi-sub">'+cnt('CUSTO CONSTRUTIVO')+' lancamentos</div></div>'+
-    '<div class="kpi" style="--kc:var(--green)"><div class="kpi-label">Total Apropriacoes</div><div class="kpi-value">'+fBRL(total)+'</div><div class="kpi-sub">'+data.length+' lancamentos</div></div>';
+  document.getElementById('admKpis').innerHTML=
+    '<div class="kpi" style="--kc:#e8a045">'+
+      '<div class="kpi-label">Valor Pago</div>'+
+      '<div class="kpi-value">'+fBRL(total)+'</div>'+
+      '<div class="kpi-sub">'+data.length+' lancamentos</div>'+
+    '</div>';
 
-  // GRAFICO
+  // GRAFICO MENSAL
   var mesesSet=new Set();
   data.forEach(function(r){if(r.ano&&r.mes) mesesSet.add(String(r.ano)+'-'+String(r.mes).padStart(2,'0'));});
-  var mesesKeys=[...mesesSet].sort();
-  var mesesLabels=mesesKeys.map(function(k){var p=k.split('-');return MESES[parseInt(p[1])-1]+'/'+p[0].slice(2);});
-
-  var datasets=UC_LIST.map(function(uc){
-    return {
-      label:uc,
-      data:mesesKeys.map(function(k){
-        var p=k.split('-'); var ano=parseInt(p[0]); var mes=parseInt(p[1]);
-        return data.filter(function(r){return r.uc===uc&&r.ano===ano&&r.mes===mes;}).reduce(function(s,r){return s+r.valor;},0);
-      }),
-      backgroundColor:UC_COLORS[uc],borderRadius:4,borderSkipped:false
-    };
+  var mkeys=[...mesesSet].sort();
+  var mlabels=mkeys.map(function(k){var p=k.split('-');return MESES[parseInt(p[1])-1]+'/'+p[0].slice(2);});
+  var mvals=mkeys.map(function(k){
+    var p=k.split('-'); var a=parseInt(p[0]); var m=parseInt(p[1]);
+    return data.filter(function(r){return r.ano===a&&r.mes===m;}).reduce(function(s,r){return s+r.valFin;},0);
   });
 
-  document.getElementById('chartLegend').innerHTML=UC_LIST.map(function(uc){
-    return '<span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:'+UC_COLORS[uc]+';display:inline-block;"></span>'+uc+'</span>';
-  }).join('');
-
-  if(chartBarrasInstance) chartBarrasInstance.destroy();
-  chartBarrasInstance=new Chart(document.getElementById('chartBarras'),{
+  if(admChartInst) admChartInst.destroy();
+  admChartInst=new Chart(document.getElementById('admChart'),{
     type:'bar',
-    data:{labels:mesesLabels,datasets:datasets},
+    data:{labels:mlabels,datasets:[{label:'Valor Pago',data:mvals,backgroundColor:'#e8a045',borderRadius:4,borderSkipped:false}]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+fBRL(ctx.parsed.y);}}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return fBRL(ctx.parsed.y);}}}},
       scales:{
-        x:{stacked:false,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
-        y:{stacked:false,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
       }
     }
   });
 
-  // DETALHAMENTO
-  var obraFiltro=document.getElementById('dObra').value;
-  var breakdown=document.getElementById('obraBreakdown');
-  if(obraFiltro==='all'){
-    var obras=[...new Set(data.map(function(r){return r.obra;}).filter(Boolean))].sort();
-    if(obras.length>1){
-      breakdown.style.display='block';
-      document.getElementById('tbodyObras').innerHTML=obras.map(function(o){
-        var od=data.filter(function(r){return r.obra===o;});
-        var ot=sumByUC(od,'TERRENO'),oe=sumByUC(od,'EMPREENDIMENTO'),oc=sumByUC(od,'CUSTO CONSTRUTIVO');
-        return '<tr><td style="font-weight:500">'+o+'</td><td class="mono" style="text-align:right;color:#e8a045">'+fBRL(ot)+'</td><td class="mono" style="text-align:right;color:#5b9cf6">'+fBRL(oe)+'</td><td class="mono" style="text-align:right;color:#a78bfa">'+fBRL(oc)+'</td><td class="mono" style="text-align:right;font-weight:600">'+fBRL(ot+oe+oc)+'</td></tr>';
-      }).join('');
-    } else { breakdown.style.display='none'; }
-  } else { breakdown.style.display='none'; }
+  // TABELA CENTRO CUSTO
+  var ccMap={};
+  data.forEach(function(r){
+    if(!r.cc) return;
+    if(!ccMap[r.cc]) ccMap[r.cc]={cc:r.cc,val:0,cnt:0};
+    ccMap[r.cc].val+=r.valFin; ccMap[r.cc].cnt++;
+  });
+  var ccList=Object.values(ccMap).sort(function(a,b){return b.val-a.val;});
+  document.getElementById('admTbody').innerHTML=ccList.map(function(c){
+    return '<tr><td>'+c.cc+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(c.val)+'</td><td class="mono" style="text-align:right;color:var(--text2)">'+c.cnt+'</td></tr>';
+  }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:20px;">Nenhum dado para os filtros selecionados.</td></tr>';
 }
 
 // ============================================================
-// SALVAR / CARREGAR SESSAO
+// ABA 2 — DASHBOARD DE OBRA
+// ============================================================
+function populateObraFiltros(){
+  var anosSet=new Set(); dados.forEach(function(r){if(r.ano) anosSet.add(r.ano);});
+  var anos=['all'].concat([...anosSet].sort(function(a,b){return b-a;}));
+  var elA=document.getElementById('obraAno'); var curA=elA.value;
+  elA.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+(a==='all'?'Todos':a)+'</option>';}).join('');
+  if(anos.map(String).includes(String(curA))) elA.value=curA;
+
+  var obras=['all'].concat([...new Set(dados.map(function(r){return r.obra;}).filter(Boolean))].sort());
+  var elO=document.getElementById('obraObra'); var curO=elO.value;
+  elO.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
+  if(obras.includes(curO)) elO.value=curO;
+
+  var ucs=['all'].concat([...new Set(dados.map(function(r){return r.uc;}).filter(Boolean))].sort());
+  var elU=document.getElementById('obraUC'); var curU=elU.value;
+  elU.innerHTML=ucs.map(function(u){return '<option value="'+u+'">'+(u==='all'?'Todas':u)+'</option>';}).join('');
+  if(ucs.includes(curU)) elU.value=curU;
+
+  var contas=['all'].concat([...new Set(dados.map(function(r){return r.conta;}).filter(Boolean))].sort());
+  var elC=document.getElementById('obraConta'); var curC=elC.value;
+  elC.innerHTML=contas.map(function(c){return '<option value="'+c+'">'+(c==='all'?'Todas':c)+'</option>';}).join('');
+  if(contas.includes(curC)) elC.value=curC;
+}
+
+function getObraFiltered(){
+  var ano=document.getElementById('obraAno').value;
+  var mes=document.getElementById('obraMes').value;
+  var obra=document.getElementById('obraObra').value;
+  var uc=document.getElementById('obraUC').value;
+  var conta=document.getElementById('obraConta').value;
+  return dados.filter(function(r){
+    if(ano!=='all'&&String(r.ano)!==String(ano)) return false;
+    if(mes!=='all'&&String(r.mes)!==String(mes)) return false;
+    if(obra!=='all'&&r.obra!==obra) return false;
+    if(uc!=='all'&&r.uc!==uc) return false;
+    if(conta!=='all'&&r.conta!==conta) return false;
+    return true;
+  });
+}
+
+function clearObraFilters(){
+  document.getElementById('obraAno').value='all';
+  document.getElementById('obraMes').value='all';
+  document.getElementById('obraObra').value='all';
+  document.getElementById('obraUC').value='all';
+  document.getElementById('obraConta').value='all';
+  renderObra();
+}
+
+function renderObra(){
+  if(!dados.length){
+    document.getElementById('obraNoData').style.display='block';
+    document.getElementById('obraContent').style.display='none';
+    return;
+  }
+  document.getElementById('obraNoData').style.display='none';
+  document.getElementById('obraContent').style.display='block';
+  populateObraFiltros();
+
+  var data=getObraFiltered();
+  var total=data.reduce(function(s,r){return s+r.valObra;},0);
+
+  document.getElementById('obraKpis').innerHTML=
+    '<div class="kpi" style="--kc:#5b9cf6">'+
+      '<div class="kpi-label">Valor Pago</div>'+
+      '<div class="kpi-value">'+fBRL(total)+'</div>'+
+      '<div class="kpi-sub">'+data.length+' lancamentos</div>'+
+    '</div>';
+
+  // GRAFICO MENSAL
+  var mesesSet=new Set();
+  data.forEach(function(r){if(r.ano&&r.mes) mesesSet.add(String(r.ano)+'-'+String(r.mes).padStart(2,'0'));});
+  var mkeys=[...mesesSet].sort();
+  var mlabels=mkeys.map(function(k){var p=k.split('-');return MESES[parseInt(p[1])-1]+'/'+p[0].slice(2);});
+  var mvals=mkeys.map(function(k){
+    var p=k.split('-'); var a=parseInt(p[0]); var m=parseInt(p[1]);
+    return data.filter(function(r){return r.ano===a&&r.mes===m;}).reduce(function(s,r){return s+r.valObra;},0);
+  });
+
+  if(obraChartInst) obraChartInst.destroy();
+  obraChartInst=new Chart(document.getElementById('obraChart'),{
+    type:'bar',
+    data:{labels:mlabels,datasets:[{label:'Valor Pago',data:mvals,backgroundColor:'#5b9cf6',borderRadius:4,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return fBRL(ctx.parsed.y);}}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
+      }
+    }
+  });
+
+  // TABELA OBRAS
+  var obraMap={};
+  data.forEach(function(r){
+    var key=r.obra+'||'+r.uc;
+    if(!obraMap[key]) obraMap[key]={obra:r.obra,uc:r.uc,val:0,cnt:0};
+    obraMap[key].val+=r.valObra; obraMap[key].cnt++;
+  });
+  var obraList=Object.values(obraMap).sort(function(a,b){return b.val-a.val;});
+  document.getElementById('obraTbody').innerHTML=obraList.map(function(o){
+    return '<tr><td style="font-weight:500">'+o.obra+'</td><td style="color:var(--text2)">'+o.uc+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(o.val)+'</td><td class="mono" style="text-align:right;color:var(--text2)">'+o.cnt+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">Nenhum dado para os filtros selecionados.</td></tr>';
+}
+
+// ============================================================
+// SALVAR / CARREGAR
 // ============================================================
 function salvarSessao(){
-  if(!analiticoData.length&&!orcamentoData.length){alert('Nenhum dado para salvar.');return;}
-  var sessao={versao:2,data:new Date().toISOString(),analiticoData:analiticoData,orcamentoData:orcamentoData};
+  if(!dados.length){alert('Nenhum dado para salvar.');return;}
+  var sessao={versao:1,data:new Date().toISOString(),dados:dados};
   var blob=new Blob([JSON.stringify(sessao,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url;
@@ -733,33 +724,27 @@ function salvarSessao(){
   a.click(); URL.revokeObjectURL(url);
 }
 
-function carregarSessaoArquivo(input){
+function carregarSessao(input){
   var f=input.files[0]; if(!f) return;
   var reader=new FileReader();
   reader.onload=function(ev){
     try{
       var sessao=JSON.parse(ev.target.result);
-      if(!sessao.analiticoData){alert('Arquivo invalido.');return;}
-      if((analiticoData.length||orcamentoData.length)&&!confirm('Substituir dados existentes pelos do arquivo?')) return;
-      analiticoData=sessao.analiticoData||[];
-      orcamentoData=sessao.orcamentoData||[];
+      if(!sessao.dados){alert('Arquivo invalido.');return;}
+      if(dados.length&&!confirm('Substituir dados existentes pelos do arquivo?')) return;
+      dados=sessao.dados;
       salvarEstado();
-      populateAnaliticoFilters(); renderAnalitico();
-      populateOrcFiltros(); renderOrcamento();
-      updateHeader();
-      alert('&#10003; Sessao carregada! '+analiticoData.length+' registros no analitico, '+orcamentoData.length+' no orcamento.');
+      populateDadosFiltros(); renderDados(); updateHeader();
+      alert('&#10003; '+dados.length+' registros carregados!');
     }catch(e){alert('Erro ao ler o arquivo.');}
   };
-  reader.readAsText(f,'UTF-8');
-  input.value='';
+  reader.readAsText(f,'UTF-8'); input.value='';
 }
 
 // INIT
 carregarEstado();
-populateAnaliticoFilters();
-renderAnalitico();
-populateOrcFiltros();
-renderOrcamento();
+populateDadosFiltros();
+renderDados();
 updateHeader();
 </script>
 </body>
