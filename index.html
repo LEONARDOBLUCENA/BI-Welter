@@ -129,6 +129,10 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       <span class="nav-icon">&#128203;</span>
       <span class="nav-label">Contas Pagas</span>
     </div>
+    <div class="nav-item" onclick="goTab(3)" id="tab3">
+      <span class="nav-icon">&#128257;</span>
+      <span class="nav-label">De/Para Plano Fin.</span>
+    </div>
     <div class="nav-divider"></div>
     <div class="nav-section">Dashboards</div>
     <div class="nav-item" onclick="goTab(1)" id="tab1">
@@ -317,18 +321,67 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
     </div>
 
+    <!-- ABA 3: DE/PARA PLANO FINANCEIRO -->
+    <div class="page fade" id="page3">
+      <div class="sec-header">
+        <div class="sec-title">De/Para - Plano Financeiro</div>
+        <div class="sec-desc">Cadastre aqui os nomes que precisam ser ajustados. O nome "Para" sera usado no Dashboard Adm Fin no lugar do nome original.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Novo ajuste</div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:200px;">
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;">Nome atual (De)</label>
+            <input type="text" id="inDe" placeholder="Nome original da coluna 41">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:200px;">
+            <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;">Nome corrigido (Para)</label>
+            <input type="text" id="inPara" placeholder="Nome que deve aparecer no dashboard">
+          </div>
+          <button class="btn btn-accent" onclick="addDePara()" style="margin-bottom:1px;">+ Adicionar</button>
+        </div>
+        <div id="deParaMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Ajustes cadastrados <span id="deParaCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="exportDePara()">&#8595; Exportar</button>
+            <button class="btn btn-sm" onclick="document.getElementById('importDeParaInput').click()">&#8593; Importar</button>
+            <input type="file" id="importDeParaInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="importDePara(this)">
+          </div>
+        </div>
+        <div id="deParaEmpty" class="no-data" style="display:none;padding:32px 0;">
+          <div class="no-data-icon">&#128257;</div>
+          <p>Nenhum ajuste cadastrado ainda.</p>
+        </div>
+        <div class="tbl-wrap" id="deParaTableWrap" style="display:none;">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th>Nome atual (De)</th>
+              <th>Nome corrigido (Para)</th>
+              <th style="width:60px"></th>
+            </tr></thead>
+            <tbody id="tbodyDePara"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
 <script>
 var dados = [];
+var depara = [];
 var admChartInst = null;
 var obraChartInst = null;
 var MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 // SESSION
-function salvarEstado(){ try{ sessionStorage.setItem('bi_dados', JSON.stringify(dados)); }catch(e){} }
-function carregarEstado(){ try{ var d=sessionStorage.getItem('bi_dados'); if(d) dados=JSON.parse(d); }catch(e){ dados=[]; } }
+function salvarEstado(){ try{ sessionStorage.setItem('bi_dados', JSON.stringify(dados)); sessionStorage.setItem('bi_depara', JSON.stringify(depara)); }catch(e){} }
+function carregarEstado(){ try{ var d=sessionStorage.getItem('bi_dados'); if(d) dados=JSON.parse(d); var dp=sessionStorage.getItem('bi_depara'); if(dp) depara=JSON.parse(dp); }catch(e){ dados=[]; depara=[]; } }
 
 // TABS
 function goTab(i){
@@ -336,6 +389,7 @@ function goTab(i){
   document.querySelectorAll('.page').forEach(function(p,j){ p.classList.toggle('active',i===j); });
   if(i===1) renderAdm();
   if(i===2) renderObra();
+  if(i===3) renderDePara();
 }
 
 // UTILS
@@ -369,6 +423,12 @@ function updateHeader(){
   var hr=document.getElementById('hdrRecords');
   if(dados.length){ hr.style.display='inline'; hr.textContent=dados.length+' registros'; }
   else hr.style.display='none';
+}
+
+function applyDePara(nome){
+  if(!nome) return nome;
+  var found = depara.find(function(d){ return d.de.toLowerCase().trim() === nome.toLowerCase().trim(); });
+  return found ? found.para : nome;
 }
 
 function findCol(keys,opts){
@@ -594,8 +654,9 @@ function renderAdm(){
   var ccMap={};
   data.forEach(function(r){
     if(!r.cc) return;
-    var key = r.cc + '||' + (r.descFin||'Sem descricao');
-    if(!ccMap[key]) ccMap[key]={cc:r.cc, descFin:r.descFin||'Sem descricao', val:0, cnt:0};
+    var descFinAjustado = applyDePara(r.descFin)||'Sem descricao';
+    var key = r.cc + '||' + descFinAjustado;
+    if(!ccMap[key]) ccMap[key]={cc:r.cc, descFin:descFinAjustado, val:0, cnt:0};
     ccMap[key].val+=r.valFin; ccMap[key].cnt++;
   });
   var ccList=Object.values(ccMap).sort(function(a,b){
@@ -728,11 +789,87 @@ function renderObra(){
 }
 
 // ============================================================
+// ABA 3 — DE/PARA PLANO FINANCEIRO
+// ============================================================
+function addDePara(){
+  var de = document.getElementById('inDe').value.trim();
+  var para = document.getElementById('inPara').value.trim();
+  if(!de){ showMsg('deParaMsg','Informe o nome atual.','warn'); return; }
+  if(!para){ showMsg('deParaMsg','Informe o nome corrigido.','warn'); return; }
+  if(depara.find(function(d){ return d.de.toLowerCase()===de.toLowerCase(); })){
+    showMsg('deParaMsg','Este nome ja esta cadastrado.','warn'); return;
+  }
+  depara.push({de:de, para:para});
+  salvarEstado();
+  document.getElementById('inDe').value='';
+  document.getElementById('inPara').value='';
+  showMsg('deParaMsg','&#10003; Ajuste adicionado!','success');
+  renderDePara();
+}
+
+function deleteDePara(i){
+  depara.splice(i,1);
+  salvarEstado();
+  renderDePara();
+}
+
+function renderDePara(){
+  document.getElementById('deParaCount').textContent='('+depara.length+')';
+  document.getElementById('deParaEmpty').style.display=depara.length?'none':'block';
+  document.getElementById('deParaTableWrap').style.display=depara.length?'block':'none';
+  document.getElementById('tbodyDePara').innerHTML=depara.map(function(d,i){
+    return '<tr>'+
+      '<td class="mono" style="color:var(--text3)">'+String(i+1).padStart(3,'0')+'</td>'+
+      '<td style="color:var(--text2)">'+d.de+'</td>'+
+      '<td style="font-weight:500">'+d.para+'</td>'+
+      '<td><button class="btn btn-sm btn-danger" onclick="deleteDePara('+i+')">&#10005;</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function exportDePara(){
+  if(!depara.length){alert('Nenhum ajuste para exportar.');return;}
+  var ws=XLSX.utils.aoa_to_sheet([['De','Para']].concat(depara.map(function(d){return[d.de,d.para];})));
+  ws['!cols']=[{wch:50},{wch:50}];
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'DePara');
+  XLSX.writeFile(wb,'depara_plano_financeiro.xlsx');
+}
+
+function importDePara(input){
+  var f=input.files[0]; if(!f) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var rows=[];
+      if(f.name.toLowerCase().endsWith('.csv')){
+        var lines=ev.target.result.split('\n').filter(function(l){return l.trim();});
+        var hdrs=lines[0].split(/[,;]/).map(function(h){return h.trim().replace(/"/g,'');});
+        for(var i=1;i<lines.length;i++){var v=lines[i].split(/[,;]/).map(function(x){return x.trim().replace(/"/g,'');});var r={};hdrs.forEach(function(h,j){r[h]=v[j]||'';});rows.push(r);}
+      } else {
+        var wb=XLSX.read(ev.target.result,{type:'array'}); rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      }
+      var added=0,skipped=0;
+      rows.forEach(function(r){
+        var de=String(r['De']||r['de']||'').trim();
+        var para=String(r['Para']||r['para']||'').trim();
+        if(!de||!para){skipped++;return;}
+        if(depara.find(function(d){return d.de.toLowerCase()===de.toLowerCase();})){skipped++;return;}
+        depara.push({de:de,para:para}); added++;
+      });
+      salvarEstado(); renderDePara();
+      alert(added+' ajuste(s) importado(s).'+(skipped?' '+skipped+' ignorado(s).':''));
+    }catch(e){alert('Erro ao ler o arquivo.');}
+  };
+  if(f.name.toLowerCase().endsWith('.csv')) reader.readAsText(f,'UTF-8'); else reader.readAsArrayBuffer(f);
+  input.value='';
+}
+
+// ============================================================
 // SALVAR / CARREGAR
 // ============================================================
 function salvarSessao(){
   if(!dados.length){alert('Nenhum dado para salvar.');return;}
-  var sessao={versao:1,data:new Date().toISOString(),dados:dados};
+  var sessao={versao:2,data:new Date().toISOString(),dados:dados,depara:depara};
   var blob=new Blob([JSON.stringify(sessao,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url;
@@ -749,8 +886,9 @@ function carregarSessao(input){
       if(!sessao.dados){alert('Arquivo invalido.');return;}
       if(dados.length&&!confirm('Substituir dados existentes pelos do arquivo?')) return;
       dados=sessao.dados;
+      depara=sessao.depara||[];
       salvarEstado();
-      populateDadosFiltros(); renderDados(); updateHeader();
+      populateDadosFiltros(); renderDados(); renderDePara(); updateHeader();
       alert('&#10003; '+dados.length+' registros carregados!');
     }catch(e){alert('Erro ao ler o arquivo.');}
   };
@@ -761,6 +899,7 @@ function carregarSessao(input){
 carregarEstado();
 populateDadosFiltros();
 renderDados();
+renderDePara();
 updateHeader();
 </script>
 </body>
