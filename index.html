@@ -113,7 +113,7 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       <span>Colar dados do Excel</span>
       <button class="btn btn-accent btn-sm" onclick="processarCola()">&#10003; Processar e adicionar</button>
     </div>
-    <textarea id="pasteArea" rows="5" placeholder="Copie as celulas do Excel incluindo o cabecalho e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;"></textarea>
+    <textarea id="pasteArea" rows="8" placeholder="Copie as celulas do Excel incluindo o cabecalho e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;max-height:300px;"></textarea>
     <div id="pasteMsg" class="msg"></div>
   </div>
   <div class="card">
@@ -294,14 +294,22 @@ function obraPermitida(nome) {
 // ============================================================
 function salvarEstado() {
   try {
-    sessionStorage.setItem('bi_dados',  JSON.stringify(dados));
-    sessionStorage.setItem('bi_depara', JSON.stringify(depara));
-  } catch(e) {}
+    localStorage.setItem('bi_dados',  JSON.stringify(dados));
+    localStorage.setItem('bi_depara', JSON.stringify(depara));
+  } catch(e) {
+    try {
+      localStorage.removeItem('bi_dados');
+      localStorage.setItem('bi_dados',  JSON.stringify(dados));
+      localStorage.setItem('bi_depara', JSON.stringify(depara));
+    } catch(e2) {
+      console.warn('localStorage cheio:', e2);
+    }
+  }
 }
 function carregarEstado() {
   try {
-    var d = sessionStorage.getItem('bi_dados');
-    var p = sessionStorage.getItem('bi_depara');
+    var d = localStorage.getItem('bi_dados');
+    var p = localStorage.getItem('bi_depara');
     if (d) dados  = JSON.parse(d);
     if (p) depara = JSON.parse(p);
   } catch(e) { dados=[]; depara=[]; }
