@@ -425,6 +425,7 @@ function normalizeRows(rows) {
     return found || null;
   }
 
+  var cCodDoc  = col(['codigo documento']);
   var cData    = col(['data pagamento']);
   var cConta   = col(['conta corrente']);
   var cCC      = col(['desc centro custo']);
@@ -445,6 +446,7 @@ function normalizeRows(rows) {
   });
 
   function get(r, c) { return c ? String(r[c]||'').trim() : ''; }
+  console.log('Cod Documento col:', cCodDoc, '| Exemplo:', rows[0][cCodDoc]);
 
   return rows.map(function(r){
     var ds = get(r, cData);
@@ -453,6 +455,7 @@ function normalizeRows(rows) {
       data:    ds,
       ano:     dp ? dp.getFullYear() : null,
       mes:     dp ? dp.getMonth()+1  : null,
+      codDoc:  get(r, cCodDoc),
       conta:   get(r, cConta),
       cc:      get(r, cCC),
       codFin:  get(r, cCodFin),
@@ -656,6 +659,7 @@ function getAdmData() {
   var conta = document.getElementById('admConta').value;
   return dados.filter(function(r){
     if (r.conta==='REAPROPFIN') return false;
+    if (r.codDoc==='ADT') return false;
     if (ano!=='all'   && String(r.ano)!==ano)  return false;
     if (mes!=='all'   && String(r.mes)!==mes)  return false;
     if (cc!=='all'    && r.cc!==cc)            return false;
@@ -753,6 +757,7 @@ function getObraData() {
   var conta = document.getElementById('obraConta').value;
   return dados.filter(function(r){
     if (!obraPermitida(r.obra)) return false;
+    if (r.codDoc==='ADT') return false;
     if (ano!=='all'   && String(r.ano)!==ano)  return false;
     if (mes!=='all'   && String(r.mes)!==mes)  return false;
     if (obra!=='all'  && r.obra!==obra)         return false;
