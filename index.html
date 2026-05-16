@@ -399,36 +399,51 @@ function updateHeader() {
 // ============================================================
 function normalizeRows(rows) {
   if (!rows.length) return [];
+  // Mapeia por indice de coluna (base 0):
+  // Col 31 = idx 30, Col 32 = idx 31, Col 39 = idx 38
+  // Col 40 = idx 39, Col 41 = idx 40, Col 43 = idx 42
+  // Col 45 = idx 44, Col 47 = idx 46, Col 48 = idx 47
+  // Col 49 = idx 48, Col 51 = idx 50
+  var IDX = {
+    data:    30,
+    conta:   31,
+    cc:      38,
+    codFin:  39,
+    descFin: 40,
+    valFin:  42,
+    obra:    44,
+    uc:      46,
+    codOrc:  47,
+    descOrc: 48,
+    valObra: 50
+  };
+
+  // Detecta se os dados vieram com cabecalho (primeira linha = nomes)
+  // e usa posicao dos campos pelo indice da coluna
   var keys = Object.keys(rows[0]);
-  var cData    = findCol(keys,['data pagamento','data pag']);
-  var cConta   = findCol(keys,['conta corrente']);
-  var cCC      = findCol(keys,['desc centro custo','centro custo']);
-  var cCodFin  = findCol(keys,['codigo plano financeiro','cod plano fin','codigo plano fin']);
-  var cDescFin = findCol(keys,['descricao plano financeiro','desc plano financeiro','descricao plano fin']);
-  var cValFin  = findCol(keys,['valor aprop fin','valor aprop financeiro']);
-  var cObra    = keys.find(function(k){ return k.toLowerCase().trim()==='desc obra' || k.toLowerCase().trim()==='descricao obra'; }) || findCol(keys,['desc obra']);
-  var cUC      = findCol(keys,['desc unid construtiva','unid construtiva','unidade construtiva']);
-  var cCodOrc  = findCol(keys,['codigo item orcamento','cod item orc','codigo item orc']);
-  var cDescOrc = findCol(keys,['descricao item orcamento','desc item orc','descricao item orc']);
-  var cValObra = findCol(keys,['valor aprop obra']);
+
+  function getByIdx(row, idx) {
+    var k = keys[idx];
+    return k !== undefined ? row[k] : '';
+  }
 
   return rows.map(function(r){
-    var ds = cData ? String(r[cData]||'').trim() : '';
+    var ds = String(getByIdx(r, IDX.data)||'').trim();
     var dp = parseData(ds);
     return {
       data:    ds,
       ano:     dp ? dp.getFullYear() : null,
       mes:     dp ? dp.getMonth()+1  : null,
-      conta:   cConta   ? String(r[cConta  ]||'').trim() : '',
-      cc:      cCC      ? String(r[cCC     ]||'').trim() : '',
-      codFin:  cCodFin  ? String(r[cCodFin ]||'').trim() : '',
-      descFin: cDescFin ? String(r[cDescFin]||'').trim() : '',
-      valFin:  cValFin  ? parseValor(r[cValFin])  : 0,
-      obra:    cObra    ? String(r[cObra   ]||'').trim() : '',
-      uc:      cUC      ? String(r[cUC     ]||'').trim() : '',
-      codOrc:  cCodOrc  ? String(r[cCodOrc ]||'').trim() : '',
-      descOrc: cDescOrc ? String(r[cDescOrc]||'').trim() : '',
-      valObra: cValObra ? parseValor(r[cValObra]) : 0
+      conta:   String(getByIdx(r, IDX.conta  )||'').trim(),
+      cc:      String(getByIdx(r, IDX.cc     )||'').trim(),
+      codFin:  String(getByIdx(r, IDX.codFin )||'').trim(),
+      descFin: String(getByIdx(r, IDX.descFin)||'').trim(),
+      valFin:  parseValor(getByIdx(r, IDX.valFin)),
+      obra:    String(getByIdx(r, IDX.obra   )||'').trim(),
+      uc:      String(getByIdx(r, IDX.uc     )||'').trim(),
+      codOrc:  String(getByIdx(r, IDX.codOrc )||'').trim(),
+      descOrc: String(getByIdx(r, IDX.descOrc)||'').trim(),
+      valObra: parseValor(getByIdx(r, IDX.valObra))
     };
   }).filter(function(r){ return r.data||r.valFin||r.valObra; });
 }
