@@ -399,51 +399,62 @@ function updateHeader() {
 // ============================================================
 function normalizeRows(rows) {
   if (!rows.length) return [];
-  // Mapeia por indice de coluna (base 0):
-  // Col 31 = idx 30, Col 32 = idx 31, Col 39 = idx 38
-  // Col 40 = idx 39, Col 41 = idx 40, Col 43 = idx 42
-  // Col 45 = idx 44, Col 47 = idx 46, Col 48 = idx 47
-  // Col 49 = idx 48, Col 51 = idx 50
-  var IDX = {
-    data:    30,
-    conta:   31,
-    cc:      38,
-    codFin:  39,
-    descFin: 40,
-    valFin:  42,
-    obra:    44,
-    uc:      46,
-    codOrc:  47,
-    descOrc: 48,
-    valObra: 50
-  };
-
-  // Detecta se os dados vieram com cabecalho (primeira linha = nomes)
-  // e usa posicao dos campos pelo indice da coluna
   var keys = Object.keys(rows[0]);
 
-  function getByIdx(row, idx) {
-    var k = keys[idx];
-    return k !== undefined ? row[k] : '';
+  // Busca exata por nome de cabecalho (case insensitive, sem espacos extras)
+  function col(names) {
+    var found = keys.find(function(k){
+      var kl = k.toLowerCase().trim();
+      return names.some(function(n){ return kl === n.toLowerCase().trim(); });
+    });
+    // fallback: busca parcial
+    if (!found) {
+      found = keys.find(function(k){
+        var kl = k.toLowerCase().trim();
+        return names.some(function(n){ return kl.includes(n.toLowerCase().trim()); });
+      });
+    }
+    return found || null;
   }
 
+  var cData    = col(['data pagamento']);
+  var cConta   = col(['conta corrente']);
+  var cCC      = col(['desc centro custo']);
+  var cCodFin  = col(['codigo plano financeiro']);
+  var cDescFin = col(['descricao plano financeiro']);
+  var cValFin  = col(['valor aprop fin']);
+  var cObra    = col(['desc obra']);
+  var cUC      = col(['desc unid construtiva']);
+  var cCodOrc  = col(['codigo item orcamento']);
+  var cDescOrc = col(['descricao item orcamento']);
+  var cValObra = col(['valor aprop obra']);
+
+  // Debug: loga colunas encontradas no console
+  console.log('Colunas mapeadas:', {
+    data:cData, conta:cConta, cc:cCC, codFin:cCodFin,
+    descFin:cDescFin, valFin:cValFin, obra:cObra, uc:cUC,
+    codOrc:cCodOrc, descOrc:cDescOrc, valObra:cValObra
+  });
+
+  function get(r, c) { return c ? String(r[c]||'').trim() : ''; }
+
   return rows.map(function(r){
-    var ds = String(getByIdx(r, IDX.data)||'').trim();
+    var ds = get(r, cData);
     var dp = parseData(ds);
     return {
       data:    ds,
       ano:     dp ? dp.getFullYear() : null,
       mes:     dp ? dp.getMonth()+1  : null,
-      conta:   String(getByIdx(r, IDX.conta  )||'').trim(),
-      cc:      String(getByIdx(r, IDX.cc     )||'').trim(),
-      codFin:  String(getByIdx(r, IDX.codFin )||'').trim(),
-      descFin: String(getByIdx(r, IDX.descFin)||'').trim(),
-      valFin:  parseValor(getByIdx(r, IDX.valFin)),
-      obra:    String(getByIdx(r, IDX.obra   )||'').trim(),
-      uc:      String(getByIdx(r, IDX.uc     )||'').trim(),
-      codOrc:  String(getByIdx(r, IDX.codOrc )||'').trim(),
-      descOrc: String(getByIdx(r, IDX.descOrc)||'').trim(),
-      valObra: parseValor(getByIdx(r, IDX.valObra))
+      conta:   get(r, cConta),
+      cc:      get(r, cCC),
+      codFin:  get(r, cCodFin),
+      descFin: get(r, cDescFin),
+      valFin:  parseValor(cValFin  ? r[cValFin]  : 0),
+      obra:    get(r, cObra),
+      uc:      get(r, cUC),
+      codOrc:  get(r, cCodOrc),
+      descOrc: get(r, cDescOrc),
+      valObra: parseValor(cValObra ? r[cValObra] : 0)
     };
   }).filter(function(r){ return r.data||r.valFin||r.valObra; });
 }
