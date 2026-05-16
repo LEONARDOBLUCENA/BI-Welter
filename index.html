@@ -779,11 +779,49 @@ function renderObra() {
   document.getElementById('obraContent').style.display = 'block';
 
   var data  = getObraData();
-  var total = data.reduce(function(s,r){ return s+r.valObra; },0);
+  // Normaliza Desc Unid Construtiva para lidar com encoding
+  function normUC(v) {
+    if (!v) return '';
+    var s = v.toUpperCase().trim();
+    // POS OBRA pode vir corrompido
+    if (s.includes('S OBRA') || s.includes('POS OBRA') || s.includes('PÓS OBRA')) return 'POS OBRA';
+    if (s.includes('EMPREENDIMENTO')) return 'EMPREENDIMENTO';
+    if (s.includes('CUSTO CONSTRUTIVO')) return 'CUSTO CONSTRUTIVO';
+    return s;
+  }
+
+  var emp  = data.filter(function(r){ return normUC(r.uc)==='EMPREENDIMENTO'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var ccTotal = data.filter(function(r){ return normUC(r.uc)==='CUSTO CONSTRUTIVO'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var ccPermuta = data.filter(function(r){ return normUC(r.uc)==='CUSTO CONSTRUTIVO' && r.conta==='REAPROPFIN'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var ccCaixa   = ccTotal - ccPermuta;
+  var posObra  = data.filter(function(r){ return normUC(r.uc)==='POS OBRA'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var total = emp + ccTotal + posObra;
 
   document.getElementById('obraKpi').innerHTML =
+    '<div class="kpi" style="--kc:#4caf82">'+
+      '<div class="kpi-label">Faturamento</div>'+
+      '<div class="kpi-value" style="font-size:16px;color:var(--text3)">A definir</div>'+
+      '<div class="kpi-sub">sera adicionado depois</div>'+
+    '</div>'+
     '<div class="kpi" style="--kc:#5b9cf6">'+
-      '<div class="kpi-label">Valor Pago</div>'+
+      '<div class="kpi-label">Empreendimento</div>'+
+      '<div class="kpi-value">'+fBRL(emp)+'</div>'+
+      '<div class="kpi-sub">'+data.filter(function(r){return normUC(r.uc)==='EMPREENDIMENTO';}).length+' lancamentos</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#a78bfa">'+
+      '<div class="kpi-label">Custo Construtivo</div>'+
+      '<div class="kpi-value">'+fBRL(ccTotal)+'</div>'+
+      '<div class="kpi-sub">'+
+        'Caixa: '+fBRL(ccCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(ccPermuta)+
+      '</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#e8a045">'+
+      '<div class="kpi-label">Pos Obra</div>'+
+      '<div class="kpi-value">'+fBRL(posObra)+'</div>'+
+      '<div class="kpi-sub">'+data.filter(function(r){return normUC(r.uc)==='POS OBRA';}).length+' lancamentos</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:var(--green)">'+
+      '<div class="kpi-label">Total Apropriacoes</div>'+
       '<div class="kpi-value">'+fBRL(total)+'</div>'+
       '<div class="kpi-sub">'+data.length+' lancamentos</div>'+
     '</div>';
