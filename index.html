@@ -340,6 +340,8 @@ function goTab(i) {
     document.getElementById('tab'+j).classList.toggle('active', i===j);
     document.getElementById('page'+j).classList.toggle('active', i===j);
   }
+  if (i===2) renderAdm();
+  if (i===3) renderObra();
 }
 
 // ============================================================
@@ -476,6 +478,8 @@ function atualizarTudo() {
   populateSelect('obraUC',    unicos(dadosObra(), 'uc'),    'Todas');
   renderDados();
   renderDP();
+  renderAdm();
+  renderObra();
 }
 
 function dadosObra() {
