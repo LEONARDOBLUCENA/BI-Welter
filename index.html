@@ -342,20 +342,24 @@ function obraOK(n){ if(!n) return false; var s=n.toLowerCase(); return OBRAS_OK.
 
 // ---- STORAGE ----
 function salvar(){
-  try{
-    localStorage.setItem('bi_d', JSON.stringify(dados));
-    localStorage.setItem('bi_dp', JSON.stringify(depara));
-    localStorage.setItem('bi_rec', JSON.stringify(recebidas));
-    localStorage.setItem('bi_ar', JSON.stringify(areceber));
-  }catch(e){}
+  try{ localStorage.setItem('bi_d', JSON.stringify(dados)); }
+  catch(e){ console.error('Erro ao salvar dados:',e); }
+  try{ localStorage.setItem('bi_dp', JSON.stringify(depara)); }
+  catch(e){ console.error('Erro ao salvar depara:',e); }
+  try{ localStorage.setItem('bi_rec', JSON.stringify(recebidas)); }
+  catch(e){ console.error('Erro ao salvar recebidas:',e); }
+  try{ localStorage.setItem('bi_ar', JSON.stringify(areceber)); }
+  catch(e){ console.error('Erro ao salvar areceber:',e); }
 }
 function carregar(){
-  try{
-    var d=localStorage.getItem('bi_d'); if(d) dados=JSON.parse(d);
-    var p=localStorage.getItem('bi_dp'); if(p) depara=JSON.parse(p);
-    var r=localStorage.getItem('bi_rec'); if(r) recebidas=JSON.parse(r);
-    var a=localStorage.getItem('bi_ar'); if(a) areceber=JSON.parse(a);
-  }catch(e){ dados=[];depara=[];recebidas=[];areceber=[]; }
+  try{ var d=localStorage.getItem('bi_d'); if(d){ dados=JSON.parse(d); console.log('Dados carregados:',dados.length); } }
+  catch(e){ console.error('Erro ao carregar dados:',e); dados=[]; }
+  try{ var p=localStorage.getItem('bi_dp'); if(p) depara=JSON.parse(p); }
+  catch(e){ depara=[]; }
+  try{ var r=localStorage.getItem('bi_rec'); if(r) recebidas=JSON.parse(r); }
+  catch(e){ recebidas=[]; }
+  try{ var a=localStorage.getItem('bi_ar'); if(a) areceber=JSON.parse(a); }
+  catch(e){ areceber=[]; }
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length){ alert('Nenhum dado para salvar.'); return; }
@@ -512,6 +516,9 @@ function processarCola(){
         dados=dados.concat(novos); salvar();
         document.getElementById('pasteArea').value='';
         btn.disabled=false; btn.innerHTML='&#10003; Processar e adicionar';
+        // Reset selects so they repopulate with new data
+        document.getElementById('obraObra').innerHTML='<option value="all">Todas</option>';
+        document.getElementById('admAno').innerHTML='<option value="all">Todos</option>';
         init(); showMsg('pasteMsg','&#10003; '+novos.length+' adicionados! Total: '+dados.length,'ok');
       }
     }
@@ -704,9 +711,11 @@ function renderAdm(){
   if(!dados.length){document.getElementById('admEmpty').style.display='block';document.getElementById('admContent').style.display='none';return;}
   document.getElementById('admEmpty').style.display='none';
   document.getElementById('admContent').style.display='block';
-  // populate selects preserving value
-  popSel('admAno',anos(dados),'Todos');
-  popSel('admConta',unicos(dados.filter(function(r){return r.conta!=='REAPROPFIN';}), 'conta'),'Todas');
+  // Only repopulate if selects are empty (first load)
+  if(document.getElementById('admAno').options.length<=1){
+    popSel('admAno',anos(dados),'Todos');
+    popSel('admConta',unicos(dados.filter(function(r){return r.conta!=='REAPROPFIN';}), 'conta'),'Todas');
+  }
   var data=getAdm();
   var total=data.reduce(function(s,r){return s+r.valFin;},0);
   document.getElementById('admKpi').innerHTML=
@@ -787,12 +796,15 @@ function renderObra(){
   document.getElementById('obraEmpty').style.display='none';
   document.getElementById('obraContent').style.display='block';
   var dadosOK=dados.filter(function(r){return obraOK(r.obra);});
-  popSel('obraAno',anos(dadosOK),'Todos');
-  popSel('obraObra',unicos(dadosOK,'obra'),'Todas');
-  var ucsRaw=unicos(dadosOK,'uc');
-  var ucsNorm=[...new Set(ucsRaw.map(normUC))].filter(Boolean).sort();
-  popSel('obraUC',ucsNorm,'Todas');
-  popSel('obraConta',unicos(dadosOK,'conta'),'Todas');
+  // Only repopulate if selects are empty (first load)
+  if(document.getElementById('obraObra').options.length<=1){
+    popSel('obraAno',anos(dadosOK),'Todos');
+    popSel('obraObra',unicos(dadosOK,'obra'),'Todas');
+    var ucsRaw=unicos(dadosOK,'uc');
+    var ucsNorm=[...new Set(ucsRaw.map(normUC))].filter(Boolean).sort();
+    popSel('obraUC',ucsNorm,'Todas');
+    popSel('obraConta',unicos(dadosOK,'conta'),'Todas');
+  }
   var data=getObra();
   // Faturamento KPIs
   var obraF=document.getElementById('obraObra').value;
