@@ -255,7 +255,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
   <div class="card">
     <div class="ct">Novo item</div>
     <div class="rfrow">
-      <div class="fg2"><label>Obra</label><input type="text" id="orcObra" placeholder="Nome da obra"></div>
+      <div class="fg2"><label>Obra</label><select id="orcObra"><option value="">Selecione...</option></select></div>
       <div class="fg2"><label>Cod Item Orc.</label><input type="text" id="orcCod" placeholder="Ex: 1.1.01"></div>
       <div class="fg2"><label>Desc Conta Totalizadora</label><input type="text" id="orcDescTot" placeholder="Ex: Fundacoes"></div>
       <div class="fg2"><label>Valor Orcado</label><input type="text" id="orcValor" placeholder="Ex: 150000"></div>
@@ -733,7 +733,7 @@ function renderAR(){
 // P4: ORCAMENTO
 // ============================================================
 function addOrc(){
-  var obra=document.getElementById('orcObra').value.trim();
+  var obra=document.getElementById('orcObra').value;
   var cod=document.getElementById('orcCod').value.trim();
   var descTot=document.getElementById('orcDescTot').value.trim();
   var valor=parseVal(document.getElementById('orcValor').value);
@@ -749,7 +749,14 @@ function addOrc(){
 }
 function deleteOrc(i){orcamento.splice(i,1);salvar();renderOrc();}
 function renderOrc(){
-  var obras=['all'].concat(unicos(orcamento,'obra'));
+  // Populate orcObra select from dados desc obra
+  var obrasDisponiveis=unicos(dados.filter(function(r){return r.obra;}), 'obra');
+  var selOrcObra=document.getElementById('orcObra');
+  if(selOrcObra){
+    var curOrcObra=selOrcObra.value;
+    selOrcObra.innerHTML='<option value="">Selecione...</option>'+obrasDisponiveis.map(function(o){return '<option value="'+o+'">'+o+'</option>';}).join('');
+    if(obrasDisponiveis.includes(curOrcObra)) selOrcObra.value=curOrcObra;
+  }
   setSel('fOrcObra',unicos(orcamento,'obra'),'Todas');
   var fObra=document.getElementById('fOrcObra').value;
   var data=orcamento.filter(function(r){return fObra==='all'||r.obra===fObra;});
@@ -976,12 +983,12 @@ function renderObra(){
     tfComp.innerHTML='';
   } else {
     var realMap={};
-    data.forEach(function(r){if(!r.codOrc)return;realMap[r.codOrc]=(realMap[r.codOrc]||0)+r.valObra;});
+    data.forEach(function(r){if(!r.codOrc)return;var k=r.codOrc.trim().toLowerCase();realMap[k]=(realMap[k]||0)+r.valObra;});
     var totMap={};
     orcFilt.forEach(function(r){
       var tot=r.descTot||'Sem totalizadora';
       if(!totMap[tot])totMap[tot]={items:[],totOrc:0,totReal:0};
-      var real=realMap[r.cod]||0;
+      var real=realMap[r.cod.trim().toLowerCase()]||0;
       totMap[tot].items.push({cod:r.cod,obra:r.obra,orcado:r.valor,realizado:real});
       totMap[tot].totOrc+=r.valor;totMap[tot].totReal+=real;
     });
