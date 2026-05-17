@@ -376,7 +376,15 @@ function carregar(){
   catch(e){ depara=[]; }
   try{ var r=localStorage.getItem('bi_rec'); if(r) recebidas=JSON.parse(r); }
   catch(e){ recebidas=[]; }
-  try{ var a=localStorage.getItem('bi_ar'); if(a) areceber=JSON.parse(a); }
+  try{
+    var a=localStorage.getItem('bi_ar');
+    if(a){
+      areceber=JSON.parse(a);
+      // re-evaluate inadimplente since Date objects don't survive JSON
+      var hoje2=new Date(); hoje2.setHours(0,0,0,0); var hojeMs=hoje2.getTime();
+      areceber.forEach(function(r){ r.inadimplente = r.dtMs ? r.dtMs < hojeMs : false; });
+    }
+  }
   catch(e){ areceber=[]; }
 }
 function salvarSessao(){
@@ -644,7 +652,10 @@ function normContas(rows, isAR){
   return rows.map(function(r){
     var ds=cBaixa?String(r[cBaixa]||'').trim():'';
     var dp=parseDt(ds);
-    return{obra:cObra?String(r[cObra]||'').trim():'',dtBaixa:ds,dp:dp,
+    return{obra:cObra?String(r[cObra]||'').trim():'',dtBaixa:ds,
+      ano:dp?dp.getFullYear():null,
+      mes:dp?dp.getMonth()+1:null,
+      dtMs:dp?dp.getTime():null,
       liquido:parseVal(cLiq?r[cLiq]:0),inadimplente:isAR&&dp&&dp<hoje};
   }).filter(function(r){return r.obra||r.liquido;});
 }
@@ -835,14 +846,14 @@ function renderObra(){
   var mesF=document.getElementById('obraMes').value;
   var recF=recebidas.filter(function(r){
     if(obraF!=='all'&&r.obra!==obraF) return false;
-    if(anoF!=='all'&&(!r.dp||String(r.dp.getFullYear())!==anoF)) return false;
-    if(mesF!=='all'&&(!r.dp||String(r.dp.getMonth()+1)!==mesF)) return false;
+    if(anoF!=='all'&&String(r.ano)!==anoF) return false;
+    if(mesF!=='all'&&String(r.mes)!==mesF) return false;
     return true;
   });
   var arF=areceber.filter(function(r){
     if(obraF!=='all'&&r.obra!==obraF) return false;
-    if(anoF!=='all'&&(!r.dp||String(r.dp.getFullYear())!==anoF)) return false;
-    if(mesF!=='all'&&(!r.dp||String(r.dp.getMonth()+1)!==mesF)) return false;
+    if(anoF!=='all'&&String(r.ano)!==anoF) return false;
+    if(mesF!=='all'&&String(r.mes)!==mesF) return false;
     return true;
   });
   var fatTotal=recF.reduce(function(s,r){return s+r.liquido;},0);
