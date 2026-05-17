@@ -474,48 +474,53 @@ function processarCola() {
   var txt = document.getElementById('pasteArea').value.trim();
   if (!txt) { showMsg('pasteMsg','Cole os dados antes de processar.','warn'); return; }
   var btn = document.querySelector('button.btn-accent.btn-sm');
-  if (btn) { btn.disabled=true; btn.textContent='Processando...'; }
-  showMsg('pasteMsg','Processando dados, aguarde...','info');
+  if (btn) { btn.disabled=true; btn.innerHTML='Processando...'; }
+  showMsg('pasteMsg','Preparando dados...','info');
   setTimeout(function(){
-    try {
-      var lines = txt.split('\n');
-      var validLines = [];
-      for (var i=0;i<lines.length;i++){ if(lines[i].trim()) validLines.push(lines[i]); }
-      if (validLines.length < 2) {
-        showMsg('pasteMsg','Dados insuficientes.','warn');
-        if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
-        return;
-      }
-      var hdrs = validLines[0].split('\t').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
-      var rows = [];
-      for (var i=1;i<validLines.length;i++) {
-        var vals = validLines[i].split('\t').map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+    var lines = txt.split('\n');
+    var validLines = [];
+    for (var i=0;i<lines.length;i++){ if(lines[i].trim()) validLines.push(lines[i]); }
+    if (validLines.length < 2) {
+      showMsg('pasteMsg','Dados insuficientes.','warn');
+      if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
+      return;
+    }
+    var hdrs = validLines[0].split('\t').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+    var dataLines = validLines.slice(1);
+    var total = dataLines.length;
+    var CHUNK = 500;
+    var allRows = [];
+    var idx = 0;
+    function processChunk() {
+      var end = Math.min(idx + CHUNK, total);
+      for (var i=idx; i<end; i++) {
+        var vals = dataLines[i].split('\t').map(function(v){ return v.trim().replace(/^"|"$/g,''); });
         if (vals.every(function(v){return !v;})) continue;
         var row = {}; hdrs.forEach(function(h,j){ row[h]=vals[j]!==undefined?vals[j]:''; });
-        rows.push(row);
+        allRows.push(row);
       }
-      if (!rows.length) {
-        showMsg('pasteMsg','Nenhuma linha valida.','warn');
+      idx = end;
+      var pct = Math.round((idx/total)*100);
+      showMsg('pasteMsg','Processando... '+pct+'% ('+idx+'/'+total+' linhas)','info');
+      if (idx < total) {
+        setTimeout(processChunk, 10);
+      } else {
+        var novos = normalizeRows(allRows);
+        if (!novos.length) {
+          showMsg('pasteMsg','Nenhum registro valido. Verifique os cabecalhos.','warn');
+          if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
+          return;
+        }
+        dados = dados.concat(novos);
+        salvarEstado();
+        document.getElementById('pasteArea').value = '';
         if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
-        return;
+        atualizarTudo();
+        showMsg('pasteMsg','&#10003; '+novos.length+' registros adicionados! Total: '+dados.length,'ok');
       }
-      var novos = normalizeRows(rows);
-      if (!novos.length) {
-        showMsg('pasteMsg','Nenhum registro valido. Verifique os cabecalhos.','warn');
-        if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
-        return;
-      }
-      dados = dados.concat(novos);
-      salvarEstado();
-      document.getElementById('pasteArea').value = '';
-      if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
-      atualizarTudo();
-      showMsg('pasteMsg', novos.length+' registros adicionados! Total: '+dados.length, 'ok');
-    } catch(e) {
-      showMsg('pasteMsg','Erro: '+e.message,'warn');
-      if(btn){btn.disabled=false;btn.innerHTML='&#10003; Processar e adicionar';}
     }
-  }, 100);
+    processChunk();
+  }, 50);
 }
 
 function limparDados() {
