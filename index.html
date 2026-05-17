@@ -815,10 +815,11 @@ function renderObra() {
   function normUC(v) {
     if (!v) return '';
     var s = v.toUpperCase().trim();
-    // POS OBRA pode vir corrompido
     if (s.includes('S OBRA') || s.includes('POS OBRA') || s.includes('PÓS OBRA')) return 'POS OBRA';
     if (s.includes('EMPREENDIMENTO')) return 'EMPREENDIMENTO';
     if (s.includes('CUSTO CONSTRUTIVO')) return 'CUSTO CONSTRUTIVO';
+    if (s.includes('TERRENO')) return 'TERRENO';
+    if (s.includes('CUSTO DA CONSTRU') || s.includes('CUSTO DA CONS')) return 'CUSTO DA CONSTRUCAO';
     return s;
   }
 
@@ -831,7 +832,13 @@ function renderObra() {
   var posObra    = data.filter(function(r){ return normUC(r.uc)==='POS OBRA'; }).reduce(function(s,r){return s+r.valObra;},0);
   var posPermuta = data.filter(function(r){ return normUC(r.uc)==='POS OBRA' && r.conta==='REAPROPFIN'; }).reduce(function(s,r){return s+r.valObra;},0);
   var posCaixa   = posObra - posPermuta;
-  var total = emp + ccTotal + posObra;
+  var terreno    = data.filter(function(r){ return normUC(r.uc)==='TERRENO'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var terPermuta = data.filter(function(r){ return normUC(r.uc)==='TERRENO' && r.conta==='REAPROPFIN'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var terCaixa   = terreno - terPermuta;
+  var custoCons    = data.filter(function(r){ return normUC(r.uc)==='CUSTO DA CONSTRUCAO'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var custoCPermuta= data.filter(function(r){ return normUC(r.uc)==='CUSTO DA CONSTRUCAO' && r.conta==='REAPROPFIN'; }).reduce(function(s,r){return s+r.valObra;},0);
+  var custoCCaixa  = custoCons - custoCPermuta;
+  var total = emp + ccTotal + posObra + terreno + custoCons;
 
   document.getElementById('obraKpi').innerHTML =
     '<div class="kpi" style="--kc:#4caf82">'+
@@ -858,6 +865,20 @@ function renderObra() {
       '<div class="kpi-value">'+fBRL(posObra)+'</div>'+
       '<div class="kpi-sub">'+
         'Caixa: '+fBRL(posCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(posPermuta)+
+      '</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#e05c5c">'+
+      '<div class="kpi-label">Terreno</div>'+
+      '<div class="kpi-value">'+fBRL(terreno)+'</div>'+
+      '<div class="kpi-sub">'+
+        'Caixa: '+fBRL(terCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(terPermuta)+
+      '</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#4caf82">'+
+      '<div class="kpi-label">Custo da Construcao</div>'+
+      '<div class="kpi-value">'+fBRL(custoCons)+'</div>'+
+      '<div class="kpi-sub">'+
+        'Caixa: '+fBRL(custoCCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(custoCPermuta)+
       '</div>'+
     '</div>'+
     '<div class="kpi" style="--kc:var(--green)">'+
