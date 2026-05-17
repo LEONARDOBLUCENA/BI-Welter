@@ -983,12 +983,12 @@ function renderObra(){
     tfComp.innerHTML='';
   } else {
     var realMap={};
-    data.forEach(function(r){if(!r.codOrc)return;var k=r.codOrc.trim().toLowerCase();realMap[k]=(realMap[k]||0)+r.valObra;});
+    data.forEach(function(r){if(!r.codOrc)return;var k=r.codOrc.trim().toLowerCase().replace(/\./g,'');realMap[k]=(realMap[k]||0)+r.valObra;});
     var totMap={};
     orcFilt.forEach(function(r){
       var tot=r.descTot||'Sem totalizadora';
       if(!totMap[tot])totMap[tot]={items:[],totOrc:0,totReal:0};
-      var real=realMap[r.cod.trim().toLowerCase()]||0;
+      var real=realMap[r.cod.trim().toLowerCase().replace(/\./g,'')]||0;
       totMap[tot].items.push({cod:r.cod,obra:r.obra,orcado:r.valor,realizado:real});
       totMap[tot].totOrc+=r.valor;totMap[tot].totReal+=real;
     });
