@@ -841,50 +841,54 @@ function renderObra() {
   var total = emp + ccTotal + posObra + terreno + custoCons;
 
   document.getElementById('obraKpi').innerHTML =
+    // LINHA 1: Faturamento
+    '<div style="grid-column:1/-1;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);padding:4px 0 8px;">Faturamento</div>'+
+    '<div class="kpi" style="--kc:#4caf82">'+
+      '<div class="kpi-label">Faturamento Total</div>'+
+      '<div class="kpi-value" style="font-size:18px;color:var(--text3)">—</div>'+
+      '<div class="kpi-sub">a definir</div>'+
+    '</div>'+
     '<div class="kpi" style="--kc:#4caf82">'+
       '<div class="kpi-label">Faturamento</div>'+
-      '<div class="kpi-value" style="font-size:16px;color:var(--text3)">A definir</div>'+
-      '<div class="kpi-sub">sera adicionado depois</div>'+
-    '</div>'+
-    '<div class="kpi" style="--kc:#5b9cf6">'+
-      '<div class="kpi-label">Empreendimento</div>'+
-      '<div class="kpi-value">'+fBRL(emp)+'</div>'+
-      '<div class="kpi-sub">'+
-        'Caixa: '+fBRL(empCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(empPermuta)+
-      '</div>'+
-    '</div>'+
-    '<div class="kpi" style="--kc:#a78bfa">'+
-      '<div class="kpi-label">Custo Construtivo</div>'+
-      '<div class="kpi-value">'+fBRL(ccTotal)+'</div>'+
-      '<div class="kpi-sub">'+
-        'Caixa: '+fBRL(ccCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(ccPermuta)+
-      '</div>'+
-    '</div>'+
-    '<div class="kpi" style="--kc:#e8a045">'+
-      '<div class="kpi-label">Pos Obra</div>'+
-      '<div class="kpi-value">'+fBRL(posObra)+'</div>'+
-      '<div class="kpi-sub">'+
-        'Caixa: '+fBRL(posCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(posPermuta)+
-      '</div>'+
-    '</div>'+
-    '<div class="kpi" style="--kc:#e05c5c">'+
-      '<div class="kpi-label">Terreno</div>'+
-      '<div class="kpi-value">'+fBRL(terreno)+'</div>'+
-      '<div class="kpi-sub">'+
-        'Caixa: '+fBRL(terCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(terPermuta)+
-      '</div>'+
+      '<div class="kpi-value" style="font-size:18px;color:var(--text3)">—</div>'+
+      '<div class="kpi-sub">a definir</div>'+
     '</div>'+
     '<div class="kpi" style="--kc:#4caf82">'+
-      '<div class="kpi-label">Custo da Construcao</div>'+
-      '<div class="kpi-value">'+fBRL(custoCons)+'</div>'+
-      '<div class="kpi-sub">'+
-        'Caixa: '+fBRL(custoCCaixa)+' &nbsp;|&nbsp; Permuta: '+fBRL(custoCPermuta)+
-      '</div>'+
+      '<div class="kpi-label">A Receber</div>'+
+      '<div class="kpi-value" style="font-size:18px;color:var(--text3)">—</div>'+
+      '<div class="kpi-sub">a definir</div>'+
     '</div>'+
+    // LINHA 2: Apropriacoes
+    '<div style="grid-column:1/-1;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);padding:12px 0 8px;">Apropriacoes</div>'+
     '<div class="kpi" style="--kc:var(--green)">'+
       '<div class="kpi-label">Total Apropriacoes</div>'+
       '<div class="kpi-value">'+fBRL(total)+'</div>'+
       '<div class="kpi-sub">'+data.length+' lancamentos</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#e05c5c">'+
+      '<div class="kpi-label">Terreno</div>'+
+      '<div class="kpi-value">'+fBRL(terreno)+'</div>'+
+      '<div class="kpi-sub">Caixa: '+fBRL(terCaixa)+' | Permuta: '+fBRL(terPermuta)+'</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#5b9cf6">'+
+      '<div class="kpi-label">Empreendimento</div>'+
+      '<div class="kpi-value">'+fBRL(emp)+'</div>'+
+      '<div class="kpi-sub">Caixa: '+fBRL(empCaixa)+' | Permuta: '+fBRL(empPermuta)+'</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#a78bfa">'+
+      '<div class="kpi-label">Custo Construtivo</div>'+
+      '<div class="kpi-value">'+fBRL(ccTotal)+'</div>'+
+      '<div class="kpi-sub">Caixa: '+fBRL(ccCaixa)+' | Permuta: '+fBRL(ccPermuta)+'</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#4caf82">'+
+      '<div class="kpi-label">Custo da Construcao</div>'+
+      '<div class="kpi-value">'+fBRL(custoCons)+'</div>'+
+      '<div class="kpi-sub">Caixa: '+fBRL(custoCCaixa)+' | Permuta: '+fBRL(custoCPermuta)+'</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#e8a045">'+
+      '<div class="kpi-label">Pos Obra</div>'+
+      '<div class="kpi-value">'+fBRL(posObra)+'</div>'+
+      '<div class="kpi-sub">Caixa: '+fBRL(posCaixa)+' | Permuta: '+fBRL(posPermuta)+'</div>'+
     '</div>';
 
   // Grafico mensal
