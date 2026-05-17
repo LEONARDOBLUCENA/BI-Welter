@@ -365,22 +365,32 @@ function salvar(){
     clearTimeout(ind._t); ind._t=setTimeout(function(){ind.style.display='none';},3000);
   }
 }
+function fixDates(arr, isAR){
+  var hoje=new Date(); hoje.setHours(0,0,0,0); var hojeMs=hoje.getTime();
+  arr.forEach(function(r){
+    if(!r.ano && r.dtBaixa){
+      var dp=parseDt(r.dtBaixa);
+      if(dp){ r.ano=dp.getFullYear(); r.mes=dp.getMonth()+1; r.dtMs=dp.getTime(); }
+    }
+    if(isAR){ r.inadimplente = r.dtMs ? r.dtMs < hojeMs : false; }
+  });
+}
+function fixDadosDates(arr){
+  arr.forEach(function(r){
+    if(!r.ano && r.data){
+      var dp=parseDt(r.data);
+      if(dp){ r.ano=dp.getFullYear(); r.mes=dp.getMonth()+1; }
+    }
+  });
+}
 function carregar(){
-  try{ var d=localStorage.getItem('bi_d'); if(d){ dados=JSON.parse(d); console.log('Dados carregados:',dados.length); } }
-  catch(e){ console.error('Erro ao carregar dados:',e); dados=[]; }
+  try{ var d=localStorage.getItem('bi_d'); if(d){ dados=JSON.parse(d); fixDadosDates(dados); } }
+  catch(e){ dados=[]; }
   try{ var p=localStorage.getItem('bi_dp'); if(p) depara=JSON.parse(p); }
   catch(e){ depara=[]; }
-  try{ var r=localStorage.getItem('bi_rec'); if(r) recebidas=JSON.parse(r); }
+  try{ var r=localStorage.getItem('bi_rec'); if(r){ recebidas=JSON.parse(r); fixDates(recebidas,false); } }
   catch(e){ recebidas=[]; }
-  try{
-    var a=localStorage.getItem('bi_ar');
-    if(a){
-      areceber=JSON.parse(a);
-      // re-evaluate inadimplente since Date objects don't survive JSON
-      var hoje2=new Date(); hoje2.setHours(0,0,0,0); var hojeMs=hoje2.getTime();
-      areceber.forEach(function(r){ r.inadimplente = r.dtMs ? r.dtMs < hojeMs : false; });
-    }
-  }
+  try{ var a=localStorage.getItem('bi_ar'); if(a){ areceber=JSON.parse(a); fixDates(areceber,true); } }
   catch(e){ areceber=[]; }
 }
 function salvarSessao(){
@@ -661,6 +671,7 @@ function processarRecebidas(){
   var rows=parsePaste(txt);
   if(!rows||!rows.length){showMsg('recMsg','Dados insuficientes.','warn');return;}
   var novos=normContas(rows,false);
+  fixDates(novos,false);
   recebidas=recebidas.concat(novos); salvar();
   document.getElementById('pasteRec').value='';
   renderRecebidas(); renderObra();
@@ -687,6 +698,7 @@ function processarAReceber(){
   var rows=parsePaste(txt);
   if(!rows||!rows.length){showMsg('arMsg','Dados insuficientes.','warn');return;}
   var novos=normContas(rows,true);
+  fixDates(novos,true);
   areceber=areceber.concat(novos); salvar();
   document.getElementById('pasteAR').value='';
   renderAReceber(); renderObra();
