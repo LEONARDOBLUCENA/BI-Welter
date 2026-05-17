@@ -301,10 +301,6 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="fg"><label>Mes</label>
         <select id="obraMes" onchange="renderObra()">
           <option value="all">Todos</option>
-          <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option>
-          <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-          <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-          <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
         </select>
       </div>
       <div class="fg"><label>Obra</label><select id="obraObra" onchange="renderObra()"><option value="all">Todas</option></select></div>
@@ -824,7 +820,18 @@ function populateObraFilters(){
   var curObra=document.getElementById('obraObra').value;
   var curUC=document.getElementById('obraUC').value;
   var curConta=document.getElementById('obraConta').value;
-  popSel('obraAno',anos(dadosOK),'Todos');
+  // Include anos and meses from all sources
+  var anosSet=new Set(); var mesesSet=new Set();
+  dadosOK.forEach(function(r){if(r.ano) anosSet.add(r.ano); if(r.mes) mesesSet.add(r.mes);});
+  recebidas.forEach(function(r){if(r.ano) anosSet.add(r.ano); if(r.mes) mesesSet.add(r.mes);});
+  areceber.forEach(function(r){if(r.ano) anosSet.add(r.ano); if(r.mes) mesesSet.add(r.mes);});
+  var todosAnos=[...anosSet].sort(function(a,b){return b-a;});
+  popSel('obraAno',todosAnos,'Todos');
+  var MNAMES=['','Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var curMes=document.getElementById('obraMes').value;
+  var todosMeses=[...mesesSet].sort(function(a,b){return a-b;});
+  document.getElementById('obraMes').innerHTML='<option value="all">Todos</option>'+todosMeses.map(function(m){return '<option value="'+m+'">'+MNAMES[m]+'</option>';}).join('');
+  if([].slice.call(document.getElementById('obraMes').options).some(function(o){return o.value===curMes;})) document.getElementById('obraMes').value=curMes;
   popSel('obraObra',unicos(dadosOK,'obra'),'Todas');
   var ucsNorm=[...new Set(unicos(dadosOK,'uc').map(normUC))].filter(Boolean).sort();
   popSel('obraUC',ucsNorm,'Todas');
