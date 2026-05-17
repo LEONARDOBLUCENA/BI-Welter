@@ -688,7 +688,6 @@ function getAdmData() {
   var conta = document.getElementById('admConta').value;
   return dados.filter(function(r){
     if (r.conta==='REAPROPFIN') return false;
-    if (r.codDoc==='ADT') return false;
     if (ano!=='all'   && String(r.ano)!==ano)  return false;
     if (mes!=='all'   && String(r.mes)!==mes)  return false;
     if (cc!=='all'    && r.cc!==cc)            return false;
@@ -786,7 +785,6 @@ function getObraData() {
   var conta = document.getElementById('obraConta').value;
   return dados.filter(function(r){
     if (!obraPermitida(r.obra)) return false;
-    if (r.codDoc==='ADT') return false;
     if (ano!=='all'   && String(r.ano)!==ano)  return false;
     if (mes!=='all'   && String(r.mes)!==mes)  return false;
     if (obra!=='all'  && r.obra!==obra)         return false;
