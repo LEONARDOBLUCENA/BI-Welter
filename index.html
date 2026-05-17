@@ -100,6 +100,7 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
   <div class="ni" id="tab1" onclick="goTab(1)"><span class="ni-icon">&#128257;</span><span class="ni-label">De/Para Plano Fin.</span></div>
   <div class="ni" id="tab2" onclick="goTab(2)"><span class="ni-icon">&#9989;</span><span class="ni-label">Contas Recebidas</span></div>
   <div class="ni" id="tab3" onclick="goTab(3)"><span class="ni-icon">&#128197;</span><span class="ni-label">Contas a Receber</span></div>
+  <div class="ni" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#128196;</span><span class="ni-label">Orcamento de Obra</span></div>
   <div class="nd"></div>
   <div class="ns">Dashboards</div>
   <div class="ni" id="tab4" onclick="goTab(4)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Adm Fin.</span></div>
@@ -305,7 +306,6 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
       <div class="fg"><label>Obra</label><select id="obraObra" onchange="renderObra()"><option value="all">Todas</option></select></div>
       <div class="fg"><label>Unid. Construtiva</label><select id="obraUC" onchange="renderObra()"><option value="all">Todas</option></select></div>
-      <div class="fg"><label>Conta Corrente</label><select id="obraConta" onchange="renderObra()"><option value="all">Todas</option></select></div>
       <button class="btn btn-sm" onclick="clearObra()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div class="kpi-row" id="obraKpi"></div>
@@ -314,23 +314,72 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
       <div style="position:relative;width:100%;height:280px;"><canvas id="obraChart"></canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Detalhamento por Obra</div>
+      <div class="ct">Orcado x Realizado por Conta Totalizadora</div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Obra</th><th>Unid. Construtiva</th><th style="text-align:right">Valor Pago</th><th style="text-align:right">Lanc.</th></tr></thead>
-          <tbody id="tbObra"></tbody>
+          <thead><tr>
+            <th>Conta Totalizadora</th>
+            <th>Cod Item Orc.</th>
+            <th>Descricao</th>
+            <th style="text-align:right">Orcado</th>
+            <th style="text-align:right">Realizado</th>
+            <th style="text-align:right">Saldo</th>
+            <th style="text-align:right">%</th>
+          </tr></thead>
+          <tbody id="tbComparativo"></tbody>
+          <tfoot id="tfComparativo"></tfoot>
         </table>
       </div>
     </div>
+
   </div>
 </div>
+
+<!-- PAGE 6: ORCAMENTO -->
+    <div class="page" id="page6">
+      <div class="st">Orcamento de Obra</div>
+      <div class="sd">Cadastre o orcamento por item. Os dados serao cruzados com o realizado no Dashboard de Obra.</div>
+      <div class="card">
+        <div class="ct">Novo item</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="fg2"><label>Obra</label><input type="text" id="orcObra" placeholder="Nome da obra"></div>
+          <div class="fg2"><label>Cod Item Orc.</label><input type="text" id="orcCod" placeholder="Ex: 1.1.01"></div>
+          <div class="fg2"><label>Descricao Conta Totalizadora</label><input type="text" id="orcDescTot" placeholder="Ex: Fundacoes"></div>
+          <div class="fg2"><label>Valor Orcado</label><input type="text" id="orcValor" placeholder="Ex: 150000"></div>
+          <button class="btn btn-accent" onclick="addOrc()" style="align-self:flex-end;">+ Adicionar</button>
+        </div>
+        <div id="orcMsg" class="msg"></div>
+      </div>
+      <div class="card">
+        <div class="ct">
+          <span>Itens <span id="orcCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="exportOrc()">&#8595; Exportar</button>
+            <button class="btn btn-sm" onclick="document.getElementById('importOrcInput').click()">&#8593; Importar Excel</button>
+            <input type="file" id="importOrcInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="importOrc(this)">
+            <button class="btn btn-sm btn-danger" onclick="limparOrc()">&#10005; Limpar</button>
+          </div>
+        </div>
+        <div class="fbar">
+          <label>Obra</label><select id="fOrcObra" onchange="renderOrc()"><option value="all">Todas</option></select>
+        </div>
+        <div id="orcEmpty" class="nodata" style="display:none;"><p>Nenhum item cadastrado.</p></div>
+        <div class="tbl-wrap" id="orcWrap" style="display:none;">
+          <table>
+            <thead><tr><th>Obra</th><th>Cod Item Orc.</th><th>Desc Conta Totalizadora</th><th style="text-align:right">Valor Orcado</th><th></th></tr></thead>
+            <tbody id="tbOrc"></tbody>
+          </table>
+        </div>
+        <div id="orcFooter" style="padding:8px 0 0;font-size:11px;color:var(--text3);"></div>
+      </div>
+    </div>
 
 </main>
 </div>
 
 <script>
-var NTABS = 6;
-var dados = [], depara = [], recebidas = [], areceber = [];
+var NTABS = 7;
+var dados = [], depara = [], recebidas = [], areceber = [], orcamento = [];
 var admCI = null, obraCI = null;
 var MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 var OBRAS_OK = ["l'adret","monte sollaro","lavi","you","le monde"];
@@ -347,6 +396,7 @@ function salvar(){
   try{ localStorage.setItem('bi_rec', JSON.stringify(recebidas)); }
   catch(e){ console.error('Erro ao salvar recebidas:',e); ok=false; }
   try{ localStorage.setItem('bi_ar', JSON.stringify(areceber)); }
+  try{ localStorage.setItem('bi_orc', JSON.stringify(orcamento)); }
   catch(e){ console.error('Erro ao salvar areceber:',e); ok=false; }
   var ind=document.getElementById('saveIndicator');
   if(ind){
@@ -392,10 +442,12 @@ function carregar(){
   catch(e){ recebidas=[]; }
   try{ var a=localStorage.getItem('bi_ar'); if(a){ areceber=JSON.parse(a); fixDates(areceber,true); } }
   catch(e){ areceber=[]; }
+  try{ var o=localStorage.getItem('bi_orc'); if(o) orcamento=JSON.parse(o); }
+  catch(e){ orcamento=[]; }
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length){ alert('Nenhum dado para salvar.'); return; }
-  var blob=new Blob([JSON.stringify({v:3,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:4,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento})],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='bi_sessao_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
 }
@@ -409,6 +461,7 @@ function carregarSessao(input){
       if((dados.length||recebidas.length)&&!confirm('Substituir dados existentes?')) return;
       dados=s.dados||[]; depara=s.depara||[];
       recebidas=s.recebidas||[]; areceber=s.areceber||[];
+      orcamento=s.orcamento||[];
       salvar(); init();
       alert(dados.length+' registros carregados.');
     }catch(ex){alert('Erro ao ler arquivo.');}
@@ -424,6 +477,7 @@ function goTab(i){
   }
   if(i===4) renderAdm();
   if(i===5) renderObra();
+  if(i===6) renderOrc();
 }
 
 // ---- UTILS ----
@@ -800,14 +854,12 @@ function getObra(){
   var mes=document.getElementById('obraMes').value;
   var obra=document.getElementById('obraObra').value;
   var uc=document.getElementById('obraUC').value;
-  var conta=document.getElementById('obraConta').value;
   return dados.filter(function(r){
     if(!obraOK(r.obra)) return false;
     if(ano!=='all'&&String(r.ano)!==ano) return false;
     if(mes!=='all'&&String(r.mes)!==mes) return false;
     if(obra!=='all'&&r.obra!==obra) return false;
     if(uc!=='all'&&normUC(r.uc)!==uc) return false;
-    if(conta!=='all'&&r.conta!==conta) return false;
     return true;
   });
 }
@@ -816,7 +868,6 @@ function clearObra(){
   document.getElementById('obraMes').value='all';
   document.getElementById('obraObra').value='all';
   document.getElementById('obraUC').value='all';
-  document.getElementById('obraConta').value='all';
   renderObra();
 }
 function sum(arr,field,ucFilter,contaFilter){
@@ -831,7 +882,6 @@ function populateObraFilters(){
   var curAno=document.getElementById('obraAno').value;
   var curObra=document.getElementById('obraObra').value;
   var curUC=document.getElementById('obraUC').value;
-  var curConta=document.getElementById('obraConta').value;
   // Include anos and meses from all sources
   var anosSet=new Set(); var mesesSet=new Set();
   dadosOK.forEach(function(r){if(r.ano) anosSet.add(r.ano); if(r.mes) mesesSet.add(r.mes);});
@@ -847,12 +897,10 @@ function populateObraFilters(){
   popSel('obraObra',unicos(dadosOK,'obra'),'Todas');
   var ucsNorm=[...new Set(unicos(dadosOK,'uc').map(normUC))].filter(Boolean).sort();
   popSel('obraUC',ucsNorm,'Todas');
-  popSel('obraConta',unicos(dadosOK,'conta'),'Todas');
   // restore selections
   if([].slice.call(document.getElementById('obraAno').options).some(function(o){return o.value===curAno;})) document.getElementById('obraAno').value=curAno;
   if([].slice.call(document.getElementById('obraObra').options).some(function(o){return o.value===curObra;})) document.getElementById('obraObra').value=curObra;
   if([].slice.call(document.getElementById('obraUC').options).some(function(o){return o.value===curUC;})) document.getElementById('obraUC').value=curUC;
-  if([].slice.call(document.getElementById('obraConta').options).some(function(o){return o.value===curConta;})) document.getElementById('obraConta').value=curConta;
 }
 function renderObra(){
   if(!dados.length){document.getElementById('obraEmpty').style.display='block';document.getElementById('obraContent').style.display='none';return;}
@@ -915,9 +963,152 @@ function renderObra(){
   var map={};
   data.forEach(function(r){var k=r.obra+'||'+normUC(r.uc); if(!map[k]) map[k]={obra:r.obra,uc:normUC(r.uc),val:0,cnt:0}; map[k].val+=r.valObra; map[k].cnt++;});
   var list=Object.values(map).sort(function(a,b){return b.val-a.val;});
-  document.getElementById('tbObra').innerHTML=list.map(function(r){
-    return '<tr><td style="font-weight:500">'+r.obra+'</td><td style="color:var(--text2)">'+r.uc+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.val)+'</td><td class="mono" style="text-align:right;color:var(--text2)">'+r.cnt+'</td></tr>';
-  }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px;">Nenhum dado.</td></tr>';
+  // Comparativo
+  renderComparativo(data, obraF);
+}
+
+
+// ---- PAGE 6: ORCAMENTO ----
+function addOrc(){
+  var obra=document.getElementById('orcObra').value.trim();
+  var cod=document.getElementById('orcCod').value.trim();
+  var descTot=document.getElementById('orcDescTot').value.trim();
+  var valor=parseVal(document.getElementById('orcValor').value.trim());
+  if(!obra){showMsg('orcMsg','Informe a obra.','warn');return;}
+  if(!cod){showMsg('orcMsg','Informe o codigo.','warn');return;}
+  if(!valor){showMsg('orcMsg','Informe o valor.','warn');return;}
+  orcamento.push({obra:obra,cod:cod,descTot:descTot,valor:valor});
+  orcamento.sort(function(a,b){return a.cod.localeCompare(b.cod);});
+  salvar();
+  document.getElementById('orcObra').value='';
+  document.getElementById('orcCod').value='';
+  document.getElementById('orcDescTot').value='';
+  document.getElementById('orcValor').value='';
+  showMsg('orcMsg','&#10003; Item adicionado!','ok');
+  renderOrc();
+}
+function deleteOrc(i){orcamento.splice(i,1);salvar();renderOrc();}
+function renderOrc(){
+  var obras=['all'].concat([...new Set(orcamento.map(function(r){return r.obra;}).filter(Boolean))].sort());
+  var sel=document.getElementById('fOrcObra'); var cur=sel.value;
+  sel.innerHTML=obras.map(function(o){return '<option value="'+o+'">'+(o==='all'?'Todas':o)+'</option>';}).join('');
+  if([].slice.call(sel.options).some(function(o){return o.value===cur;})) sel.value=cur;
+  var fObra=sel.value;
+  var data=orcamento.filter(function(r){return fObra==='all'||r.obra===fObra;});
+  document.getElementById('orcCount').textContent='('+orcamento.length+' total)';
+  document.getElementById('orcEmpty').style.display=orcamento.length?'none':'block';
+  document.getElementById('orcWrap').style.display=orcamento.length?'block':'none';
+  document.getElementById('orcFooter').textContent=data.length+' itens filtrados';
+  document.getElementById('tbOrc').innerHTML=data.map(function(r,i){
+    var ri=orcamento.indexOf(r);
+    return '<tr><td>'+r.obra+'</td><td class="mono" style="font-size:11px">'+r.cod+'</td><td style="color:var(--text2)">'+r.descTot+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valor)+'</td><td><button class="btn btn-sm btn-danger" onclick="deleteOrc('+ri+')">&#10005;</button></td></tr>';
+  }).join('');
+}
+function exportOrc(){
+  if(!orcamento.length){alert('Nenhum item.');return;}
+  var ws=XLSX.utils.aoa_to_sheet([['Obra','Cod Item Orc','Desc Conta Totalizadora','Valor Orcado']].concat(orcamento.map(function(r){return[r.obra,r.cod,r.descTot,r.valor];})));
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Orcamento');
+  XLSX.writeFile(wb,'orcamento.xlsx');
+}
+function limparOrc(){
+  if(!confirm('Apagar todos os itens do orcamento?')) return;
+  orcamento=[]; salvar(); renderOrc();
+}
+function importOrc(input){
+  var f=input.files[0]; if(!f) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'array'});
+      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      var added=0;
+      rows.forEach(function(r){
+        var obra=String(r['Obra']||r['obra']||'').trim();
+        var cod=String(r['Cod Item Orc']||r['Codigo']||r['cod']||'').trim();
+        var descTot=String(r['Desc Conta Totalizadora']||r['Descricao Conta Totalizadora']||r['descTot']||'').trim();
+        var valor=parseVal(r['Valor Orcado']||r['Valor']||r['valor']||0);
+        if(!obra||!cod) return;
+        orcamento.push({obra:obra,cod:cod,descTot:descTot,valor:valor}); added++;
+      });
+      orcamento.sort(function(a,b){return a.cod.localeCompare(b.cod);});
+      salvar(); renderOrc();
+      alert(added+' item(s) importado(s).');
+    }catch(ex){alert('Erro ao ler arquivo.');}
+  };
+  reader.readAsArrayBuffer(f); input.value='';
+}
+
+// Comparativo Orcado x Realizado
+function renderComparativo(data, obraFiltro){
+  var tb=document.getElementById('tbComparativo');
+  var tf=document.getElementById('tfComparativo');
+  if(!tb) return;
+
+  var orcFilt=orcamento.filter(function(r){return obraFiltro==='all'||r.obra===obraFiltro;});
+  if(!orcFilt.length){
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px;">Nenhum item de orcamento cadastrado para esta obra.</td></tr>';
+    tf.innerHTML=''; return;
+  }
+
+  // Build realizado map by codOrc
+  var realMap={};
+  data.forEach(function(r){
+    if(!r.codOrc) return;
+    realMap[r.codOrc]=(realMap[r.codOrc]||0)+r.valObra;
+  });
+
+  // Group by descTot
+  var totMap={};
+  orcFilt.forEach(function(r){
+    var tot=r.descTot||'Sem totalizadora';
+    if(!totMap[tot]) totMap[tot]={descTot:tot,items:[],totOrc:0,totReal:0};
+    var real=realMap[r.cod]||0;
+    totMap[tot].items.push({cod:r.cod,obra:r.obra,orcado:r.valor,realizado:real});
+    totMap[tot].totOrc+=r.valor;
+    totMap[tot].totReal+=real;
+  });
+
+  var html='';
+  var grandOrc=0, grandReal=0;
+
+  Object.values(totMap).forEach(function(grupo){
+    // Totalizadora header row
+    var saldo=grupo.totOrc-grupo.totReal;
+    var pct=grupo.totOrc>0?((grupo.totReal/grupo.totOrc)*100).toFixed(1):'0.0';
+    html+='<tr style="background:rgba(255,255,255,0.04);">'+
+      '<td colspan="3" style="font-weight:600;font-size:12px">'+grupo.descTot+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:600">'+fBRL(grupo.totOrc)+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:600">'+fBRL(grupo.totReal)+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:600;color:'+(saldo>=0?'var(--green)':'var(--red)')+'">'+fBRL(saldo)+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:600">'+pct+'%</td>'+
+    '</tr>';
+    // Detail rows
+    grupo.items.forEach(function(item){
+      var s=item.orcado-item.realizado;
+      var p=item.orcado>0?((item.realizado/item.orcado)*100).toFixed(1):'0.0';
+      html+='<tr>'+
+        '<td style="color:var(--text3);font-size:11px;padding-left:24px">'+item.obra+'</td>'+
+        '<td class="mono" style="font-size:11px;color:var(--text2)">'+item.cod+'</td>'+
+        '<td></td>'+
+        '<td class="mono" style="text-align:right">'+fBRL(item.orcado)+'</td>'+
+        '<td class="mono" style="text-align:right">'+fBRL(item.realizado)+'</td>'+
+        '<td class="mono" style="text-align:right;color:'+(s>=0?'var(--green)':'var(--red)')+'">'+fBRL(s)+'</td>'+
+        '<td class="mono" style="text-align:right;color:var(--text2)">'+p+'%</td>'+
+      '</tr>';
+    });
+    grandOrc+=grupo.totOrc; grandReal+=grupo.totReal;
+  });
+
+  tb.innerHTML=html;
+  var grandSaldo=grandOrc-grandReal;
+  var grandPct=grandOrc>0?((grandReal/grandOrc)*100).toFixed(1):'0.0';
+  tf.innerHTML='<tr style="border-top:2px solid var(--border2);">'+
+    '<td colspan="3" style="font-weight:600;padding:10px 12px;">TOTAL GERAL</td>'+
+    '<td class="mono" style="text-align:right;font-weight:600;padding:10px 12px;">'+fBRL(grandOrc)+'</td>'+
+    '<td class="mono" style="text-align:right;font-weight:600;padding:10px 12px;">'+fBRL(grandReal)+'</td>'+
+    '<td class="mono" style="text-align:right;font-weight:600;padding:10px 12px;color:'+(grandSaldo>=0?'var(--green)':'var(--red)')+'">'+fBRL(grandSaldo)+'</td>'+
+    '<td class="mono" style="text-align:right;font-weight:600;padding:10px 12px;">'+grandPct+'%</td>'+
+  '</tr>';
 }
 
 // ---- INIT ----
@@ -926,7 +1117,7 @@ function init(){
   popSel('fAno',anos(dados),'Todos');
   populateObraFilters();
   renderDados(); renderDP(); renderRecebidas(); renderAReceber();
-  renderAdm(); renderObra();
+  renderAdm(); renderObra(); renderOrc();
 }
 carregar(); init();
 </script>
