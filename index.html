@@ -96,6 +96,8 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
   <div class="nav-section">Dados</div>
   <div class="nav-item active" id="tab0" onclick="goTab(0)"><span class="nav-icon">&#128203;</span><span class="nav-label">Contas Pagas</span></div>
   <div class="nav-item" id="tab1" onclick="goTab(1)"><span class="nav-icon">&#128257;</span><span class="nav-label">De/Para Plano Fin.</span></div>
+  <div class="nav-item" id="tab4" onclick="goTab(4)"><span class="nav-icon">&#9989;</span><span class="nav-label">Contas Recebidas</span></div>
+  <div class="nav-item" id="tab5" onclick="goTab(5)"><span class="nav-icon">&#128197;</span><span class="nav-label">Contas a Receber</span></div>
   <div class="nav-divider"></div>
   <div class="nav-section">Dashboards</div>
   <div class="nav-item" id="tab2" onclick="goTab(2)"><span class="nav-icon">&#128200;</span><span class="nav-label">Dashboard Adm Fin.</span></div>
@@ -269,6 +271,67 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
   </div>
 </div>
 
+
+    <!-- PAGE 4: CONTAS RECEBIDAS -->
+    <div class="page" id="page4">
+      <div class="sec-title">Contas Recebidas</div>
+      <div class="sec-desc">Cole os dados do Excel. Colunas usadas: Obra, Dt. Baixa, Liquido.</div>
+      <div class="card">
+        <div class="card-title">
+          <span>Colar dados do Excel</span>
+          <button class="btn btn-accent btn-sm" onclick="processarRecebidas()">&#10003; Processar e adicionar</button>
+        </div>
+        <textarea id="pasteRecebidas" rows="5" placeholder="Copie as celulas do Excel incluindo o cabecalho e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;"></textarea>
+        <div id="msgRecebidas" class="msg"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Registros <span id="countRecebidas" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-danger" onclick="limparRecebidas()">&#10005; Limpar</button>
+          </div>
+        </div>
+        <div id="emptyRecebidas" class="no-data" style="padding:32px 0;display:none;"><div class="no-data-icon">&#9989;</div><p>Nenhum dado. Cole acima.</p></div>
+        <div class="tbl-wrap" id="wrapRecebidas" style="display:none;">
+          <table>
+            <thead><tr><th>Obra</th><th>Dt. Baixa</th><th style="text-align:right">Liquido</th></tr></thead>
+            <tbody id="tbRecebidas"></tbody>
+          </table>
+        </div>
+        <div id="footerRecebidas" style="padding:8px 0 0;font-size:11px;color:var(--text3);"></div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: CONTAS A RECEBER -->
+    <div class="page" id="page5">
+      <div class="sec-title">Contas a Receber</div>
+      <div class="sec-desc">Cole os dados do Excel. Titulos com Dt. Baixa anterior a hoje sao considerados inadimplentes.</div>
+      <div class="card">
+        <div class="card-title">
+          <span>Colar dados do Excel</span>
+          <button class="btn btn-accent btn-sm" onclick="processarAReceber()">&#10003; Processar e adicionar</button>
+        </div>
+        <textarea id="pasteAReceber" rows="5" placeholder="Copie as celulas do Excel incluindo o cabecalho e cole aqui com Ctrl+V..." style="font-family:var(--mono);font-size:12px;resize:vertical;"></textarea>
+        <div id="msgAReceber" class="msg"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Registros <span id="countAReceber" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-danger" onclick="limparAReceber()">&#10005; Limpar</button>
+          </div>
+        </div>
+        <div id="emptyAReceber" class="no-data" style="padding:32px 0;display:none;"><div class="no-data-icon">&#128197;</div><p>Nenhum dado. Cole acima.</p></div>
+        <div class="tbl-wrap" id="wrapAReceber" style="display:none;">
+          <table>
+            <thead><tr><th>Obra</th><th>Dt. Baixa</th><th>Status</th><th style="text-align:right">Liquido</th></tr></thead>
+            <tbody id="tbAReceber"></tbody>
+          </table>
+        </div>
+        <div id="footerAReceber" style="padding:8px 0 0;font-size:11px;color:var(--text3);"></div>
+      </div>
+    </div>
+
 </main>
 </div>
 
@@ -277,6 +340,8 @@ tbody tr:hover td{background:rgba(255,255,255,0.02);}
 // STATE
 // ============================================================
 var dados   = [];
+var contasRecebidas = [];
+var contasAReceber  = [];
 var depara  = [];
 var admChartInst  = null;
 var obraChartInst = null;
@@ -296,6 +361,8 @@ function salvarEstado() {
   try {
     localStorage.setItem('bi_dados',  JSON.stringify(dados));
     localStorage.setItem('bi_depara', JSON.stringify(depara));
+    localStorage.setItem('bi_recebidas', JSON.stringify(contasRecebidas));
+    localStorage.setItem('bi_areceber',  JSON.stringify(contasAReceber));
   } catch(e) {
     try {
       localStorage.removeItem('bi_dados');
@@ -310,13 +377,17 @@ function carregarEstado() {
   try {
     var d = localStorage.getItem('bi_dados');
     var p = localStorage.getItem('bi_depara');
-    if (d) dados  = JSON.parse(d);
-    if (p) depara = JSON.parse(p);
+    var rc = localStorage.getItem('bi_recebidas');
+    var ar = localStorage.getItem('bi_areceber');
+    if (d)  dados            = JSON.parse(d);
+    if (p)  depara           = JSON.parse(p);
+    if (rc) contasRecebidas  = JSON.parse(rc);
+    if (ar) contasAReceber   = JSON.parse(ar);
   } catch(e) { dados=[]; depara=[]; }
 }
 function salvarSessao() {
   if (!dados.length && !depara.length) { alert('Nenhum dado para salvar.'); return; }
-  var blob = new Blob([JSON.stringify({v:1,dados:dados,depara:depara})], {type:'application/json'});
+  var blob = new Blob([JSON.stringify({v:2,dados:dados,depara:depara,contasRecebidas:contasRecebidas,contasAReceber:contasAReceber})], {type:'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'bi_sessao_' + new Date().toISOString().slice(0,10) + '.json';
@@ -330,8 +401,10 @@ function carregarSessao(input) {
       var s = JSON.parse(e.target.result);
       if (!s.dados) { alert('Arquivo invalido.'); return; }
       if (dados.length && !confirm('Substituir dados existentes?')) return;
-      dados  = s.dados  || [];
-      depara = s.depara || [];
+      dados           = s.dados           || [];
+      depara          = s.depara          || [];
+      contasRecebidas = s.contasRecebidas || [];
+      contasAReceber  = s.contasAReceber  || [];
       salvarEstado();
       atualizarTudo();
       alert(dados.length + ' registros carregados.');
@@ -350,6 +423,8 @@ function goTab(i) {
   }
   if (i===2) renderAdm();
   if (i===3) renderObra();
+  if (i===4) renderRecebidas();
+  if (i===5) renderAReceber();
 }
 
 // ============================================================
@@ -840,23 +915,47 @@ function renderObra() {
   var custoCCaixa  = custoCons - custoCPermuta;
   var total = emp + ccTotal + posObra + terreno + custoCons;
 
+  // Calculos Faturamento
+  var obraFiltro3 = document.getElementById('obraObra').value;
+  var recRecebidas = contasRecebidas.filter(function(r){
+    if (obraFiltro3!=='all' && r.obra!==obraFiltro3) return false;
+    return true;
+  });
+  var recAReceber = contasAReceber.filter(function(r){
+    if (obraFiltro3!=='all' && r.obra!==obraFiltro3) return false;
+    return !r.inadimplente;
+  });
+  var recInadimplencia = contasAReceber.filter(function(r){
+    if (obraFiltro3!=='all' && r.obra!==obraFiltro3) return false;
+    return r.inadimplente;
+  });
+  var totalFaturamento    = recRecebidas.reduce(function(s,r){return s+r.liquido;},0);
+  var totalAReceber       = recAReceber.reduce(function(s,r){return s+r.liquido;},0);
+  var totalInadimplencia  = recInadimplencia.reduce(function(s,r){return s+r.liquido;},0);
+  var totalFatTotal       = totalFaturamento + totalAReceber + totalInadimplencia;
+
   document.getElementById('obraKpi').innerHTML =
     // LINHA 1: Faturamento
     '<div style="grid-column:1/-1;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);padding:4px 0 8px;">Faturamento</div>'+
     '<div class="kpi" style="--kc:#4caf82">'+
       '<div class="kpi-label">Faturamento Total</div>'+
-      '<div class="kpi-value" style="font-size:18px;color:var(--text3)">—</div>'+
-      '<div class="kpi-sub">a definir</div>'+
+      '<div class="kpi-value">'+fBRL(totalFatTotal)+'</div>'+
+      '<div class="kpi-sub">Rec + A Rec + Inadimp</div>'+
     '</div>'+
     '<div class="kpi" style="--kc:#4caf82">'+
       '<div class="kpi-label">Faturamento</div>'+
-      '<div class="kpi-value" style="font-size:18px;color:var(--text3)">—</div>'+
-      '<div class="kpi-sub">a definir</div>'+
+      '<div class="kpi-value">'+fBRL(totalFaturamento)+'</div>'+
+      '<div class="kpi-sub">'+recRecebidas.length+' titulos</div>'+
     '</div>'+
     '<div class="kpi" style="--kc:#4caf82">'+
       '<div class="kpi-label">A Receber</div>'+
-      '<div class="kpi-value" style="font-size:18px;color:var(--text3)">—</div>'+
-      '<div class="kpi-sub">a definir</div>'+
+      '<div class="kpi-value">'+fBRL(totalAReceber)+'</div>'+
+      '<div class="kpi-sub">'+recAReceber.length+' titulos</div>'+
+    '</div>'+
+    '<div class="kpi" style="--kc:#e05c5c">'+
+      '<div class="kpi-label">Inadimplencia</div>'+
+      '<div class="kpi-value">'+fBRL(totalInadimplencia)+'</div>'+
+      '<div class="kpi-sub">'+recInadimplencia.length+' titulos</div>'+
     '</div>'+
     // LINHA 2: Apropriacoes
     '<div style="grid-column:1/-1;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);padding:12px 0 8px;">Apropriacoes</div>'+
@@ -934,6 +1033,116 @@ function renderObra() {
 }
 
 // ============================================================
+// ============================================================
+// PAGE 4 & 5: CONTAS RECEBIDAS / A RECEBER
+// ============================================================
+function parseDataFlex(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) { var d=new Date(+m[3],+m[2]-1,+m[1]); return isNaN(d.getTime())?null:d; }
+  return null;
+}
+
+function normalizeContasRows(rows, isAReceber) {
+  if (!rows.length) return [];
+  var keys = Object.keys(rows[0]);
+  var cObra   = keys.find(function(k){ return k.toLowerCase().trim()==='obra'; }) || keys.find(function(k){ return k.toLowerCase().includes('obra'); });
+  var cBaixa  = keys.find(function(k){ return k.toLowerCase().includes('baixa'); });
+  var cLiq    = keys.find(function(k){ return k.toLowerCase().includes('liquido') || k.toLowerCase().includes('líquido'); });
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  return rows.map(function(r){
+    var ds = cBaixa ? String(r[cBaixa]||'').trim() : '';
+    var dp = parseDataFlex(ds);
+    var inadimplente = isAReceber && dp && dp < hoje;
+    return {
+      obra:        cObra  ? String(r[cObra ]||'').trim() : '',
+      dtBaixa:     ds,
+      dtParsed:    dp,
+      liquido:     cLiq   ? parseValor(r[cLiq]) : 0,
+      inadimplente: inadimplente
+    };
+  }).filter(function(r){ return r.obra||r.liquido; });
+}
+
+function parsePasteSimple(txt) {
+  var lines = txt.split('
+').filter(function(l){ return l.trim(); });
+  if (lines.length < 2) return null;
+  var hdrs = lines[0].split('	').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+  var rows = [];
+  for (var i=1;i<lines.length;i++){
+    var vals = lines[i].split('	').map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+    if (vals.every(function(v){return !v;})) continue;
+    var row={}; hdrs.forEach(function(h,j){ row[h]=vals[j]!==undefined?vals[j]:''; });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function processarRecebidas() {
+  var txt = document.getElementById('pasteRecebidas').value.trim();
+  if (!txt) { showMsg('msgRecebidas','Cole os dados primeiro.','warn'); return; }
+  var rows = parsePasteSimple(txt);
+  if (!rows||!rows.length) { showMsg('msgRecebidas','Dados insuficientes.','warn'); return; }
+  var novos = normalizeContasRows(rows, false);
+  contasRecebidas = contasRecebidas.concat(novos);
+  salvarEstado();
+  document.getElementById('pasteRecebidas').value='';
+  renderRecebidas();
+  renderObra();
+  showMsg('msgRecebidas','&#10003; '+novos.length+' registros adicionados! Total: '+contasRecebidas.length,'ok');
+}
+
+function limparRecebidas() {
+  if (!confirm('Apagar todos os '+contasRecebidas.length+' registros?')) return;
+  contasRecebidas=[];
+  salvarEstado(); renderRecebidas(); renderObra();
+}
+
+function renderRecebidas() {
+  document.getElementById('emptyRecebidas').style.display = contasRecebidas.length?'none':'block';
+  document.getElementById('wrapRecebidas').style.display  = contasRecebidas.length?'block':'none';
+  document.getElementById('countRecebidas').textContent   = '('+contasRecebidas.length+' total)';
+  document.getElementById('footerRecebidas').textContent  = contasRecebidas.length+' registros';
+  document.getElementById('tbRecebidas').innerHTML = contasRecebidas.slice(0,500).map(function(r){
+    return '<tr><td>'+r.obra+'</td><td style="color:var(--text2)">'+r.dtBaixa+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.liquido)+'</td></tr>';
+  }).join('');
+}
+
+function processarAReceber() {
+  var txt = document.getElementById('pasteAReceber').value.trim();
+  if (!txt) { showMsg('msgAReceber','Cole os dados primeiro.','warn'); return; }
+  var rows = parsePasteSimple(txt);
+  if (!rows||!rows.length) { showMsg('msgAReceber','Dados insuficientes.','warn'); return; }
+  var novos = normalizeContasRows(rows, true);
+  contasAReceber = contasAReceber.concat(novos);
+  salvarEstado();
+  document.getElementById('pasteAReceber').value='';
+  renderAReceber();
+  renderObra();
+  showMsg('msgAReceber','&#10003; '+novos.length+' registros adicionados! Total: '+contasAReceber.length,'ok');
+}
+
+function limparAReceber() {
+  if (!confirm('Apagar todos os '+contasAReceber.length+' registros?')) return;
+  contasAReceber=[];
+  salvarEstado(); renderAReceber(); renderObra();
+}
+
+function renderAReceber() {
+  document.getElementById('emptyAReceber').style.display = contasAReceber.length?'none':'block';
+  document.getElementById('wrapAReceber').style.display  = contasAReceber.length?'block':'none';
+  document.getElementById('countAReceber').textContent   = '('+contasAReceber.length+' total)';
+  document.getElementById('footerAReceber').textContent  = contasAReceber.length+' registros';
+  document.getElementById('tbAReceber').innerHTML = contasAReceber.slice(0,500).map(function(r){
+    var badge = r.inadimplente
+      ? '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(224,92,92,0.15);color:#e05c5c;">Inadimplente</span>'
+      : '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(76,175,130,0.15);color:#4caf82;">A Receber</span>';
+    return '<tr><td>'+r.obra+'</td><td style="color:var(--text2)">'+r.dtBaixa+'</td><td>'+badge+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.liquido)+'</td></tr>';
+  }).join('');
+}
+
 // INIT
 // ============================================================
 carregarEstado();
