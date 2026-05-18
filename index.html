@@ -980,17 +980,41 @@ function renderObra(){
       kpiHtml('#e8a045','Pos Obra',fBRL(pos),'Caixa: '+fBRL(posC)+' | Permuta: '+fBRL(posP))+
     '</div>';
 
-  // Chart
-  var mm={};
-  data.forEach(function(r){if(!r.ano||!r.mes)return;var k=r.ano+'-'+String(r.mes).padStart(2,'0');mm[k]=(mm[k]||0)+r.valObra;});
-  var mk=Object.keys(mm).sort();
+  // Chart - stacked by UC
+  var UC_LIST=['TERRENO','EMPREENDIMENTO','CUSTO CONSTRUTIVO','CUSTO DA CONSTRUCAO','POS OBRA'];
+  var UC_COLORS={'TERRENO':'#e05c5c','EMPREENDIMENTO':'#5b9cf6','CUSTO CONSTRUTIVO':'#a78bfa','CUSTO DA CONSTRUCAO':'#4caf82','POS OBRA':'#e8a045'};
+  var mSet=new Set();
+  data.forEach(function(r){if(!r.ano||!r.mes)mSet.add(r.ano+'-'+String(r.mes).padStart(2,'0'));});
+  var mk=Object.keys(Object.fromEntries([...mSet].map(function(k){return [k,1];}))).sort();
+  // rebuild mk properly
+  mk=[];mSet.forEach(function(k){mk.push(k);});mk.sort();
   var ml=mk.map(function(k){var p=k.split('-');return MESES_SHORT[+p[1]-1]+'/'+p[0].slice(2);});
+  var datasets=UC_LIST.map(function(uc){
+    return {
+      label:uc,
+      backgroundColor:UC_COLORS[uc],
+      borderRadius:2,
+      borderSkipped:false,
+      data:mk.map(function(k){
+        var p=k.split('-');var ano=parseInt(p[0]);var mes=parseInt(p[1]);
+        return data.filter(function(r){return r.ano===ano&&r.mes===mes&&normUC(r.uc)===uc;}).reduce(function(s,r){return s+r.valObra;},0);
+      })
+    };
+  });
   if(obraCI)obraCI.destroy();
   obraCI=new Chart(document.getElementById('obraChart'),{type:'bar',
-    data:{labels:ml,datasets:[{label:'Valor Pago',data:mk.map(function(k){return mm[k];}),backgroundColor:'#5b9cf6',borderRadius:4,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fBRL(c.parsed.y);}}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}}}});
+    data:{labels:ml,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#9a9897',font:{size:11},boxWidth:12,padding:16}},
+        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fBRL(c.parsed.y);}}}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
+      }
+    }
+  });
 
   // Comparativo Orcado x Realizado
   // Only show comparativo if a specific obra is selected AND has orcamento
