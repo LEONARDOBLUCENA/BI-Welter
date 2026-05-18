@@ -950,6 +950,24 @@ function sumUC(data,ucName,permuta){
 function kpiHtml(kc,label,val,sub){
   return '<div class="kpi" style="--kc:'+kc+'"><div class="kpi-label">'+label+'</div><div class="kpi-value">'+val+'</div><div class="kpi-sub">'+sub+'</div></div>';
 }
+function buildCCKpi(cc,ccC,ccP,orcFilt){
+  var orcCC=orcFilt.filter(function(r){
+    var d=r.descTot||'';
+    return d.toUpperCase().includes('CUSTO CONSTRUTIVO')||d.toUpperCase().includes('CUSTO CONS');
+  }).reduce(function(s,r){return s+r.valor;},0);
+  var pct=orcCC>0?Math.min(Math.round((cc/orcCC)*100),100):0;
+  var barColor=pct<80?'#4caf82':pct<100?'#e8a045':'#e05c5c';
+  var bar=orcCC>0?
+    '<div style="margin-top:8px;background:rgba(255,255,255,0.07);border-radius:4px;height:6px;overflow:hidden;">'+
+      '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:4px;"></div>'+
+    '</div>'+
+    '<div style="font-size:10px;color:var(--text3);margin-top:4px;">'+pct+'% do orcado ('+fBRL(orcCC)+')</div>':'';
+  return '<div class="kpi" style="--kc:#a78bfa">'+
+    '<div class="kpi-label">Custo Construtivo</div>'+
+    '<div class="kpi-value">'+fBRL(cc)+'</div>'+
+    '<div class="kpi-sub">Caixa: '+fBRL(ccC)+' | Permuta: '+fBRL(ccP)+'</div>'+
+    bar+'</div>';
+}
 function renderObra(){
   if(!dados.length){document.getElementById('obraEmpty').style.display='block';document.getElementById('obraContent').style.display='none';return;}
   document.getElementById('obraEmpty').style.display='none';
@@ -969,32 +987,19 @@ function renderObra(){
   var pos=sumUC(data,'POS OBRA');var posP=sumUC(data,'POS OBRA','P');var posC=sumUC(data,'POS OBRA','C');
   var totAprop=ter+emp+cc+cdc+pos;
 
+  // orcFilt used by KPI progress bar and comparativo
+  var orcFilt=[];
+  if(obraF!=='all'){
+    orcFilt=orcamento.filter(function(r){return r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
+  }
+
   document.getElementById('obraKpi').innerHTML=
     '<span class="kpi-section">Apropriacoes</span>'+
     '<div class="kpi-row">'+
       kpiHtml('var(--green)','Total Apropriacoes',fBRL(totAprop),data.length+' lancamentos')+
       kpiHtml('#e05c5c','Terreno',fBRL(ter),'Caixa: '+fBRL(terC)+' | Permuta: '+fBRL(terP))+
       kpiHtml('#5b9cf6','Empreendimento',fBRL(emp),'Caixa: '+fBRL(empC)+' | Permuta: '+fBRL(empP))+
-      (function(){
-        var orcCC=orcFilt.filter(function(r){
-          var d=r.descTot||'';
-          return d.toUpperCase().includes('CUSTO CONSTRUTIVO')||d.toUpperCase().includes('CUSTO CONST');
-        }).reduce(function(s,r){return s+r.valor;},0);
-        var pct=orcCC>0?Math.min(Math.round((cc/orcCC)*100),100):0;
-        var barColor=pct<80?'#4caf82':pct<100?'#e8a045':'#e05c5c';
-        var progressBar=orcCC>0?
-          '<div style="margin-top:8px;background:rgba(255,255,255,0.07);border-radius:4px;height:6px;overflow:hidden;">'+
-            '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:4px;transition:width 0.3s;"></div>'+
-          '</div>'+
-          '<div style="font-size:10px;color:var(--text3);margin-top:4px;">'+pct+'% do orcado ('+fBRL(orcCC)+')</div>':
-          '';
-        return '<div class="kpi" style="--kc:#a78bfa">'+
-          '<div class="kpi-label">Custo Construtivo</div>'+
-          '<div class="kpi-value">'+fBRL(cc)+'</div>'+
-          '<div class="kpi-sub">Caixa: '+fBRL(ccC)+' | Permuta: '+fBRL(ccP)+'</div>'+
-          progressBar+
-        '</div>';
-      }())+
+      buildCCKpi(cc,ccC,ccP,orcFilt)+
       kpiHtml('#4caf82','Custo da Construcao',fBRL(cdc),'Caixa: '+fBRL(cdcC)+' | Permuta: '+fBRL(cdcP))+
       kpiHtml('#e8a045','Pos Obra',fBRL(pos),'Caixa: '+fBRL(posC)+' | Permuta: '+fBRL(posP))+
     '</div>';
@@ -1044,10 +1049,6 @@ function renderObra(){
 
   // Comparativo Orcado x Realizado
   // Only show comparativo if a specific obra is selected AND has orcamento
-  var orcFilt=[];
-  if(obraF!=='all'){
-    orcFilt=orcamento.filter(function(r){return r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
-  }
   console.log('orcFilt length:', orcFilt.length, '| obraF:', obraF, '| orcamento total:', orcamento.length);
   var tbComp=document.getElementById('tbComp');
   var tfComp=document.getElementById('tfComp');
