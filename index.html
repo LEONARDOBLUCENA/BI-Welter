@@ -452,7 +452,15 @@ function fixDadosDates(arr){
 // STORAGE
 // ============================================================
 function salvar(){
-  try{localStorage.setItem('bi_d',JSON.stringify(dados));}catch(e){}
+  try{
+    var dadosStr=JSON.stringify(dados);
+    localStorage.setItem('bi_d',dadosStr);
+  }catch(e){
+    // localStorage full - dados too large, warn user
+    console.warn('Nao foi possivel salvar dados localmente:', e);
+    var ind=document.getElementById('saveInd');
+    if(ind){ind.style.display='inline';ind.style.background='rgba(224,92,92,0.1)';ind.style.color='#e05c5c';ind.style.border='1px solid rgba(224,92,92,0.2)';ind.textContent='Use Salvar para nao perder dados';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},8000);}
+  }
   try{localStorage.setItem('bi_dp',JSON.stringify(depara));}catch(e){}
   try{localStorage.setItem('bi_rec',JSON.stringify(recebidas));}catch(e){}
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
@@ -988,7 +996,7 @@ function renderObra(){
     orcFilt.forEach(function(r){
       var tot=r.descTot||'Sem totalizadora';
       if(!totMap[tot])totMap[tot]={items:[],totOrc:0,totReal:0};
-      var real=realMap[r.cod.trim().toLowerCase().replace(/\./g,'')]||0;
+      var real=realMap[r.cod.trim().toLowerCase().replace(/\./g,'').replace(/\s/g,'')]||0;
       totMap[tot].items.push({cod:r.cod,obra:r.obra,orcado:r.valor,realizado:real});
       totMap[tot].totOrc+=r.valor;totMap[tot].totReal+=real;
     });
