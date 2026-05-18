@@ -351,7 +351,10 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       <div style="position:relative;width:100%;height:260px;"><canvas id="obraChart"></canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Orcado x Realizado</div>
+      <div class="ct">
+        <span>Orcado x Realizado</span>
+        <button class="btn btn-sm" onclick="diagComparativo()">&#128269; Diagnostico</button>
+      </div>
       <div class="tbl-wrap">
         <table>
           <thead><tr>
@@ -1026,6 +1029,30 @@ function renderObra(){
     var gs=gOrc-gReal;var gp=gOrc>0?((gReal/gOrc)*100).toFixed(1):'0.0';
     tfComp.innerHTML='<tr><td colspan="3">TOTAL GERAL</td><td class="mono" style="text-align:right">'+fBRL(gOrc)+'</td><td class="mono" style="text-align:right">'+fBRL(gReal)+'</td><td class="mono" style="text-align:right;color:'+(gs>=0?'var(--green)':'var(--red)')+'">'+fBRL(gs)+'</td><td class="mono" style="text-align:right">'+gp+'%</td></tr>';
   }
+}
+
+function diagComparativo(){
+  var dadosOK=dados.filter(function(r){return obraOK(r.obra)&&r.codOrc;});
+  var msg='=== DIAGNOSTICO ===\n\n';
+  msg+='Total registros com codOrc: '+dadosOK.length+'\n';
+  if(dadosOK.length>0){
+    msg+='Exemplos codOrc nos dados:\n';
+    dadosOK.slice(0,5).forEach(function(r){msg+='  ['+r.codOrc+'] val='+r.valObra+' obra='+r.obra+'\n';});
+  }
+  msg+='\nTotal orcamento: '+orcamento.length+'\n';
+  if(orcamento.length>0){
+    msg+='Exemplos cod no orcamento:\n';
+    orcamento.slice(0,5).forEach(function(r){msg+='  ['+r.cod+'] obra='+r.obra+'\n';});
+  }
+  // Try matching
+  var matched=0;
+  orcamento.forEach(function(o){
+    var k=o.cod.trim().toLowerCase().replace(/\./g,'').replace(/\s/g,'');
+    var found=dadosOK.find(function(r){return r.codOrc.trim().toLowerCase().replace(/\./g,'').replace(/\s/g,'')==k;});
+    if(found) matched++;
+  });
+  msg+='\nCodigos que batem: '+matched+' de '+orcamento.length;
+  alert(msg);
 }
 
 // ============================================================
