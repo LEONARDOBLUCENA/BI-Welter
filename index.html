@@ -108,6 +108,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
   <div class="ns">Dashboards</div>
   <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Adm Fin.</span></div>
   <div class="ni" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#127959;</span><span class="ni-label">Dashboard de Obra</span></div>
+  <div class="ni" id="tab7" onclick="goTab(7)"><span class="ni-icon">&#11088;</span><span class="ni-label">Dashboard Executivo</span></div>
 </aside>
 
 <main>
@@ -358,7 +359,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>Conta Totalizadora</th><th>Cod</th><th>Descricao</th>
+            <th>Conta Totalizadora</th><th>Cod</th>
             <th style="text-align:right">Orcado</th>
             <th style="text-align:right">Realizado</th>
             <th style="text-align:right">Saldo</th>
@@ -369,6 +370,20 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
         </table>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- P7: DASHBOARD EXECUTIVO -->
+<div class="page" id="page7">
+  <div class="st">Dashboard Executivo</div>
+  <div class="sd">Visao geral de faturamento por obra.</div>
+  <div id="execEmpty" class="nodata"><p>Importe dados nas abas Contas Recebidas e Contas a Receber.</p><button class="btn btn-accent" style="margin-top:16px;" onclick="goTab(2)">Ir para Contas Recebidas</button></div>
+  <div id="execContent" style="display:none;">
+    <div class="filters">
+      <div class="fg"><label>Obra</label><select id="execObra" onchange="renderExec()"><option value="all">Todas</option></select></div>
+      <button class="btn btn-sm" onclick="clearExec()" style="align-self:flex-end;">&#10005; Limpar</button>
+    </div>
+    <div id="execKpi" class="kpi-wrap"></div>
   </div>
 </div>
 
@@ -523,12 +538,13 @@ function carregarSessao(input){
 // TABS
 // ============================================================
 function goTab(i){
-  for(var j=0;j<7;j++){
+  for(var j=0;j<8;j++){
     document.getElementById('tab'+j).classList.toggle('active',i===j);
     document.getElementById('page'+j).classList.toggle('active',i===j);
   }
   if(i===5)renderAdm();
   if(i===6)renderObra();
+  if(i===7)renderExec();
 }
 
 // ============================================================
@@ -945,24 +961,6 @@ function renderObra(){
   var anoF=document.getElementById('obraAno').value;
   var mesF=document.getElementById('obraMes').value;
 
-  // Faturamento KPIs
-  var recF=recebidas.filter(function(r){
-    if(obraF!=='all'&&r.obra!==obraF)return false;
-    if(anoF!=='all'&&String(r.ano)!==anoF)return false;
-    if(mesF!=='all'&&String(r.mes)!==mesF)return false;
-    return true;
-  });
-  var arF=areceber.filter(function(r){
-    if(obraF!=='all'&&r.obra!==obraF)return false;
-    if(anoF!=='all'&&String(r.ano)!==anoF)return false;
-    if(mesF!=='all'&&String(r.mes)!==mesF)return false;
-    return true;
-  });
-  var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
-  var aRecVal=arF.filter(function(r){return !r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
-  var inadVal=arF.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
-  var fatTotal=fatVal+aRecVal+inadVal;
-
   // Apropriacao KPIs
   var ter=sumUC(data,'TERRENO');var terP=sumUC(data,'TERRENO','P');var terC=sumUC(data,'TERRENO','C');
   var emp=sumUC(data,'EMPREENDIMENTO');var empP=sumUC(data,'EMPREENDIMENTO','P');var empC=sumUC(data,'EMPREENDIMENTO','C');
@@ -972,13 +970,6 @@ function renderObra(){
   var totAprop=ter+emp+cc+cdc+pos;
 
   document.getElementById('obraKpi').innerHTML=
-    '<span class="kpi-section">Faturamento</span>'+
-    '<div class="kpi-row">'+
-      kpiHtml('#4caf82','Faturamento Total',fBRL(fatTotal),'Rec + A Rec + Inadimp')+
-      kpiHtml('#4caf82','Faturamento',fBRL(fatVal),recF.length+' titulos')+
-      kpiHtml('#5b9cf6','A Receber',fBRL(aRecVal),arF.filter(function(r){return !r.inadimplente;}).length+' titulos')+
-      kpiHtml('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
-    '</div>'+
     '<span class="kpi-section">Apropriacoes</span>'+
     '<div class="kpi-row">'+
       kpiHtml('var(--green)','Total Apropriacoes',fBRL(totAprop),data.length+' lancamentos')+
@@ -1002,7 +993,11 @@ function renderObra(){
         y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}}}});
 
   // Comparativo Orcado x Realizado
-  var orcFilt=orcamento.filter(function(r){return obraF==='all'||r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
+  // Only show comparativo if a specific obra is selected AND has orcamento
+  var orcFilt=[];
+  if(obraF!=='all'){
+    orcFilt=orcamento.filter(function(r){return r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
+  }
   console.log('orcFilt length:', orcFilt.length, '| obraF:', obraF, '| orcamento total:', orcamento.length);
   var tbComp=document.getElementById('tbComp');
   var tfComp=document.getElementById('tfComp');
@@ -1023,7 +1018,7 @@ function renderObra(){
     var html='';var gOrc=0;var gReal=0;
     Object.keys(totMap).forEach(function(tot){
       var g=totMap[tot];var saldo=g.totOrc-g.totReal;var pct=g.totOrc>0?((g.totReal/g.totOrc)*100).toFixed(1):'0.0';
-      html+='<tr class="tot-row"><td colspan="3">'+tot+'</td>'+
+      html+='<tr class="tot-row"><td colspan="2">'+tot+'</td>'+
         '<td class="mono" style="text-align:right">'+fBRL(g.totOrc)+'</td>'+
         '<td class="mono" style="text-align:right">'+fBRL(g.totReal)+'</td>'+
         '<td class="mono" style="text-align:right;color:'+(saldo>=0?'var(--green)':'var(--red)')+'">'+fBRL(saldo)+'</td>'+
@@ -1043,7 +1038,7 @@ function renderObra(){
     });
     tbComp.innerHTML=html;
     var gs=gOrc-gReal;var gp=gOrc>0?((gReal/gOrc)*100).toFixed(1):'0.0';
-    tfComp.innerHTML='<tr><td colspan="3">TOTAL GERAL</td><td class="mono" style="text-align:right">'+fBRL(gOrc)+'</td><td class="mono" style="text-align:right">'+fBRL(gReal)+'</td><td class="mono" style="text-align:right;color:'+(gs>=0?'var(--green)':'var(--red)')+'">'+fBRL(gs)+'</td><td class="mono" style="text-align:right">'+gp+'%</td></tr>';
+    tfComp.innerHTML='<tr><td colspan="2">TOTAL GERAL</td><td class="mono" style="text-align:right">'+fBRL(gOrc)+'</td><td class="mono" style="text-align:right">'+fBRL(gReal)+'</td><td class="mono" style="text-align:right;color:'+(gs>=0?'var(--green)':'var(--red)')+'">'+fBRL(gs)+'</td><td class="mono" style="text-align:right">'+gp+'%</td></tr>';
   }
 }
 
@@ -1069,6 +1064,48 @@ function diagComparativo(){
   });
   msg+='\nCodigos que batem: '+matched+' de '+orcamento.length;
   alert(msg);
+}
+
+// ============================================================
+// P7: DASHBOARD EXECUTIVO
+// ============================================================
+function clearExec(){
+  document.getElementById('execObra').value='all';
+  renderExec();
+}
+function renderExec(){
+  var hasData=recebidas.length||areceber.length;
+  if(!hasData){
+    document.getElementById('execEmpty').style.display='block';
+    document.getElementById('execContent').style.display='none';
+    return;
+  }
+  document.getElementById('execEmpty').style.display='none';
+  document.getElementById('execContent').style.display='block';
+
+  // Populate obra filter from recebidas + areceber
+  var obrasSet=new Set();
+  recebidas.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
+  areceber.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
+  var obras=[...obrasSet].sort();
+  setSel('execObra',obras,'Todas');
+
+  var obraF=document.getElementById('execObra').value;
+  var recF=recebidas.filter(function(r){return obraF==='all'||r.obra===obraF;});
+  var arF=areceber.filter(function(r){return obraF==='all'||r.obra===obraF;});
+  var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
+  var aRecVal=arF.filter(function(r){return !r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
+  var inadVal=arF.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
+  var fatTotal=fatVal+aRecVal+inadVal;
+
+  document.getElementById('execKpi').innerHTML=
+    '<span class="kpi-section">Faturamento</span>'+
+    '<div class="kpi-row">'+
+      kpiHtml('#4caf82','Faturamento Total',fBRL(fatTotal),'Rec + A Rec + Inadimp')+
+      kpiHtml('#4caf82','Faturamento',fBRL(fatVal),recF.length+' titulos')+
+      kpiHtml('#5b9cf6','A Receber',fBRL(aRecVal),arF.filter(function(r){return !r.inadimplente;}).length+' titulos')+
+      kpiHtml('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
+    '</div>';
 }
 
 // ============================================================
