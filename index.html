@@ -955,10 +955,15 @@ function kpiHtml(kc,label,val,sub){
   return '<div class="kpi" style="--kc:'+kc+'"><div class="kpi-label">'+label+'</div><div class="kpi-value">'+val+'</div><div class="kpi-sub">'+sub+'</div></div>';
 }
 function buildCCKpi(cc,ccC,ccP,orcFilt){
+  // Try to find CC orcamento by descTot, fallback to sum all orcamento
   var orcCC=orcFilt.filter(function(r){
-    var d=r.descTot||'';
-    return d.toUpperCase().includes('CUSTO CONSTRUTIVO')||d.toUpperCase().includes('CUSTO CONS');
+    var d=(r.descTot||'').toUpperCase();
+    return d.includes('CUSTO CONSTRUTIVO')||d.includes('CUSTO CONS')||d.includes('CC');
   }).reduce(function(s,r){return s+r.valor;},0);
+  // If no match by descTot, use total orcamento for this obra
+  if(orcCC===0 && orcFilt.length>0){
+    orcCC=orcFilt.reduce(function(s,r){return s+r.valor;},0);
+  }
   var pct=orcCC>0?Math.min(Math.round((cc/orcCC)*100),100):0;
   var barColor=pct<80?'#4caf82':pct<100?'#e8a045':'#e05c5c';
   var bar=orcCC>0?
@@ -1018,10 +1023,7 @@ function renderObra(){
   document.getElementById('obraKpi').innerHTML=
     '<span class="kpi-section">Faturamento</span>'+
     '<div class="kpi-row">'+
-      kpiHtml('#4caf82','Faturamento Total',fBRL(fatTotal),'Rec + A Rec + Inadimp')+
       kpiHtml('#4caf82','Faturamento',fBRL(fatVal),recF.length+' titulos')+
-      kpiHtml('#5b9cf6','A Receber',fBRL(aRecVal),arF.filter(function(r){return !r.inadimplente;}).length+' titulos')+
-      kpiHtml('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
     '</div>'+
     '<span class="kpi-section">Apropriacoes</span>'+
     '<div class="kpi-row">'+
