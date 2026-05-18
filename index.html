@@ -456,13 +456,14 @@ function fixDadosDates(arr){
 // ============================================================
 function salvar(){
   try{
-    var dadosStr=JSON.stringify(dados);
-    localStorage.setItem('bi_d',dadosStr);
+    // Save dados as compact array format to save space
+    var dadosCompact=[['data','ano','mes','conta','cc','codFin','descFin','valFin','obra','uc','codOrc','descOrc','valObra']];
+    dados.forEach(function(r){dadosCompact.push([r.data,r.ano,r.mes,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});
+    localStorage.setItem('bi_d',JSON.stringify(dadosCompact));
   }catch(e){
-    // localStorage full - dados too large, warn user
-    console.warn('Nao foi possivel salvar dados localmente:', e);
+    console.warn('localStorage cheio:', e);
     var ind=document.getElementById('saveInd');
-    if(ind){ind.style.display='inline';ind.style.background='rgba(224,92,92,0.1)';ind.style.color='#e05c5c';ind.style.border='1px solid rgba(224,92,92,0.2)';ind.textContent='Use Salvar para nao perder dados';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},8000);}
+    if(ind){ind.style.display='inline';ind.style.background='rgba(224,92,92,0.1)';ind.style.color='#e05c5c';ind.style.border='1px solid rgba(224,92,92,0.2)';ind.textContent='Dados grandes - use botao Salvar!';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},8000);}
   }
   try{localStorage.setItem('bi_dp',JSON.stringify(depara));}catch(e){}
   try{localStorage.setItem('bi_rec',JSON.stringify(recebidas));}catch(e){}
@@ -472,7 +473,22 @@ function salvar(){
   if(ind){ind.style.display='inline';ind.style.background='rgba(76,175,130,0.1)';ind.style.color='#4caf82';ind.style.border='1px solid rgba(76,175,130,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
 }
 function carregar(){
-  try{var d=localStorage.getItem('bi_d');if(d){dados=JSON.parse(d);fixDadosDates(dados);}}catch(e){dados=[];}
+  try{
+    var d=localStorage.getItem('bi_d');
+    if(d){
+      var parsed=JSON.parse(d);
+      if(Array.isArray(parsed) && Array.isArray(parsed[0])){
+        // Compact format: first row is headers
+        var hdrs=parsed[0]; var rows=parsed.slice(1);
+        dados=rows.map(function(r){
+          var obj={};hdrs.forEach(function(h,i){obj[h]=r[i];});return obj;
+        });
+      } else {
+        dados=parsed;
+      }
+      fixDadosDates(dados);
+    }
+  }catch(e){dados=[];}
   try{var p=localStorage.getItem('bi_dp');if(p)depara=JSON.parse(p);}catch(e){depara=[];}
   try{var r=localStorage.getItem('bi_rec');if(r){recebidas=JSON.parse(r);fixDates(recebidas,false);}}catch(e){recebidas=[];}
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
