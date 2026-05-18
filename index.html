@@ -1000,7 +1000,7 @@ function renderObra(){
     orcFilt.forEach(function(r){
       var tot=r.descTot||'Sem totalizadora';
       if(!totMap[tot])totMap[tot]={items:[],totOrc:0,totReal:0};
-      var real=realMap[r.cod.trim().replace(/[^a-zA-Z0-9]/g,'')]||0;
+      var real=realMap[String(parseInt(r.cod.replace(/[^0-9]/g,''),10))]||0;
       totMap[tot].items.push({cod:r.cod,obra:r.obra,orcado:r.valor,realizado:real});
       totMap[tot].totOrc+=r.valor;totMap[tot].totReal+=real;
     });
@@ -1037,18 +1037,18 @@ function diagComparativo(){
   msg+='Total registros com codOrc: '+dadosOK.length+'\n';
   if(dadosOK.length>0){
     msg+='Exemplos codOrc nos dados:\n';
-    dadosOK.slice(0,5).forEach(function(r){msg+='  ['+r.codOrc+'] norm=['+r.codOrc.trim().replace(/[^a-zA-Z0-9]/g,'')+'] val='+r.valObra+'\n';});
+    dadosOK.slice(0,5).forEach(function(r){msg+='  ['+r.codOrc+'] norm=['+String(parseInt(r.codOrc.replace(/[^0-9]/g,''),10))+'] val='+r.valObra+'\n';});
   }
   msg+='\nTotal orcamento: '+orcamento.length+'\n';
   if(orcamento.length>0){
     msg+='Exemplos cod no orcamento:\n';
-    orcamento.slice(0,5).forEach(function(r){msg+='  ['+r.cod+'] norm=['+r.cod.trim().replace(/[^a-zA-Z0-9]/g,'')+']\n';});
+    orcamento.slice(0,5).forEach(function(r){msg+='  ['+r.cod+'] norm=['+String(parseInt(r.cod.replace(/[^0-9]/g,''),10))+']\n';});
   }
   // Try matching
   var matched=0;
   orcamento.forEach(function(o){
-    var k=o.cod.trim().replace(/[^a-zA-Z0-9]/g,'');
-    var found=dadosOK.find(function(r){return r.codOrc.trim().replace(/[^a-zA-Z0-9]/g,'')==k;});
+    var k=String(parseInt(o.cod.replace(/[^0-9]/g,''),10));
+    var found=dadosOK.find(function(r){return String(parseInt(r.codOrc.replace(/[^0-9]/g,''),10))==k;});
     if(found) matched++;
   });
   msg+='\nCodigos que batem: '+matched+' de '+orcamento.length;
