@@ -975,43 +975,69 @@ function renderObra(){
       kpiHtml('var(--green)','Total Apropriacoes',fBRL(totAprop),data.length+' lancamentos')+
       kpiHtml('#e05c5c','Terreno',fBRL(ter),'Caixa: '+fBRL(terC)+' | Permuta: '+fBRL(terP))+
       kpiHtml('#5b9cf6','Empreendimento',fBRL(emp),'Caixa: '+fBRL(empC)+' | Permuta: '+fBRL(empP))+
-      kpiHtml('#a78bfa','Custo Construtivo',fBRL(cc),'Caixa: '+fBRL(ccC)+' | Permuta: '+fBRL(ccP))+
+      (function(){
+        var orcCC=orcFilt.filter(function(r){
+          var d=r.descTot||'';
+          return d.toUpperCase().includes('CUSTO CONSTRUTIVO')||d.toUpperCase().includes('CUSTO CONST');
+        }).reduce(function(s,r){return s+r.valor;},0);
+        var pct=orcCC>0?Math.min(Math.round((cc/orcCC)*100),100):0;
+        var barColor=pct<80?'#4caf82':pct<100?'#e8a045':'#e05c5c';
+        var progressBar=orcCC>0?
+          '<div style="margin-top:8px;background:rgba(255,255,255,0.07);border-radius:4px;height:6px;overflow:hidden;">'+
+            '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:4px;transition:width 0.3s;"></div>'+
+          '</div>'+
+          '<div style="font-size:10px;color:var(--text3);margin-top:4px;">'+pct+'% do orcado ('+fBRL(orcCC)+')</div>':
+          '';
+        return '<div class="kpi" style="--kc:#a78bfa">'+
+          '<div class="kpi-label">Custo Construtivo</div>'+
+          '<div class="kpi-value">'+fBRL(cc)+'</div>'+
+          '<div class="kpi-sub">Caixa: '+fBRL(ccC)+' | Permuta: '+fBRL(ccP)+'</div>'+
+          progressBar+
+        '</div>';
+      }())+
       kpiHtml('#4caf82','Custo da Construcao',fBRL(cdc),'Caixa: '+fBRL(cdcC)+' | Permuta: '+fBRL(cdcP))+
       kpiHtml('#e8a045','Pos Obra',fBRL(pos),'Caixa: '+fBRL(posC)+' | Permuta: '+fBRL(posP))+
     '</div>';
 
   // Chart - stacked by UC
-  var UC_LIST=['TERRENO','EMPREENDIMENTO','CUSTO CONSTRUTIVO','CUSTO DA CONSTRUCAO','POS OBRA'];
-  var UC_COLORS={'TERRENO':'#e05c5c','EMPREENDIMENTO':'#5b9cf6','CUSTO CONSTRUTIVO':'#a78bfa','CUSTO DA CONSTRUCAO':'#4caf82','POS OBRA':'#e8a045'};
-  var mSet=new Set();
-  data.forEach(function(r){if(!r.ano||!r.mes)mSet.add(r.ano+'-'+String(r.mes).padStart(2,'0'));});
-  var mk=Object.keys(Object.fromEntries([...mSet].map(function(k){return [k,1];}))).sort();
-  // rebuild mk properly
-  mk=[];mSet.forEach(function(k){mk.push(k);});mk.sort();
-  var ml=mk.map(function(k){var p=k.split('-');return MESES_SHORT[+p[1]-1]+'/'+p[0].slice(2);});
-  var datasets=UC_LIST.map(function(uc){
+  var UC_CHART=['TERRENO','EMPREENDIMENTO','CUSTO CONSTRUTIVO','CUSTO DA CONSTRUCAO','POS OBRA'];
+  var UC_CLR={'TERRENO':'#e05c5c','EMPREENDIMENTO':'#5b9cf6','CUSTO CONSTRUTIVO':'#a78bfa','CUSTO DA CONSTRUCAO':'#4caf82','POS OBRA':'#e8a045'};
+  var mSet=[];
+  data.forEach(function(r){
+    if(!r.ano||!r.mes) return;
+    var k=r.ano+'-'+String(r.mes).padStart(2,'0');
+    if(mSet.indexOf(k)===-1) mSet.push(k);
+  });
+  mSet.sort();
+  var ml=mSet.map(function(k){var p=k.split('-');return MESES_SHORT[parseInt(p[1])-1]+'/'+p[0].slice(2);});
+  var datasets=UC_CHART.map(function(uc){
     return {
       label:uc,
-      backgroundColor:UC_COLORS[uc],
-      borderRadius:2,
-      borderSkipped:false,
-      data:mk.map(function(k){
+      backgroundColor:UC_CLR[uc],
+      data:mSet.map(function(k){
         var p=k.split('-');var ano=parseInt(p[0]);var mes=parseInt(p[1]);
-        return data.filter(function(r){return r.ano===ano&&r.mes===mes&&normUC(r.uc)===uc;}).reduce(function(s,r){return s+r.valObra;},0);
+        return data.filter(function(r){
+          return r.ano===ano && r.mes===mes && normUC(r.uc)===uc;
+        }).reduce(function(s,r){return s+r.valObra;},0);
       })
     };
   });
-  if(obraCI)obraCI.destroy();
-  obraCI=new Chart(document.getElementById('obraChart'),{type:'bar',
+  if(obraCI) obraCI.destroy();
+  obraCI=new Chart(document.getElementById('obraChart'),{
+    type:'bar',
     data:{labels:ml,datasets:datasets},
-    options:{responsive:true,maintainAspectRatio:false,
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
       plugins:{
         legend:{display:true,position:'bottom',labels:{color:'#9a9897',font:{size:11},boxWidth:12,padding:16}},
-        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fBRL(c.parsed.y);}}}
+        tooltip:{mode:'index',callbacks:{label:function(c){return c.dataset.label+': '+fBRL(c.parsed.y);}}}
       },
       scales:{
         x:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
-        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},
+          callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}
+        }}
       }
     }
   });
