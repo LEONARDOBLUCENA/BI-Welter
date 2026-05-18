@@ -359,7 +359,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>Conta Totalizadora</th><th>Cod</th>
+            <th>Conta Totalizadora</th><th>Cod</th><th> - </th>
             <th style="text-align:right">Orcado</th>
             <th style="text-align:right">Realizado</th>
             <th style="text-align:right">Saldo</th>
@@ -1018,7 +1018,7 @@ function renderObra(){
     var html='';var gOrc=0;var gReal=0;
     Object.keys(totMap).forEach(function(tot){
       var g=totMap[tot];var saldo=g.totOrc-g.totReal;var pct=g.totOrc>0?((g.totReal/g.totOrc)*100).toFixed(1):'0.0';
-      html+='<tr class="tot-row"><td colspan="2">'+tot+'</td>'+
+      html+='<tr class="tot-row"><td colspan="3">'+tot+'</td>'+
         '<td class="mono" style="text-align:right">'+fBRL(g.totOrc)+'</td>'+
         '<td class="mono" style="text-align:right">'+fBRL(g.totReal)+'</td>'+
         '<td class="mono" style="text-align:right;color:'+(saldo>=0?'var(--green)':'var(--red)')+'">'+fBRL(saldo)+'</td>'+
@@ -1038,7 +1038,7 @@ function renderObra(){
     });
     tbComp.innerHTML=html;
     var gs=gOrc-gReal;var gp=gOrc>0?((gReal/gOrc)*100).toFixed(1):'0.0';
-    tfComp.innerHTML='<tr><td colspan="2">TOTAL GERAL</td><td class="mono" style="text-align:right">'+fBRL(gOrc)+'</td><td class="mono" style="text-align:right">'+fBRL(gReal)+'</td><td class="mono" style="text-align:right;color:'+(gs>=0?'var(--green)':'var(--red)')+'">'+fBRL(gs)+'</td><td class="mono" style="text-align:right">'+gp+'%</td></tr>';
+    tfComp.innerHTML='<tr><td colspan="3">TOTAL GERAL</td><td class="mono" style="text-align:right">'+fBRL(gOrc)+'</td><td class="mono" style="text-align:right">'+fBRL(gReal)+'</td><td class="mono" style="text-align:right;color:'+(gs>=0?'var(--green)':'var(--red)')+'">'+fBRL(gs)+'</td><td class="mono" style="text-align:right">'+gp+'%</td></tr>';
   }
 }
 
