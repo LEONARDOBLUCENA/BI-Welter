@@ -347,13 +347,25 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       <button class="btn btn-sm" onclick="clearObra()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="obraKpi" class="kpi-wrap"></div>
-    <div class="card">
-      <div class="ct">Valor Pago por mes</div>
-      <div style="position:relative;width:100%;height:260px;"><canvas id="obraChart"></canvas></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct">Faturamento por Obra</div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="fatChartObra"></canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct">Faturamento por Mes e Obra</div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="fatChartMes"></canvas></div>
+      </div>
     </div>
-    <div class="card">
-      <div class="ct">Valor Pago por Obra</div>
-      <div style="position:relative;width:100%;height:260px;"><canvas id="obraChartObra"></canvas></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct">Valor Pago por Mes</div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="obraChart"></canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct">Valor Pago por Obra</div>
+        <div style="position:relative;width:100%;height:260px;"><canvas id="obraChartObra"></canvas></div>
+      </div>
     </div>
     <div class="card">
       <div class="ct">
@@ -1013,6 +1025,61 @@ function renderObra(){
   var cdc=sumUC(data,'CUSTO DA CONSTRUCAO');var cdcP=sumUC(data,'CUSTO DA CONSTRUCAO','P');var cdcC=sumUC(data,'CUSTO DA CONSTRUCAO','C');
   var pos=sumUC(data,'POS OBRA');var posP=sumUC(data,'POS OBRA','P');var posC=sumUC(data,'POS OBRA','C');
   var totAprop=ter+emp+cc+cdc+pos;
+
+  // Faturamento charts
+  var fatByObra={};
+  recF.forEach(function(r){if(!r.obra)return;fatByObra[r.obra]=(fatByObra[r.obra]||0)+r.liquido;});
+  var fatObraLabels=Object.keys(fatByObra).sort(function(a,b){return fatByObra[b]-fatByObra[a];});
+  var fatObraVals=fatObraLabels.map(function(k){return fatByObra[k];});
+  var fatColors=['#4caf82','#5b9cf6','#e8a045','#a78bfa','#e05c5c'];
+  if(window._fatChartObra) window._fatChartObra.destroy();
+  window._fatChartObra=new Chart(document.getElementById('fatChartObra'),{
+    type:'bar',
+    data:{labels:fatObraLabels,datasets:[{label:'Faturamento',data:fatObraVals,
+      backgroundColor:fatObraLabels.map(function(_,i){return fatColors[i%fatColors.length];}),
+      borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fBRL(c.parsed.x);}}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11}}}
+      }
+    }
+  });
+
+  // Faturamento por mes e obra (stacked)
+  var fatMesSet=[];
+  recF.forEach(function(r){
+    if(!r.ano||!r.mes)return;
+    var k=r.ano+'-'+String(r.mes).padStart(2,'0');
+    if(fatMesSet.indexOf(k)===-1)fatMesSet.push(k);
+  });
+  fatMesSet.sort();
+  var fatMesLabels=fatMesSet.map(function(k){var p=k.split('-');return MESES_SHORT[parseInt(p[1])-1]+'/'+p[0].slice(2);});
+  var fatObrasUniq=[...new Set(recF.map(function(r){return r.obra;}).filter(Boolean))].sort();
+  var fatMesDatasets=fatObrasUniq.map(function(obra,i){
+    return {label:obra,backgroundColor:fatColors[i%fatColors.length],
+      data:fatMesSet.map(function(k){
+        var p=k.split('-');var ano=parseInt(p[0]);var mes=parseInt(p[1]);
+        return recF.filter(function(r){return r.obra===obra&&r.ano===ano&&r.mes===mes;}).reduce(function(s,r){return s+r.liquido;},0);
+      })
+    };
+  });
+  if(window._fatChartMes) window._fatChartMes.destroy();
+  window._fatChartMes=new Chart(document.getElementById('fatChartMes'),{
+    type:'bar',
+    data:{labels:fatMesLabels,datasets:fatMesDatasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#9a9897',font:{size:11},boxWidth:12,padding:12}},
+        tooltip:{mode:'index',callbacks:{label:function(c){return c.dataset.label+': '+fBRL(c.parsed.y);}}}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},maxRotation:45}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5c5b59',font:{size:11},callback:function(v){return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
+      }
+    }
+  });
 
   // orcFilt used by KPI progress bar and comparativo
   var orcFilt=[];
