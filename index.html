@@ -243,7 +243,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
     <div id="arEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="arWrap" style="display:none;">
       <table>
-        <thead><tr><th>Obra</th><th>Dt. Baixa</th><th>Status</th><th style="text-align:right">Liquido</th></tr></thead>
+        <thead><tr><th>Obra</th><th>Data Vcto</th><th>Status</th><th style="text-align:right">Total</th></tr></thead>
         <tbody id="tbAR"></tbody>
       </table>
     </div>
@@ -791,7 +791,9 @@ function normContas(rows,isAR){
     var dp=parseDt(ds);
     return{obra:cObra?String(r[cObra]||'').trim():'',dtBaixa:ds,
       ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,dtMs:dp?dp.getTime():null,
-      liquido:parseVal(cLiq?r[cLiq]:0),inadimplente:isAR&&dp&&dp.getTime()<hMs};
+      liquido:parseVal(cLiq?r[cLiq]:0),
+      dataVcto:isAR?ds:'',
+      inadimplente:isAR&&dp&&dp.getTime()<hMs};
   }).filter(function(r){return r.obra||r.liquido;});
 }
 function processarRec(){
@@ -1326,7 +1328,10 @@ function renderExec(){
 
   // Faturamento
   var recF=recebidas.filter(function(r){return obraF==='all'||r.obra===obraF;});
+  var hoje=new Date();hoje.setHours(0,0,0,0);var hojeMs=hoje.getTime();
   var arF=areceber.filter(function(r){return obraF==='all'||r.obra===obraF;});
+  // Recompute inadimplente based on current date
+  arF.forEach(function(r){r.inadimplente=r.dtMs?r.dtMs<hojeMs:false;});
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
   var aRecVal=arF.filter(function(r){return !r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
   var inadVal=arF.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
@@ -1346,14 +1351,15 @@ function renderExec(){
   var posVal  =sumUC(dadosF,'POS OBRA');
   var contasPagas=empVal+ccVal+cdcVal+terVal+posVal;
 
-  // Afetacao = 4% sobre A Receber
-  var afetacao=aRecVal*0.04;
-  var custoTotal=contasPagas+afetacao;
-
   // Saldo orcamento = total orcamento - custo construtivo
   var orcFiltExec=orcamento.filter(function(r){return obraF==='all'||r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
   var totalOrc=orcFiltExec.reduce(function(s,r){return s+r.valor;},0);
   var saldoOrc=totalOrc-ccVal;
+
+  // Afetacao = 4% sobre A Receber
+  var afetacao=aRecVal*0.04;
+  // Custo Total = Contas Pagas + Afetacao + Saldo Orcamento
+  var custoTotal=contasPagas+afetacao+Math.max(0,saldoOrc)+terVal;
 
   // Layout: 2 columns side by side
   function kpiV(kc,label,val,sub){
@@ -1369,7 +1375,7 @@ function renderExec(){
     kpiV('#4caf82','Faturamento Total',fBRL(fatTotal),(inclEstoque?'Inclui estoque: '+fBRL(estVal):'Rec + A Rec + Inadimp'))+
     kpiV('#4caf82','Faturamento',fBRL(fatVal),recF.length+' titulos')+
     kpiV('#5b9cf6','A Receber',fBRL(aRecVal),arF.filter(function(r){return !r.inadimplente;}).length+' titulos')+
-    kpiV('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
+    kpiV('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos | Venc antes de '+new Date().toLocaleDateString('pt-BR'))+
     kpiV('#e8a045','Estoque',fBRL(estVal),estoque.filter(function(r){return obraF==='all'||r.obra===obraF;}).length+' unidades');
 
   var col2=
@@ -1379,7 +1385,8 @@ function renderExec(){
     kpiV('#e8a045','Contas Pagas',fBRL(contasPagas),
       'Emp: '+fBRL(empVal)+' | CC: '+fBRL(ccVal)+' | CDC: '+fBRL(cdcVal)+' | Ter: '+fBRL(terVal)+' | Pos: '+fBRL(posVal))+
     kpiV('#5b9cf6','Afetacao (4% A Rec)',fBRL(afetacao),'4% sobre '+fBRL(aRecVal))+
-    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal));
+    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal))+
+    kpiV('#e05c5c','Terreno',fBRL(terVal),dadosF.filter(function(r){return normUC(r.uc)==='TERRENO';}).length+' lancamentos');
 
   document.getElementById('execKpi').innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+
