@@ -532,16 +532,8 @@ function fixDadosDates(arr){
 // STORAGE
 // ============================================================
 function salvar(){
-  try{
-    // Save dados as compact array format to save space
-    var dadosCompact=[['data','ano','mes','conta','cc','codFin','descFin','valFin','obra','uc','codOrc','descOrc','valObra']];
-    dados.forEach(function(r){dadosCompact.push([r.data,r.ano,r.mes,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});
-    localStorage.setItem('bi_d',JSON.stringify(dadosCompact));
-  }catch(e){
-    console.warn('localStorage cheio:', e);
-    var ind=document.getElementById('saveInd');
-    if(ind){ind.style.display='inline';ind.style.background='rgba(224,92,92,0.1)';ind.style.color='#e05c5c';ind.style.border='1px solid rgba(224,92,92,0.2)';ind.textContent='Dados grandes - use botao Salvar!';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},8000);}
-  }
+  // dados (Contas Pagas) sao muito grandes para localStorage - nao salvar automaticamente
+  // Usuario deve usar botao Salvar/Carregar para persistir
   try{localStorage.setItem('bi_dp',JSON.stringify(depara));}catch(e){}
   try{localStorage.setItem('bi_rec',JSON.stringify(recebidas));}catch(e){}
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
@@ -551,22 +543,7 @@ function salvar(){
   if(ind){ind.style.display='inline';ind.style.background='rgba(76,175,130,0.1)';ind.style.color='#4caf82';ind.style.border='1px solid rgba(76,175,130,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
 }
 function carregar(){
-  try{
-    var d=localStorage.getItem('bi_d');
-    if(d){
-      var parsed=JSON.parse(d);
-      if(Array.isArray(parsed) && Array.isArray(parsed[0])){
-        // Compact format: first row is headers
-        var hdrs=parsed[0]; var rows=parsed.slice(1);
-        dados=rows.map(function(r){
-          var obj={};hdrs.forEach(function(h,i){obj[h]=r[i];});return obj;
-        });
-      } else {
-        dados=parsed;
-      }
-      fixDadosDates(dados);
-    }
-  }catch(e){dados=[];}
+  // dados nao sao salvos no localStorage por serem muito grandes - usar botao Carregar
   try{var p=localStorage.getItem('bi_dp');if(p)depara=JSON.parse(p);}catch(e){depara=[];}
   try{var r=localStorage.getItem('bi_rec');if(r){recebidas=JSON.parse(r);fixDates(recebidas,false);}}catch(e){recebidas=[];}
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
@@ -784,7 +761,7 @@ function normContas(rows,isAR){
   var k=Object.keys(rows[0]);
   var cObra=colFind(k,['obra','cc']);
   // Contas Recebidas: Dt. Baixa | Contas a Receber: Data Vcto
-  var cBaixa=colFind(k,['dt. baixa','dt baixa','data baixa','baixa','data vcto','dt vcto','vcto','vencimento']);
+  var cBaixa=colFind(k,['dt. baixa','dt baixa','data baixa','baixa','data vcto','data vecto','dt vcto','vcto','vencimento']);
   // Liquido: Contas Recebidas uses 'liquido', Contas a Receber uses 'total'
   var cLiq=colFind(k,['liquido','líquido']);
   if(!cLiq) cLiq=colFind(k,['total']);
@@ -1485,8 +1462,19 @@ function limparEstoque(){
 // ============================================================
 function updateHdr(){
   var el=document.getElementById('hdrRec');
-  if(dados.length){el.style.display='inline';el.textContent=dados.length+' registros';}
-  else el.style.display='none';
+  if(dados.length){
+    el.style.display='inline';
+    el.style.background='rgba(91,156,246,0.1)';
+    el.style.color='#5b9cf6';
+    el.style.border='1px solid rgba(91,156,246,0.2)';
+    el.textContent=dados.length+' registros';
+  } else {
+    el.style.display='inline';
+    el.style.background='rgba(232,160,69,0.1)';
+    el.style.color='var(--accent)';
+    el.style.border='1px solid rgba(232,160,69,0.2)';
+    el.textContent='Carregar sessao para restaurar dados';
+  }
 }
 function init(){
   updateHdr();
