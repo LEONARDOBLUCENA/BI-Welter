@@ -1388,8 +1388,8 @@ function renderExec(){
     kpiV('#e8a045','Contas Pagas',fBRL(contasPagas),
       'Emp: '+fBRL(empVal)+' | CC: '+fBRL(ccVal)+' | CDC: '+fBRL(cdcVal)+' | Ter: '+fBRL(terVal)+' | Pos: '+fBRL(posVal))+
     kpiV('#5b9cf6','Afetacao (4% A Rec)',fBRL(afetacao),'4% sobre '+fBRL(aRecVal))+
-    kpiV('#5b9cf6','Afetacao + Comissao',fBRL(afetacaoComissao),inclEstoque?'4%+8% sobre estoque '+fBRL(estVal):'Marque o checkbox de estoque')+
-    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal));
+    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal))+
+    kpiV('#5b9cf6','Afetacao + Comissao',fBRL(afetacaoComissao),inclEstoque?'4%+8% sobre estoque '+fBRL(estVal):'Marque o checkbox de estoque');
 
   var lucro=fatTotal-custoTotal;
   var lucroColor=lucro>=0?'#4caf82':'#e05c5c';
