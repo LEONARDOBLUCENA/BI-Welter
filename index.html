@@ -104,6 +104,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
   <div class="ni" id="tab2" onclick="goTab(2)"><span class="ni-icon">&#9989;</span><span class="ni-label">Contas Recebidas</span></div>
   <div class="ni" id="tab3" onclick="goTab(3)"><span class="ni-icon">&#128197;</span><span class="ni-label">Contas a Receber</span></div>
   <div class="ni" id="tab4" onclick="goTab(4)"><span class="ni-icon">&#128196;</span><span class="ni-label">Orcamento de Obra</span></div>
+  <div class="ni" id="tab8" onclick="goTab(8)"><span class="ni-icon">&#128230;</span><span class="ni-label">Estoque</span></div>
   <div class="nd"></div>
   <div class="ns">Dashboards</div>
   <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Adm Fin.</span></div>
@@ -389,17 +390,59 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
   </div>
 </div>
 
+<!-- P8: ESTOQUE -->
+<div class="page" id="page8">
+  <div class="st">Estoque</div>
+  <div class="sd">Cadastre as unidades em estoque por obra.</div>
+  <div class="card">
+    <div class="ct">Nova unidade</div>
+    <div class="rfrow">
+      <div class="fg2"><label>Obra</label><select id="estObra"><option value="">Selecione...</option></select></div>
+      <div class="fg2"><label>Unidade</label><input type="text" id="estUnidade" placeholder="Ex: Apto 101"></div>
+      <div class="fg2"><label>Valor</label><input type="text" id="estValor" placeholder="Ex: 500000"></div>
+      <button class="btn btn-accent" onclick="addEstoque()" style="align-self:flex-end;">+ Adicionar</button>
+    </div>
+    <div id="estMsg" class="msg"></div>
+  </div>
+  <div class="card">
+    <div class="ct">
+      <span>Unidades <span id="estCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="exportEstoque()">&#8595; Exportar</button>
+        <button class="btn btn-sm btn-danger" onclick="limparEstoque()">&#10005; Limpar</button>
+      </div>
+    </div>
+    <div class="fbar">
+      <label>Obra</label><select id="fEstObra" onchange="renderEstoque()"><option value="all">Todas</option></select>
+    </div>
+    <div id="estEmpty" class="nodata" style="display:none;"><p>Nenhuma unidade cadastrada.</p></div>
+    <div class="tbl-wrap" id="estWrap" style="display:none;">
+      <table>
+        <thead><tr><th>Obra</th><th>Unidade</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+        <tbody id="tbEst"></tbody>
+      </table>
+    </div>
+    <div id="estFooter" style="padding:8px 0 0;font-size:11px;color:var(--text3);"></div>
+  </div>
+</div>
+
 <!-- P7: DASHBOARD EXECUTIVO -->
 <div class="page" id="page7">
   <div class="st">Dashboard Executivo</div>
-  <div class="sd">Visao geral de faturamento por obra.</div>
+  <div class="sd">Visao consolidada por obra.</div>
   <div id="execEmpty" class="nodata"><p>Importe dados nas abas Contas Recebidas e Contas a Receber.</p><button class="btn btn-accent" style="margin-top:16px;" onclick="goTab(2)">Ir para Contas Recebidas</button></div>
   <div id="execContent" style="display:none;">
     <div class="filters">
       <div class="fg"><label>Obra</label><select id="execObra" onchange="renderExec()"><option value="all">Todas</option></select></div>
+      <div class="fg" style="flex:0;min-width:auto;justify-content:flex-end;padding-bottom:2px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;">
+          <input type="checkbox" id="execIncluirEstoque" onchange="renderExec()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+          <span style="font-size:12px;color:var(--text2);">Incluir Estoque no Faturamento Total</span>
+        </label>
+      </div>
       <button class="btn btn-sm" onclick="clearExec()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
-    <div id="execKpi" class="kpi-wrap"></div>
+    <div id="execKpi"></div>
   </div>
 </div>
 
@@ -410,7 +453,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
 // ============================================================
 // STATE
 // ============================================================
-var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[];
+var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[];
 var admCI=null, obraCI=null;
 var MESES_LABEL=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var MESES_SHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -500,6 +543,7 @@ function salvar(){
   try{localStorage.setItem('bi_rec',JSON.stringify(recebidas));}catch(e){}
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
   try{localStorage.setItem('bi_orc',JSON.stringify(orcamento));}catch(e){}
+  try{localStorage.setItem('bi_est',JSON.stringify(estoque));}catch(e){}
   var ind=document.getElementById('saveInd');
   if(ind){ind.style.display='inline';ind.style.background='rgba(76,175,130,0.1)';ind.style.color='#4caf82';ind.style.border='1px solid rgba(76,175,130,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
 }
@@ -524,10 +568,11 @@ function carregar(){
   try{var r=localStorage.getItem('bi_rec');if(r){recebidas=JSON.parse(r);fixDates(recebidas,false);}}catch(e){recebidas=[];}
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
   try{var o=localStorage.getItem('bi_orc');if(o)orcamento=JSON.parse(o);}catch(e){orcamento=[];}
+  try{var e2=localStorage.getItem('bi_est');if(e2)estoque=JSON.parse(e2);}catch(e){estoque=[];}
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length&&!orcamento.length){alert('Nenhum dado para salvar.');return;}
-  var blob=new Blob([JSON.stringify({v:4,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:5,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque})],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='bi_sessao_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
@@ -542,6 +587,7 @@ function carregarSessao(input){
       dados=s.dados||[];depara=s.depara||[];
       recebidas=s.recebidas||[];areceber=s.areceber||[];
       orcamento=s.orcamento||[];
+      estoque=s.estoque||[];
       fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();
       alert(dados.length+' registros carregados.');
@@ -554,13 +600,14 @@ function carregarSessao(input){
 // TABS
 // ============================================================
 function goTab(i){
-  for(var j=0;j<8;j++){
+  for(var j=0;j<9;j++){
     document.getElementById('tab'+j).classList.toggle('active',i===j);
     document.getElementById('page'+j).classList.toggle('active',i===j);
   }
   if(i===5)renderAdm();
   if(i===6)renderObra();
   if(i===7)renderExec();
+  if(i===8)renderEstoque();
 }
 
 // ============================================================
@@ -1251,10 +1298,11 @@ function diagComparativo(){
 // ============================================================
 function clearExec(){
   document.getElementById('execObra').value='all';
+  document.getElementById('execIncluirEstoque').checked=false;
   renderExec();
 }
 function renderExec(){
-  var hasData=recebidas.length||areceber.length;
+  var hasData=recebidas.length||areceber.length||dados.length;
   if(!hasData){
     document.getElementById('execEmpty').style.display='block';
     document.getElementById('execContent').style.display='none';
@@ -1263,29 +1311,130 @@ function renderExec(){
   document.getElementById('execEmpty').style.display='none';
   document.getElementById('execContent').style.display='block';
 
-  // Populate obra filter from recebidas + areceber
+  // Populate obra filter
   var obrasSet=new Set();
   recebidas.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
   areceber.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
-  var obras=[...obrasSet].sort();
-  setSel('execObra',obras,'Todas');
+  dados.filter(function(r){return obraOK(r.obra);}).forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
+  setSel('execObra',[...obrasSet].sort(),'Todas');
 
   var obraF=document.getElementById('execObra').value;
+  var inclEstoque=document.getElementById('execIncluirEstoque').checked;
+
+  // Faturamento
   var recF=recebidas.filter(function(r){return obraF==='all'||r.obra===obraF;});
   var arF=areceber.filter(function(r){return obraF==='all'||r.obra===obraF;});
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
   var aRecVal=arF.filter(function(r){return !r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
   var inadVal=arF.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
-  var fatTotal=fatVal+aRecVal+inadVal;
+  var estVal=estoque.filter(function(r){return obraF==='all'||r.obra===obraF;}).reduce(function(s,r){return s+r.valor;},0);
+  var fatTotal=fatVal+aRecVal+inadVal+(inclEstoque?estVal:0);
+
+  // Custos (from dados)
+  var dadosF=dados.filter(function(r){
+    if(!obraOK(r.obra)) return false;
+    if(obraF!=='all'&&r.obra!==obraF) return false;
+    return true;
+  });
+  var empVal  =sumUC(dadosF,'EMPREENDIMENTO');
+  var ccVal   =sumUC(dadosF,'CUSTO CONSTRUTIVO');
+  var cdcVal  =sumUC(dadosF,'CUSTO DA CONSTRUCAO');
+  var terVal  =sumUC(dadosF,'TERRENO');
+  var posVal  =sumUC(dadosF,'POS OBRA');
+  var contasPagas=empVal+ccVal+cdcVal+terVal+posVal;
+
+  // Afetacao = 4% sobre A Receber
+  var afetacao=aRecVal*0.04;
+  var custoTotal=contasPagas+afetacao;
+
+  // Saldo orcamento = total orcamento - custo construtivo
+  var orcFiltExec=orcamento.filter(function(r){return obraF==='all'||r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
+  var totalOrc=orcFiltExec.reduce(function(s,r){return s+r.valor;},0);
+  var saldoOrc=totalOrc-ccVal;
+
+  // Layout: 2 columns side by side
+  function kpiV(kc,label,val,sub){
+    return '<div class="kpi" style="--kc:'+kc+';margin-bottom:12px;">'+
+      '<div class="kpi-label">'+label+'</div>'+
+      '<div class="kpi-value">'+val+'</div>'+
+      (sub?'<div class="kpi-sub">'+sub+'</div>':'')+
+    '</div>';
+  }
+
+  var col1=
+    '<div class="kpi-section">Faturamento</div>'+
+    kpiV('#4caf82','Faturamento Total',fBRL(fatTotal),(inclEstoque?'Inclui estoque: '+fBRL(estVal):'Rec + A Rec + Inadimp'))+
+    kpiV('#4caf82','Faturamento',fBRL(fatVal),recF.length+' titulos')+
+    kpiV('#5b9cf6','A Receber',fBRL(aRecVal),arF.filter(function(r){return !r.inadimplente;}).length+' titulos')+
+    kpiV('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
+    kpiV('#e8a045','Estoque',fBRL(estVal),estoque.filter(function(r){return obraF==='all'||r.obra===obraF;}).length+' unidades');
+
+  var col2=
+    '<div class="kpi-section">Custos</div>'+
+    kpiV('var(--red)','Custo Total',fBRL(custoTotal),
+      'Contas Pagas: '+fBRL(contasPagas)+' | Afetacao: '+fBRL(afetacao))+
+    kpiV('#e8a045','Contas Pagas',fBRL(contasPagas),
+      'Emp: '+fBRL(empVal)+' | CC: '+fBRL(ccVal)+' | CDC: '+fBRL(cdcVal)+' | Ter: '+fBRL(terVal)+' | Pos: '+fBRL(posVal))+
+    kpiV('#5b9cf6','Afetacao (4% A Rec)',fBRL(afetacao),'4% sobre '+fBRL(aRecVal))+
+    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal));
 
   document.getElementById('execKpi').innerHTML=
-    '<span class="kpi-section">Faturamento</span>'+
-    '<div class="kpi-row">'+
-      kpiHtml('#4caf82','Faturamento Total',fBRL(fatTotal),'Rec + A Rec + Inadimp')+
-      kpiHtml('#4caf82','Faturamento',fBRL(fatVal),recF.length+' titulos')+
-      kpiHtml('#5b9cf6','A Receber',fBRL(aRecVal),arF.filter(function(r){return !r.inadimplente;}).length+' titulos')+
-      kpiHtml('#e05c5c','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+
+      '<div>'+col1+'</div>'+
+      '<div>'+col2+'</div>'+
     '</div>';
+}
+
+// ============================================================
+// P8: ESTOQUE
+// ============================================================
+function populateEstoqueObraSelect(){
+  var obras=unicos(dados.filter(function(r){return r.obra;}),'obra');
+  var sel=document.getElementById('estObra');
+  if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Selecione...</option>'+obras.map(function(o){return '<option value="'+o+'">'+o+'</option>';}).join('');
+  if(obras.includes(cur)) sel.value=cur;
+}
+function addEstoque(){
+  var obra=document.getElementById('estObra').value;
+  var unidade=document.getElementById('estUnidade').value.trim();
+  var valor=parseVal(document.getElementById('estValor').value);
+  if(!obra){showMsg('estMsg','Selecione a obra.','warn');return;}
+  if(!unidade){showMsg('estMsg','Informe a unidade.','warn');return;}
+  if(!valor){showMsg('estMsg','Informe o valor.','warn');return;}
+  estoque.push({obra:obra,unidade:unidade,valor:valor});
+  salvar();
+  document.getElementById('estUnidade').value='';
+  document.getElementById('estValor').value='';
+  showMsg('estMsg','&#10003; Adicionado!','ok');
+  renderEstoque();
+}
+function deleteEstoque(i){estoque.splice(i,1);salvar();renderEstoque();}
+function renderEstoque(){
+  populateEstoqueObraSelect();
+  setSel('fEstObra',unicos(estoque,'obra'),'Todas');
+  var fObra=document.getElementById('fEstObra').value;
+  var data=estoque.filter(function(r){return fObra==='all'||r.obra===fObra;});
+  document.getElementById('estCount').textContent='('+estoque.length+' total)';
+  document.getElementById('estEmpty').style.display=estoque.length?'none':'block';
+  document.getElementById('estWrap').style.display=estoque.length?'block':'none';
+  document.getElementById('estFooter').textContent=data.length+' unidades | Total: '+fBRL(data.reduce(function(s,r){return s+r.valor;},0));
+  document.getElementById('tbEst').innerHTML=data.map(function(r){
+    var ri=estoque.indexOf(r);
+    return '<tr><td>'+r.obra+'</td><td>'+r.unidade+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.valor)+'</td>'+
+      '<td><button class="btn btn-sm btn-danger" onclick="deleteEstoque('+ri+')">&#10005;</button></td></tr>';
+  }).join('');
+}
+function exportEstoque(){
+  if(!estoque.length){alert('Nenhuma unidade.');return;}
+  var ws=XLSX.utils.aoa_to_sheet([['Obra','Unidade','Valor']].concat(estoque.map(function(r){return[r.obra,r.unidade,r.valor];})));
+  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Estoque');
+  XLSX.writeFile(wb,'estoque.xlsx');
+}
+function limparEstoque(){
+  if(!confirm('Apagar todo o estoque?'))return;
+  estoque=[];salvar();renderEstoque();
 }
 
 // ============================================================
@@ -1299,7 +1448,7 @@ function updateHdr(){
 function init(){
   updateHdr();
   setSel('fAno',anos(dados),'Todos');
-  renderDados();renderDP();renderRec();renderAR();renderOrc();
+  renderDados();renderDP();renderRec();renderAR();renderOrc();renderEstoque();
 }
 carregar();init();
 </script>
