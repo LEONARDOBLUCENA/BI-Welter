@@ -789,13 +789,23 @@ function normContas(rows,isAR){
   var cLiq=colFind(k,['liquido','líquido']);
   if(!cLiq) cLiq=colFind(k,['total']);
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
+  // Log columns found for debug
+  console.log('normContas isAR='+isAR+' cObra='+cObra+' cBaixa='+cBaixa+' cLiq='+cLiq);
+  console.log('All columns:', k.join(' | '));
   return rows.map(function(r){
     var ds=cBaixa?String(r[cBaixa]||'').trim():'';
+    // Try to parse various date formats
     var dp=parseDt(ds);
-    return{obra:cObra?String(r[cObra]||'').trim():'',dtBaixa:ds,
+    // Also try yyyy-mm-dd format
+    if(!dp && ds){
+      var m2=ds.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if(m2) dp=new Date(+m2[1],+m2[2]-1,+m2[3]);
+    }
+    var dsFormatted=dp?dp.toLocaleDateString('pt-BR'):ds;
+    return{obra:cObra?String(r[cObra]||'').trim():'',
+      dtBaixa:dsFormatted,
       ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,dtMs:dp?dp.getTime():null,
       liquido:parseVal(cLiq?r[cLiq]:0),
-      dataVcto:isAR?ds:'',
       inadimplente:isAR&&dp&&dp.getTime()<hMs};
   }).filter(function(r){return r.obra||r.liquido;});
 }
