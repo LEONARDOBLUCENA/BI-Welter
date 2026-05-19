@@ -238,7 +238,10 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
   <div class="card">
     <div class="ct">
       <span>Registros <span id="arCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
-      <button class="btn btn-sm btn-danger" onclick="limparAR()">&#10005; Limpar</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="exportAR()">&#8595; Exportar</button>
+        <button class="btn btn-sm btn-danger" onclick="limparAR()">&#10005; Limpar</button>
+      </div>
     </div>
     <div id="arEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="arWrap" style="display:none;">
@@ -830,13 +833,24 @@ function processarAR(){
   renderAR();showMsg('arMsg','&#10003; '+novos.length+' adicionados! Total: '+areceber.length,'ok');
 }
 function limparAR(){if(!confirm('Apagar?'))return;areceber=[];salvar();renderAR();}
+function exportAR(){
+  if(!areceber.length){alert('Nenhum dado.');return;}
+  var rows=[['Obra','Data Vcto','Status','Total']];
+  areceber.forEach(function(r){
+    rows.push([r.obra,r.dtBaixa,r.inadimplente?'Inadimplente':'A Receber',r.liquido]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Contas a Receber');
+  XLSX.writeFile(wb,'contas_a_receber.xlsx');
+}
 function renderAR(){
   document.getElementById('arEmpty').style.display=areceber.length?'none':'block';
   document.getElementById('arWrap').style.display=areceber.length?'block':'none';
   document.getElementById('arCount').textContent='('+areceber.length+' total)';
   document.getElementById('tbAR').innerHTML=areceber.slice(0,500).map(function(r){
     var b=r.inadimplente?'<span class="badge-r">Inadimplente</span>':'<span class="badge-g">A Receber</span>';
-    return '<tr><td>'+r.obra+'</td><td style="color:var(--text2)">'+r.dtBaixa+'</td><td>'+b+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.liquido)+'</td></tr>';
+    var dtColor=r.inadimplente?'var(--red)':'var(--text2)';
+    return '<tr><td>'+r.obra+'</td><td style="color:'+dtColor+';white-space:nowrap">'+r.dtBaixa+'</td><td>'+b+'</td><td class="mono" style="text-align:right;font-weight:500">'+fBRL(r.liquido)+'</td></tr>';
   }).join('');
 }
 
@@ -1359,7 +1373,7 @@ function renderExec(){
   // Afetacao = 4% sobre A Receber
   var afetacao=aRecVal*0.04;
   // Custo Total = Contas Pagas + Afetacao + Saldo Orcamento
-  var custoTotal=contasPagas+afetacao+Math.max(0,saldoOrc)+terVal;
+  var custoTotal=contasPagas+afetacao+Math.max(0,saldoOrc);
 
   // Layout: 2 columns side by side
   function kpiV(kc,label,val,sub){
@@ -1385,10 +1399,16 @@ function renderExec(){
     kpiV('#e8a045','Contas Pagas',fBRL(contasPagas),
       'Emp: '+fBRL(empVal)+' | CC: '+fBRL(ccVal)+' | CDC: '+fBRL(cdcVal)+' | Ter: '+fBRL(terVal)+' | Pos: '+fBRL(posVal))+
     kpiV('#5b9cf6','Afetacao (4% A Rec)',fBRL(afetacao),'4% sobre '+fBRL(aRecVal))+
-    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal))+
-    kpiV('#e05c5c','Terreno',fBRL(terVal),dadosF.filter(function(r){return normUC(r.uc)==='TERRENO';}).length+' lancamentos');
+    kpiV('#a78bfa','Saldo Orcamento',fBRL(saldoOrc),'Orc: '+fBRL(totalOrc)+' - CC: '+fBRL(ccVal));
 
+  var lucro=fatTotal-custoTotal;
+  var lucroColor=lucro>=0?'#4caf82':'#e05c5c';
   document.getElementById('execKpi').innerHTML=
+    '<div class="kpi" style="--kc:'+lucroColor+';margin-bottom:16px;">'+
+      '<div class="kpi-label">Lucro / Prejuizo</div>'+
+      '<div class="kpi-value" style="color:'+lucroColor+'">'+fBRL(lucro)+'</div>'+
+      '<div class="kpi-sub">Faturamento Total: '+fBRL(fatTotal)+' - Custo Total: '+fBRL(custoTotal)+'</div>'+
+    '</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+
       '<div>'+col1+'</div>'+
       '<div>'+col2+'</div>'+
