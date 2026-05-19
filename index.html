@@ -779,9 +779,12 @@ function importarDP(input){
 function normContas(rows,isAR){
   if(!rows.length)return[];
   var k=Object.keys(rows[0]);
-  var cObra=colFind(k,['obra']);
-  var cBaixa=colFind(k,['dt. baixa','dt baixa','data baixa','baixa']);
-  var cLiq=colFind(k,['liquido','liquido']);
+  var cObra=colFind(k,['obra','cc']);
+  // Contas Recebidas: Dt. Baixa | Contas a Receber: Data Vcto
+  var cBaixa=colFind(k,['dt. baixa','dt baixa','data baixa','baixa','data vcto','dt vcto','vcto','vencimento']);
+  // Liquido: Contas Recebidas uses 'liquido', Contas a Receber uses 'total'
+  var cLiq=colFind(k,['liquido','líquido']);
+  if(!cLiq) cLiq=colFind(k,['total']);
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
   return rows.map(function(r){
     var ds=cBaixa?String(r[cBaixa]||'').trim():'';
