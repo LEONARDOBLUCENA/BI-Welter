@@ -93,6 +93,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
     <button class="btn btn-sm" onclick="salvarSessao()">&#8595; Salvar</button>
     <button class="btn btn-sm" onclick="document.getElementById('loadFile').click()">&#8593; Carregar</button>
     <input type="file" id="loadFile" accept=".json" style="display:none" onchange="carregarSessao(this)">
+    <button class="btn btn-sm" onclick="abrirConfigNuvem()" title="Salvar/Carregar na nuvem via GitHub Gist">&#9729; Nuvem</button>
   </div>
 </header>
 
@@ -446,7 +447,14 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       <button class="btn btn-sm" onclick="clearExec()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div class="card" style="margin-bottom:16px;">
-      <div class="ct">Data de Entrega das Chaves por Obra</div>
+      <div class="ct">
+        <span>Data de Entrega das Chaves por Obra</span>
+        <button class="btn btn-sm" onclick="toggleGerenciarObrasEntrega()">&#9881; Gerenciar Obras</button>
+      </div>
+      <div id="gerenciarObrasEntrega" style="display:none;margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Selecione as obras que devem aparecer:</div>
+        <div id="obrasEntregaCheck"></div>
+      </div>
       <div id="dataEntregaWrap"></div>
     </div>
     <div id="execKpi"></div>
@@ -460,7 +468,8 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
 // ============================================================
 // STATE
 // ============================================================
-var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], dataEntrega={};
+var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], dataEntrega={}, obrasEntregaVisiveis={};
+var gistConfig={token:'',gistId:'',filename:'bi_welter_data.json'};
 var admCI=null, obraCI=null;
 var MESES_LABEL=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var MESES_SHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -536,29 +545,48 @@ function fixDadosDates(arr){
 // STORAGE
 // ============================================================
 function salvar(){
-  // dados (Contas Pagas) sao muito grandes para localStorage - nao salvar automaticamente
-  // Usuario deve usar botao Salvar/Carregar para persistir
+  // Try to save dados compactly
+  try{
+    var dc=[['data','ano','mes','conta','cc','codFin','descFin','valFin','obra','uc','codOrc','descOrc','valObra']];
+    dados.forEach(function(r){dc.push([r.data,r.ano,r.mes,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});
+    localStorage.setItem('bi_d',JSON.stringify(dc));
+  }catch(e){
+    try{localStorage.removeItem('bi_d');}catch(e2){}
+  }
   try{localStorage.setItem('bi_dp',JSON.stringify(depara));}catch(e){}
   try{localStorage.setItem('bi_rec',JSON.stringify(recebidas));}catch(e){}
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
   try{localStorage.setItem('bi_orc',JSON.stringify(orcamento));}catch(e){}
   try{localStorage.setItem('bi_est',JSON.stringify(estoque));}catch(e){}
   try{localStorage.setItem('bi_dtent',JSON.stringify(dataEntrega));}catch(e){}
+  try{localStorage.setItem('bi_obrent',JSON.stringify(obrasEntregaVisiveis));}catch(e){}
+  try{localStorage.setItem('bi_gist',JSON.stringify(gistConfig));}catch(e){}
   var ind=document.getElementById('saveInd');
   if(ind){ind.style.display='inline';ind.style.background='rgba(76,175,130,0.1)';ind.style.color='#4caf82';ind.style.border='1px solid rgba(76,175,130,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
 }
 function carregar(){
-  // dados nao sao salvos no localStorage por serem muito grandes - usar botao Carregar
+  try{
+    var d=localStorage.getItem('bi_d');
+    if(d){
+      var parsed=JSON.parse(d);
+      if(Array.isArray(parsed)&&Array.isArray(parsed[0])){
+        var hdrs=parsed[0]; dados=parsed.slice(1).map(function(r){var o={};hdrs.forEach(function(h,i){o[h]=r[i];});return o;});
+      } else { dados=parsed; }
+      fixDadosDates(dados);
+    }
+  }catch(e){dados=[];}
   try{var p=localStorage.getItem('bi_dp');if(p)depara=JSON.parse(p);}catch(e){depara=[];}
   try{var r=localStorage.getItem('bi_rec');if(r){recebidas=JSON.parse(r);fixDates(recebidas,false);}}catch(e){recebidas=[];}
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
   try{var o=localStorage.getItem('bi_orc');if(o)orcamento=JSON.parse(o);}catch(e){orcamento=[];}
   try{var e2=localStorage.getItem('bi_est');if(e2)estoque=JSON.parse(e2);}catch(e){estoque=[];}
-  try{var dt=localStorage.getItem('bi_dtent');if(dt)dataEntrega=JSON.parse(dt);}catch(e){dataEntrega={}; }
+  try{var dt=localStorage.getItem('bi_dtent');if(dt)dataEntrega=JSON.parse(dt);}catch(e){dataEntrega={};}
+  try{var oe=localStorage.getItem('bi_obrent');if(oe)obrasEntregaVisiveis=JSON.parse(oe);}catch(e){obrasEntregaVisiveis={};}
+  try{var gc=localStorage.getItem('bi_gist');if(gc)gistConfig=JSON.parse(gc);}catch(e){}
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length&&!orcamento.length){alert('Nenhum dado para salvar.');return;}
-  var blob=new Blob([JSON.stringify({v:6,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntrega:dataEntrega})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:7,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntrega:dataEntrega,obrasEntregaVisiveis:obrasEntregaVisiveis})],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='bi_sessao_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
@@ -575,6 +603,7 @@ function carregarSessao(input){
       orcamento=s.orcamento||[];
       estoque=s.estoque||[];
       dataEntrega=s.dataEntrega||{};
+      obrasEntregaVisiveis=s.obrasEntregaVisiveis||{};
       fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();
       alert(dados.length+' registros carregados.');
@@ -1314,43 +1343,71 @@ function clearExec(){
   document.getElementById('execIncluirEstoque').checked=false;
   renderExec();
 }
+function toggleGerenciarObrasEntrega(){
+  var el=document.getElementById('gerenciarObrasEntrega');
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
 function renderDataEntregaCard(){
-  // Get all obras from recebidas + areceber
   var obrasSet=new Set();
   recebidas.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
   areceber.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
-  var obras=[...obrasSet].sort();
+  var todasObras=[...obrasSet].sort();
   var wrap=document.getElementById('dataEntregaWrap');
   if(!wrap) return;
-  if(!obras.length){wrap.innerHTML='<p style="font-size:12px;color:var(--text3);">Nenhuma obra encontrada. Importe Contas Recebidas ou a Receber.</p>';return;}
+  if(!todasObras.length){wrap.innerHTML='<p style="font-size:12px;color:var(--text3);">Nenhuma obra encontrada.</p>';return;}
+
+  // Render checkboxes for managing visible obras
+  var chkWrap=document.getElementById('obrasEntregaCheck');
+  if(chkWrap){
+    chkWrap.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:12px;">'+
+      todasObras.map(function(o,i){
+        var checked=obrasEntregaVisiveis[o]!==false;
+        return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text2);">'+
+          '<input type="checkbox" '+(checked?'checked':'')+' data-obra-vis="'+i+'" onchange="toggleObraEntrega(this)" style="accent-color:var(--accent);">'+
+          o+'</label>';
+      }).join('')+
+    '</div>';
+    chkWrap._obras=todasObras;
+  }
+
+  // Only show obras where visible is not explicitly false
+  var obras=todasObras.filter(function(o){ return obrasEntregaVisiveis[o]!==false; });
+  if(!obras.length){wrap.innerHTML='<p style="font-size:12px;color:var(--text3);">Nenhuma obra selecionada. Clique em Gerenciar Obras.</p>';return;}
   var html='<div style="display:flex;flex-wrap:wrap;gap:12px;">';
   obras.forEach(function(o,i){
     var val=dataEntrega[o]||'';
     html+='<div style="display:flex;flex-direction:column;gap:4px;min-width:200px;flex:1;">'+
       '<label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;">'+o+'</label>'+
       '<input type="text" placeholder="dd/mm/yyyy" value="'+val+'" '+
-        'data-obra-idx="'+i+'" '+
+        'data-obra-vis-idx="'+i+'" '+
         'style="padding:7px 10px;font-size:12px;" '+
-        'onchange="setDataEntregaByIdx(this)">'+
+        'onchange="setDataEntregaVisIdx(this)">'+
     '</div>';
   });
   html+='</div>';
   wrap.innerHTML=html;
-  // Store obras list for lookup
   wrap._obras=obras;
 }
-function setDataEntregaByIdx(input){
+function toggleObraEntrega(chk){
+  var chkWrap=document.getElementById('obrasEntregaCheck');
+  var obras=chkWrap?chkWrap._obras:[];
+  var idx=parseInt(chk.getAttribute('data-obra-vis'));
+  var obra=obras[idx];
+  if(!obra) return;
+  obrasEntregaVisiveis[obra]=chk.checked;
+  salvar(); renderDataEntregaCard();
+}
+function setDataEntregaVisIdx(input){
   var wrap=document.getElementById('dataEntregaWrap');
   var obras=wrap?wrap._obras:[];
-  var idx=parseInt(input.getAttribute('data-obra-idx'));
+  var idx=parseInt(input.getAttribute('data-obra-vis-idx'));
   var obra=obras[idx];
   if(!obra) return;
   var val=input.value.trim();
-  if(val) dataEntrega[obra]=val;
-  else delete dataEntrega[obra];
-  salvar();
-  renderExec();
+  if(val) dataEntrega[obra]=val; else delete dataEntrega[obra];
+  salvar(); renderExec();
 }
+
 function renderExec(){
   var hasData=recebidas.length||areceber.length||dados.length;
   if(!hasData){
@@ -1512,6 +1569,86 @@ function limparEstoque(){
 }
 
 // ============================================================
+// NUVEM - GitHub Gist
+// ============================================================
+function abrirConfigNuvem(){
+  document.getElementById('gistToken').value=gistConfig.token||'';
+  document.getElementById('gistId').value=gistConfig.gistId||'';
+  if(gistConfig.gistId){
+    document.getElementById('gistLink').style.display='block';
+    document.getElementById('gistLink').innerHTML='Link fixo: <a href="https://gist.github.com/'+gistConfig.gistId+'" target="_blank" style="color:var(--accent)">gist.github.com/'+gistConfig.gistId+'</a>';
+  }
+  var modal=document.getElementById('nuvemModal');
+  modal.style.display='flex';
+}
+function fecharConfigNuvem(){
+  document.getElementById('nuvemModal').style.display='none';
+}
+function showGistMsg(txt,type){
+  var el=document.getElementById('gistMsg');
+  el.style.display='block';
+  el.style.color=type==='ok'?'var(--green)':type==='warn'?'var(--accent)':'var(--red)';
+  el.innerHTML=txt;
+}
+function getSessaoData(){
+  return {v:7,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,
+    orcamento:orcamento,estoque:estoque,dataEntrega:dataEntrega,obrasEntregaVisiveis:obrasEntregaVisiveis};
+}
+async function salvarNaNuvem(){
+  var token=document.getElementById('gistToken').value.trim();
+  var gistId=document.getElementById('gistId').value.trim();
+  if(!token){showGistMsg('Informe o GitHub Token.','warn');return;}
+  showGistMsg('Salvando...','info');
+  var body={};
+  body.description='BI Welter - Dados';
+  body.public=false;
+  body.files={};
+  body.files[gistConfig.filename]={content:JSON.stringify(getSessaoData())};
+  var url=gistId?'https://api.github.com/gists/'+gistId:'https://api.github.com/gists';
+  var method=gistId?'PATCH':'POST';
+  try{
+    var resp=await fetch(url,{method:method,headers:{'Authorization':'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var data=await resp.json();
+    if(data.id){
+      gistConfig.token=token; gistConfig.gistId=data.id; salvar();
+      document.getElementById('gistId').value=data.id;
+      document.getElementById('gistLink').style.display='block';
+      document.getElementById('gistLink').innerHTML='Link fixo: <a href="https://gist.github.com/'+data.id+'" target="_blank" style="color:var(--accent)">gist.github.com/'+data.id+'</a><br><span style="color:var(--text3);font-size:11px;">Compartilhe este ID com quem precisar carregar os dados.</span>';
+      showGistMsg('&#10003; Salvo na nuvem! Gist ID: '+data.id,'ok');
+    } else {
+      showGistMsg('Erro: '+(data.message||'Falha ao salvar'),'error');
+    }
+  }catch(e){showGistMsg('Erro de conexao: '+e.message,'error');}
+}
+async function carregarDaNuvem(){
+  var gistId=document.getElementById('gistId').value.trim()||gistConfig.gistId;
+  if(!gistId){showGistMsg('Informe o Gist ID.','warn');return;}
+  showGistMsg('Carregando...','info');
+  try{
+    var resp=await fetch('https://api.github.com/gists/'+gistId);
+    var data=await resp.json();
+    var fileContent=data.files&&data.files[gistConfig.filename]?data.files[gistConfig.filename].content:null;
+    if(!fileContent){
+      // Try first file
+      var keys=data.files?Object.keys(data.files):[];
+      if(keys.length) fileContent=data.files[keys[0]].content;
+    }
+    if(!fileContent){showGistMsg('Arquivo nao encontrado no Gist.','error');return;}
+    var s=JSON.parse(fileContent);
+    if(!s.dados){showGistMsg('Formato invalido.','error');return;}
+    dados=s.dados||[]; depara=s.depara||[];
+    recebidas=s.recebidas||[]; areceber=s.areceber||[];
+    orcamento=s.orcamento||[]; estoque=s.estoque||[];
+    dataEntrega=s.dataEntrega||{}; obrasEntregaVisiveis=s.obrasEntregaVisiveis||{};
+    fixDadosDates(dados); fixDates(recebidas,false); fixDates(areceber,true);
+    gistConfig.gistId=gistId;
+    document.getElementById('gistId').value=gistId;
+    salvar(); init();
+    showGistMsg('&#10003; '+dados.length+' registros carregados da nuvem!','ok');
+  }catch(e){showGistMsg('Erro: '+e.message,'error');}
+}
+
+// ============================================================
 // INIT
 // ============================================================
 function updateHdr(){
@@ -1537,5 +1674,29 @@ function init(){
 }
 carregar();init();
 </script>
+<div id="nuvemModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:28px;max-width:480px;width:90%;position:relative;">
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px;">&#9729; Salvar na Nuvem</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:20px;">Use o GitHub Gist para compartilhar os dados com outras pessoas.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="fg2">
+        <label>GitHub Token (com permissao gist)</label>
+        <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxx" style="font-family:var(--mono);font-size:12px;">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Gere em github.com/settings/tokens com escopo "gist"</div>
+      </div>
+      <div class="fg2">
+        <label>Gist ID (deixe em branco para criar novo)</label>
+        <input type="text" id="gistId" placeholder="Ex: abc123def456 (opcional)" style="font-family:var(--mono);font-size:12px;">
+      </div>
+      <div id="gistLink" style="display:none;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;word-break:break-all;"></div>
+      <div id="gistMsg" style="font-size:12px;display:none;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-accent btn-sm" onclick="salvarNaNuvem()">&#8679; Salvar na Nuvem</button>
+        <button class="btn btn-sm" onclick="carregarDaNuvem()">&#8681; Carregar da Nuvem</button>
+        <button class="btn btn-sm" onclick="fecharConfigNuvem()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
