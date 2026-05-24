@@ -79,6 +79,76 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
 .badge-g{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(76,175,130,0.15);color:#4caf82;}
 .badge-r{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(224,92,92,0.15);color:#e05c5c;}
 .tot-row{background:rgba(255,255,255,0.04);font-weight:600;}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+  aside { display: none; }
+  .layout { flex-direction: column; }
+  main { padding: 16px; }
+
+  /* Mobile bottom nav - only dashboards */
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    z-index: 300;
+    padding: 0;
+  }
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    font-size: 10px;
+    color: var(--text2);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: var(--font);
+    gap: 3px;
+    transition: color 0.15s;
+  }
+  .mobile-nav-item.active { color: var(--accent); }
+  .mobile-nav-item .mn-icon { font-size: 20px; }
+  .mobile-nav-item .mn-label { font-size: 10px; font-weight: 500; }
+
+  /* Push content above bottom nav */
+  main { padding-bottom: 80px; }
+
+  /* Stack filters vertically */
+  .filters { flex-direction: column; }
+  .fg { min-width: 100% !important; }
+
+  /* Charts full width */
+  div[style*="grid-template-columns:1fr 1fr"] {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* KPI grid smaller */
+  .kpi-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+  .kpi { padding: 14px; }
+  .kpi-value { font-size: 18px; }
+
+  /* Header compact */
+  header { padding: 10px 16px; }
+  .logo-sub { display: none; }
+
+  /* Tables scrollable */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Cards */
+  .card { padding: 14px 16px; }
+}
+@media (min-width: 769px) {
+  .mobile-nav { display: none; }
+}
 </style>
 </head>
 <body>
@@ -1555,7 +1625,7 @@ async function salvarNaNuvem(){
   // Split dados into chunks to avoid Gist size limits (~1MB per file)
   var sessao=getSessaoData();
   var dadosStr=JSON.stringify(sessao.dados||[]);
-  var CHUNK=500000; // 500KB per chunk
+  var CHUNK=200000; // 200KB per chunk
   var chunks=[];
   for(var i=0;i<dadosStr.length;i+=CHUNK) chunks.push(dadosStr.slice(i,i+CHUNK));
   // Build meta (everything except dados)
@@ -1657,6 +1727,22 @@ function init(){
 }
 carregar();init();
 </script>
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <button class="mobile-nav-item active" id="mnTab5" onclick="goTab(5)">
+    <span class="mn-icon">&#128200;</span>
+    <span class="mn-label">Adm Fin</span>
+  </button>
+  <button class="mobile-nav-item" id="mnTab6" onclick="goTab(6)">
+    <span class="mn-icon">&#127959;</span>
+    <span class="mn-label">Obra</span>
+  </button>
+  <button class="mobile-nav-item" id="mnTab7" onclick="goTab(7)">
+    <span class="mn-icon">&#11088;</span>
+    <span class="mn-label">Executivo</span>
+  </button>
+</nav>
+
 <div id="nuvemModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;">
   <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:28px;max-width:480px;width:90%;position:relative;">
     <div style="font-size:15px;font-weight:600;margin-bottom:4px;">&#9729; Salvar na Nuvem</div>
