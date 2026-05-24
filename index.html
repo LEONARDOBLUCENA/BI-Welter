@@ -1544,14 +1544,25 @@ async function salvarNaNuvem(){
   var token=document.getElementById('gistToken').value.trim();
   var gistId=document.getElementById('gistId').value.trim();
   if(!token){showGistMsg('Informe o GitHub Token.','warn');return;}
-  showGistMsg('Salvando...','info');
-  var body={};
-  body.description='BI Welter - Dados';
-  body.public=false;
-  body.files={};
-  body.files[gistConfig.filename]={content:JSON.stringify(getSessaoData())};
+  showGistMsg('Preparando dados...','info');
+  // Split dados into chunks to avoid Gist size limits (~1MB per file)
+  var sessao=getSessaoData();
+  var dadosStr=JSON.stringify(sessao.dados||[]);
+  var CHUNK=500000; // 500KB per chunk
+  var chunks=[];
+  for(var i=0;i<dadosStr.length;i+=CHUNK) chunks.push(dadosStr.slice(i,i+CHUNK));
+  // Build meta (everything except dados)
+  var meta=JSON.stringify({v:sessao.v,depara:sessao.depara,recebidas:sessao.recebidas,
+    areceber:sessao.areceber,orcamento:sessao.orcamento,estoque:sessao.estoque,
+    dataEntregaGlobal:sessao.dataEntregaGlobal,obrasEntregaVisiveis:sessao.obrasEntregaVisiveis,
+    dadosChunks:chunks.length});
+  var files={};
+  files['bi_meta.json']={content:meta};
+  chunks.forEach(function(c,i){ files['bi_dados_'+i+'.json']={content:c}; });
+  var body={description:'BI Welter - Dados',public:false,files:files};
   var url=gistId?'https://api.github.com/gists/'+gistId:'https://api.github.com/gists';
   var method=gistId?'PATCH':'POST';
+  showGistMsg('Salvando '+chunks.length+' parte(s)...','info');
   try{
     var resp=await fetch(url,{method:method,headers:{'Authorization':'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
     var data=await resp.json();
@@ -1560,7 +1571,7 @@ async function salvarNaNuvem(){
       document.getElementById('gistId').value=data.id;
       document.getElementById('gistLink').style.display='block';
       document.getElementById('gistLink').innerHTML='Link fixo: <a href="https://gist.github.com/'+data.id+'" target="_blank" style="color:var(--accent)">gist.github.com/'+data.id+'</a><br><span style="color:var(--text3);font-size:11px;">Compartilhe este ID com quem precisar carregar os dados.</span>';
-      showGistMsg('&#10003; Salvo na nuvem! Gist ID: '+data.id,'ok');
+      showGistMsg('&#10003; Salvo! '+chunks.length+' arquivo(s). Gist ID: '+data.id,'ok');
     } else {
       showGistMsg('Erro: '+(data.message||'Falha ao salvar'),'error');
     }
@@ -1573,21 +1584,40 @@ async function carregarDaNuvem(){
   try{
     var resp=await fetch('https://api.github.com/gists/'+gistId);
     var data=await resp.json();
-    var fileContent=data.files&&data.files[gistConfig.filename]?data.files[gistConfig.filename].content:null;
-    if(!fileContent){
-      // Try first file
-      var keys=data.files?Object.keys(data.files):[];
-      if(keys.length) fileContent=data.files[keys[0]].content;
+    if(!data.files){showGistMsg('Gist nao encontrado.','error');return;}
+    var metaFile=data.files['bi_meta.json'];
+    if(metaFile){
+      // New chunked format
+      var meta=JSON.parse(metaFile.content);
+      var nChunks=meta.dadosChunks||0;
+      showGistMsg('Carregando '+nChunks+' partes...','info');
+      var dadosStr='';
+      for(var i=0;i<nChunks;i++){
+        var fname='bi_dados_'+i+'.json';
+        var f=data.files[fname];
+        if(!f){showGistMsg('Parte '+i+' nao encontrada.','error');return;}
+        var chunkContent=f.truncated?(await (await fetch(f.raw_url)).text()):f.content;
+        dadosStr+=chunkContent;
+      }
+      dados=JSON.parse(dadosStr);
+      depara=meta.depara||[]; recebidas=meta.recebidas||[];
+      areceber=meta.areceber||[]; orcamento=meta.orcamento||[];
+      estoque=meta.estoque||[]; dataEntregaGlobal=meta.dataEntregaGlobal||'';
+      obrasEntregaVisiveis=meta.obrasEntregaVisiveis||{};
+    } else {
+      // Legacy single file
+      var keys=Object.keys(data.files);
+      var fc=data.files[keys[0]];
+      var fileContent=fc.truncated?(await (await fetch(fc.raw_url)).text()):fc.content;
+      var s=JSON.parse(fileContent);
+      dados=s.dados||[]; depara=s.depara||[];
+      recebidas=s.recebidas||[]; areceber=s.areceber||[];
+      orcamento=s.orcamento||[]; estoque=s.estoque||[];
+      dataEntregaGlobal=s.dataEntregaGlobal||s.dataEntrega||'';
+      obrasEntregaVisiveis=s.obrasEntregaVisiveis||{};
     }
-    if(!fileContent){showGistMsg('Arquivo nao encontrado no Gist.','error');return;}
-    var s=JSON.parse(fileContent);
-    if(!s.dados){showGistMsg('Formato invalido.','error');return;}
-    dados=s.dados||[]; depara=s.depara||[];
-    recebidas=s.recebidas||[]; areceber=s.areceber||[];
-    orcamento=s.orcamento||[]; estoque=s.estoque||[];
-    dataEntrega=s.dataEntrega||{}; obrasEntregaVisiveis=s.obrasEntregaVisiveis||{};
     fixDadosDates(dados); fixDates(recebidas,false); fixDates(areceber,true);
-    gistConfig.gistId=gistId;
+    gistConfig.gistId=gistId; gistConfig.token=document.getElementById('gistToken').value.trim()||gistConfig.token;
     document.getElementById('gistId').value=gistId;
     salvar(); init();
     showGistMsg('&#10003; '+dados.length+' registros carregados da nuvem!','ok');
