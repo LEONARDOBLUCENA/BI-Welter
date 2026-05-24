@@ -1763,15 +1763,17 @@ function init(){
   setSel('fAno',anos(dados),'Todos');
   renderDados();renderDP();renderRec();renderAR();renderOrc();renderEstoque();
 }
-carregar();init();
+carregar();
+init();
+if(window.innerWidth<=768) goTab(6);
 </script>
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav">
-  <button class="mobile-nav-item active" id="mnTab5" onclick="goTab(5)">
+  <button class="mobile-nav-item" id="mnTab5" onclick="goTab(5)">
     <span class="mn-icon">&#128200;</span>
     <span class="mn-label">Adm Fin</span>
   </button>
-  <button class="mobile-nav-item" id="mnTab6" onclick="goTab(6)">
+  <button class="mobile-nav-item active" id="mnTab6" onclick="goTab(6)">
     <span class="mn-icon">&#127959;</span>
     <span class="mn-label">Obra</span>
   </button>
