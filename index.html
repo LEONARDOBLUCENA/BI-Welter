@@ -445,6 +445,10 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       </div>
       <button class="btn btn-sm" onclick="clearExec()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="ct">Data de Entrega das Chaves por Obra</div>
+      <div id="dataEntregaWrap"></div>
+    </div>
     <div id="execKpi"></div>
   </div>
 </div>
@@ -456,7 +460,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
 // ============================================================
 // STATE
 // ============================================================
-var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[];
+var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], dataEntrega={};
 var admCI=null, obraCI=null;
 var MESES_LABEL=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var MESES_SHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -539,6 +543,7 @@ function salvar(){
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
   try{localStorage.setItem('bi_orc',JSON.stringify(orcamento));}catch(e){}
   try{localStorage.setItem('bi_est',JSON.stringify(estoque));}catch(e){}
+  try{localStorage.setItem('bi_dtent',JSON.stringify(dataEntrega));}catch(e){}
   var ind=document.getElementById('saveInd');
   if(ind){ind.style.display='inline';ind.style.background='rgba(76,175,130,0.1)';ind.style.color='#4caf82';ind.style.border='1px solid rgba(76,175,130,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
 }
@@ -549,10 +554,11 @@ function carregar(){
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
   try{var o=localStorage.getItem('bi_orc');if(o)orcamento=JSON.parse(o);}catch(e){orcamento=[];}
   try{var e2=localStorage.getItem('bi_est');if(e2)estoque=JSON.parse(e2);}catch(e){estoque=[];}
+  try{var dt=localStorage.getItem('bi_dtent');if(dt)dataEntrega=JSON.parse(dt);}catch(e){dataEntrega={}; }
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length&&!orcamento.length){alert('Nenhum dado para salvar.');return;}
-  var blob=new Blob([JSON.stringify({v:5,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:6,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntrega:dataEntrega})],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='bi_sessao_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
@@ -568,6 +574,7 @@ function carregarSessao(input){
       recebidas=s.recebidas||[];areceber=s.areceber||[];
       orcamento=s.orcamento||[];
       estoque=s.estoque||[];
+      dataEntrega=s.dataEntrega||{};
       fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();
       alert(dados.length+' registros carregados.');
@@ -1307,6 +1314,43 @@ function clearExec(){
   document.getElementById('execIncluirEstoque').checked=false;
   renderExec();
 }
+function renderDataEntregaCard(){
+  // Get all obras from recebidas + areceber
+  var obrasSet=new Set();
+  recebidas.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
+  areceber.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
+  var obras=[...obrasSet].sort();
+  var wrap=document.getElementById('dataEntregaWrap');
+  if(!wrap) return;
+  if(!obras.length){wrap.innerHTML='<p style="font-size:12px;color:var(--text3);">Nenhuma obra encontrada. Importe Contas Recebidas ou a Receber.</p>';return;}
+  var html='<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+  obras.forEach(function(o,i){
+    var val=dataEntrega[o]||'';
+    html+='<div style="display:flex;flex-direction:column;gap:4px;min-width:200px;flex:1;">'+
+      '<label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;">'+o+'</label>'+
+      '<input type="text" placeholder="dd/mm/yyyy" value="'+val+'" '+
+        'data-obra-idx="'+i+'" '+
+        'style="padding:7px 10px;font-size:12px;" '+
+        'onchange="setDataEntregaByIdx(this)">'+
+    '</div>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+  // Store obras list for lookup
+  wrap._obras=obras;
+}
+function setDataEntregaByIdx(input){
+  var wrap=document.getElementById('dataEntregaWrap');
+  var obras=wrap?wrap._obras:[];
+  var idx=parseInt(input.getAttribute('data-obra-idx'));
+  var obra=obras[idx];
+  if(!obra) return;
+  var val=input.value.trim();
+  if(val) dataEntrega[obra]=val;
+  else delete dataEntrega[obra];
+  salvar();
+  renderExec();
+}
 function renderExec(){
   var hasData=recebidas.length||areceber.length||dados.length;
   if(!hasData){
@@ -1323,6 +1367,7 @@ function renderExec(){
   areceber.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
   dados.filter(function(r){return obraOK(r.obra);}).forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
   setSel('execObra',[...obrasSet].sort(),'Todas');
+  renderDataEntregaCard();
 
   var obraF=document.getElementById('execObra').value;
   var inclEstoque=document.getElementById('execIncluirEstoque').checked;
@@ -1330,7 +1375,16 @@ function renderExec(){
   // Faturamento
   var recF=recebidas.filter(function(r){return obraF==='all'||r.obra===obraF;});
   var hoje=new Date();hoje.setHours(0,0,0,0);var hojeMs=hoje.getTime();
-  var arF=areceber.filter(function(r){return obraF==='all'||r.obra===obraF;});
+  var arF=areceber.filter(function(r){
+    if(obraF!=='all'&&r.obra!==obraF) return false;
+    // If data entrega is set for this obra, only consider records up to that date
+    var dtEntStr=dataEntrega[r.obra];
+    if(dtEntStr){
+      var dtEnt=parseDt(dtEntStr);
+      if(dtEnt && r.dtMs && r.dtMs>dtEnt.getTime()) return false;
+    }
+    return true;
+  });
   // Recompute inadimplente based on current date
   arF.forEach(function(r){r.inadimplente=r.dtMs?r.dtMs<hojeMs:false;});
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
