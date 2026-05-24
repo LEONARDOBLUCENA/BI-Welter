@@ -447,15 +447,18 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
       <button class="btn btn-sm" onclick="clearExec()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div class="card" style="margin-bottom:16px;">
-      <div class="ct">
-        <span>Data de Entrega das Chaves por Obra</span>
-        <button class="btn btn-sm" onclick="toggleGerenciarObrasEntrega()">&#9881; Gerenciar Obras</button>
+      <div class="ct">Data de Entrega das Chaves</div>
+      <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+        <div class="fg2" style="max-width:220px;">
+          <label>Data de Entrega</label>
+          <input type="text" id="dataEntregaGlobal" placeholder="dd/mm/yyyy"
+            style="padding:9px 12px;font-size:13px;"
+            onchange="setDataEntregaGlobal(this.value)">
+        </div>
+        <div style="font-size:12px;color:var(--text2);padding-bottom:10px;">
+          Quando preenchida, o KPI <strong>A Receber</strong> considera apenas titulos com vencimento ate esta data.
+        </div>
       </div>
-      <div id="gerenciarObrasEntrega" style="display:none;margin-bottom:12px;">
-        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Selecione as obras que devem aparecer:</div>
-        <div id="obrasEntregaCheck"></div>
-      </div>
-      <div id="dataEntregaWrap"></div>
     </div>
     <div id="execKpi"></div>
   </div>
@@ -468,7 +471,7 @@ tfoot td{padding:10px 12px;font-weight:600;border-top:2px solid var(--border2);}
 // ============================================================
 // STATE
 // ============================================================
-var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], dataEntrega={}, obrasEntregaVisiveis={};
+var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], dataEntregaGlobal="", obrasEntregaVisiveis={};
 var gistConfig={token:'',gistId:'',filename:'bi_welter_data.json'};
 var admCI=null, obraCI=null;
 var MESES_LABEL=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -558,7 +561,7 @@ function salvar(){
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
   try{localStorage.setItem('bi_orc',JSON.stringify(orcamento));}catch(e){}
   try{localStorage.setItem('bi_est',JSON.stringify(estoque));}catch(e){}
-  try{localStorage.setItem('bi_dtent',JSON.stringify(dataEntrega));}catch(e){}
+  try{localStorage.setItem('bi_dtent',dataEntregaGlobal);}catch(e){}
   try{localStorage.setItem('bi_obrent',JSON.stringify(obrasEntregaVisiveis));}catch(e){}
   try{localStorage.setItem('bi_gist',JSON.stringify(gistConfig));}catch(e){}
   var ind=document.getElementById('saveInd');
@@ -580,13 +583,13 @@ function carregar(){
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
   try{var o=localStorage.getItem('bi_orc');if(o)orcamento=JSON.parse(o);}catch(e){orcamento=[];}
   try{var e2=localStorage.getItem('bi_est');if(e2)estoque=JSON.parse(e2);}catch(e){estoque=[];}
-  try{var dt=localStorage.getItem('bi_dtent');if(dt)dataEntrega=JSON.parse(dt);}catch(e){dataEntrega={};}
+  try{var dt=localStorage.getItem('bi_dtent');if(dt)dataEntregaGlobal=dt;}catch(e){dataEntregaGlobal='';}
   try{var oe=localStorage.getItem('bi_obrent');if(oe)obrasEntregaVisiveis=JSON.parse(oe);}catch(e){obrasEntregaVisiveis={};}
   try{var gc=localStorage.getItem('bi_gist');if(gc)gistConfig=JSON.parse(gc);}catch(e){}
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length&&!orcamento.length){alert('Nenhum dado para salvar.');return;}
-  var blob=new Blob([JSON.stringify({v:7,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntrega:dataEntrega,obrasEntregaVisiveis:obrasEntregaVisiveis})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:8,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal,obrasEntregaVisiveis:obrasEntregaVisiveis})],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='bi_sessao_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
@@ -602,7 +605,7 @@ function carregarSessao(input){
       recebidas=s.recebidas||[];areceber=s.areceber||[];
       orcamento=s.orcamento||[];
       estoque=s.estoque||[];
-      dataEntrega=s.dataEntrega||{};
+      dataEntregaGlobal=s.dataEntregaGlobal||s.dataEntrega||'';
       obrasEntregaVisiveis=s.obrasEntregaVisiveis||{};
       fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();
@@ -1343,69 +1346,13 @@ function clearExec(){
   document.getElementById('execIncluirEstoque').checked=false;
   renderExec();
 }
-function toggleGerenciarObrasEntrega(){
-  var el=document.getElementById('gerenciarObrasEntrega');
-  if(el) el.style.display=el.style.display==='none'?'block':'none';
+function setDataEntregaGlobal(val){
+  dataEntregaGlobal=val.trim();
+  salvar(); renderExec();
 }
 function renderDataEntregaCard(){
-  var obrasSet=new Set();
-  recebidas.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
-  areceber.forEach(function(r){if(r.obra)obrasSet.add(r.obra);});
-  var todasObras=[...obrasSet].sort();
-  var wrap=document.getElementById('dataEntregaWrap');
-  if(!wrap) return;
-  if(!todasObras.length){wrap.innerHTML='<p style="font-size:12px;color:var(--text3);">Nenhuma obra encontrada.</p>';return;}
-
-  // Render checkboxes for managing visible obras
-  var chkWrap=document.getElementById('obrasEntregaCheck');
-  if(chkWrap){
-    chkWrap.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:12px;">'+
-      todasObras.map(function(o,i){
-        var checked=obrasEntregaVisiveis[o]!==false;
-        return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text2);">'+
-          '<input type="checkbox" '+(checked?'checked':'')+' data-obra-vis="'+i+'" onchange="toggleObraEntrega(this)" style="accent-color:var(--accent);">'+
-          o+'</label>';
-      }).join('')+
-    '</div>';
-    chkWrap._obras=todasObras;
-  }
-
-  // Only show obras where visible is not explicitly false
-  var obras=todasObras.filter(function(o){ return obrasEntregaVisiveis[o]!==false; });
-  if(!obras.length){wrap.innerHTML='<p style="font-size:12px;color:var(--text3);">Nenhuma obra selecionada. Clique em Gerenciar Obras.</p>';return;}
-  var html='<div style="display:flex;flex-wrap:wrap;gap:12px;">';
-  obras.forEach(function(o,i){
-    var val=dataEntrega[o]||'';
-    html+='<div style="display:flex;flex-direction:column;gap:4px;min-width:200px;flex:1;">'+
-      '<label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;">'+o+'</label>'+
-      '<input type="text" placeholder="dd/mm/yyyy" value="'+val+'" '+
-        'data-obra-vis-idx="'+i+'" '+
-        'style="padding:7px 10px;font-size:12px;" '+
-        'onchange="setDataEntregaVisIdx(this)">'+
-    '</div>';
-  });
-  html+='</div>';
-  wrap.innerHTML=html;
-  wrap._obras=obras;
-}
-function toggleObraEntrega(chk){
-  var chkWrap=document.getElementById('obrasEntregaCheck');
-  var obras=chkWrap?chkWrap._obras:[];
-  var idx=parseInt(chk.getAttribute('data-obra-vis'));
-  var obra=obras[idx];
-  if(!obra) return;
-  obrasEntregaVisiveis[obra]=chk.checked;
-  salvar(); renderDataEntregaCard();
-}
-function setDataEntregaVisIdx(input){
-  var wrap=document.getElementById('dataEntregaWrap');
-  var obras=wrap?wrap._obras:[];
-  var idx=parseInt(input.getAttribute('data-obra-vis-idx'));
-  var obra=obras[idx];
-  if(!obra) return;
-  var val=input.value.trim();
-  if(val) dataEntrega[obra]=val; else delete dataEntrega[obra];
-  salvar(); renderExec();
+  var el=document.getElementById('dataEntregaGlobal');
+  if(el) el.value=dataEntregaGlobal||'';
 }
 
 function renderExec(){
@@ -1434,10 +1381,9 @@ function renderExec(){
   var hoje=new Date();hoje.setHours(0,0,0,0);var hojeMs=hoje.getTime();
   var arF=areceber.filter(function(r){
     if(obraF!=='all'&&r.obra!==obraF) return false;
-    // If data entrega is set for this obra, only consider records up to that date
-    var dtEntStr=dataEntrega[r.obra];
-    if(dtEntStr){
-      var dtEnt=parseDt(dtEntStr);
+    // If global data entrega is set, only consider records up to that date
+    if(dataEntregaGlobal){
+      var dtEnt=parseDt(dataEntregaGlobal);
       if(dtEnt && r.dtMs && r.dtMs>dtEnt.getTime()) return false;
     }
     return true;
@@ -1591,8 +1537,8 @@ function showGistMsg(txt,type){
   el.innerHTML=txt;
 }
 function getSessaoData(){
-  return {v:7,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,
-    orcamento:orcamento,estoque:estoque,dataEntrega:dataEntrega,obrasEntregaVisiveis:obrasEntregaVisiveis};
+  return {v:8,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,
+    orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal,obrasEntregaVisiveis:obrasEntregaVisiveis};
 }
 async function salvarNaNuvem(){
   var token=document.getElementById('gistToken').value.trim();
