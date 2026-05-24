@@ -1536,9 +1536,16 @@ function showGistMsg(txt,type){
   el.style.color=type==='ok'?'var(--green)':type==='warn'?'var(--accent)':'var(--red)';
   el.innerHTML=txt;
 }
+function sanitizeJSON(obj){
+  // JSON.stringify replacer that converts NaN/Infinity to 0
+  return JSON.parse(JSON.stringify(obj, function(key,val){
+    if(typeof val==='number' && !isFinite(val)) return 0;
+    return val;
+  }));
+}
 function getSessaoData(){
-  return {v:8,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,
-    orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal,obrasEntregaVisiveis:obrasEntregaVisiveis};
+  return sanitizeJSON({v:8,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,
+    orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal,obrasEntregaVisiveis:obrasEntregaVisiveis});
 }
 async function salvarNaNuvem(){
   var token=document.getElementById('gistToken').value.trim();
