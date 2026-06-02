@@ -627,7 +627,7 @@ var MESES_ITEMS=[{val:'1',lbl:'Jan'},{val:'2',lbl:'Fev'},{val:'3',lbl:'Mar'},{va
 function setSelMulti(id,vals,lbl,onChange){
   var msdId='msd-'+id;
   if(document.getElementById(msdId)){
-    var items=vals.map(function(v){return{val:String(v),lbl:String(v)};});
+    var items=vals.map(function(v){return(v&&typeof v==='object'&&v.val!==undefined)?v:{val:String(v),lbl:String(v)};});
     initMsd(msdId,items,lbl||'Todos',onChange);
     return;
   }
