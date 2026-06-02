@@ -756,8 +756,10 @@ function carregarSessao(input){
 // ============================================================
 function goTab(i){
   for(var j=0;j<9;j++){
-    document.getElementById('tab'+j).classList.toggle('active',i===j);
-    document.getElementById('page'+j).classList.toggle('active',i===j);
+    var t=document.getElementById('tab'+j);
+    var p=document.getElementById('page'+j);
+    if(t) t.classList.toggle('active',i===j);
+    if(p) p.classList.toggle('active',i===j);
   }
   if(i===5)renderAdm();
   if(i===6)renderObra();
