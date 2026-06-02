@@ -300,7 +300,7 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <div class="fg"><label>Ano</label><div class="dd-wrap" id="dd_admAno"><div class="dd-btn" onclick="ddOpen('admAno')"><span class="dd-lbl">Todos</span><span class="dd-arrow">&#9660;</span></div><div class="dd-pop"><div class="dd-acts"><div class="dd-act" onclick="ddAll('admAno')">Todos</div><div class="dd-act" onclick="ddNone('admAno')">Nenhum</div><div class="dd-act apl" onclick="ddApply('admAno')">Aplicar</div></div><div class="dd-list"></div></div></div></div>
       <div class="fg"><label>Mes</label><div class="dd-wrap" id="dd_admMes"><div class="dd-btn" onclick="ddOpen('admMes')"><span class="dd-lbl">Todos</span><span class="dd-arrow">&#9660;</span></div><div class="dd-pop"><div class="dd-acts"><div class="dd-act" onclick="ddAll('admMes')">Todos</div><div class="dd-act" onclick="ddNone('admMes')">Nenhum</div><div class="dd-act apl" onclick="ddApply('admMes')">Aplicar</div></div><div class="dd-list"></div></div></div></div>
       <div class="fg"><label>Centro de Custo</label><select id="admCC" onchange="renderAdm()"><option value="Administrativo">Administrativo</option><option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option><option value="Geral (Robert ME)">Geral (Robert ME)</option></select></div>
-      <div class="fg"><label>Conta Corrente</label><select id="admConta" multiple size="3" style="height:64px;" onchange="renderAdm()"><option value="all">Todas</option></select></div>
+      
       <button class="btn btn-sm" onclick="clearAdm()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="admKpi" class="kpi-row" style="margin-bottom:14px;"></div>
@@ -433,10 +433,27 @@ var admCI=null, obraCI=null, _fatChartObra=null, _fatChartMes=null, _obraChartOb
 
 var _dd={};
 function ddGet(id){return(_dd[id]&&_dd[id].sel&&_dd[id].sel.length)?_dd[id].sel:['all'];}
-function ddMatch(id,val){var s=ddGet(id);return s.indexOf('all')!==-1||s.indexOf(String(val))!==-1;}
+function ddMatch(id,val){
+  var s=ddGet(id);
+  // If not yet initialized or empty opts, match all
+  if(!_dd[id]||!_dd[id].opts||!_dd[id].opts.length)return true;
+  return s.indexOf('all')!==-1||s.indexOf(String(val))!==-1;
+}
 function ddInit(id,opts,labels,cb){
-  if(!_dd[id])_dd[id]={opts:[],labels:[],sel:['all'],cb:''};
-  _dd[id].opts=opts;_dd[id].labels=labels||opts;if(cb)_dd[id].cb=cb;
+  if(!_dd[id]){
+    // First time: initialize with 'all' selected
+    _dd[id]={opts:[],labels:[],sel:['all'],cb:''};
+  }
+  // Update options and labels but KEEP existing selection
+  var prevSel=_dd[id].sel||['all'];
+  _dd[id].opts=opts;
+  _dd[id].labels=labels||opts;
+  if(cb)_dd[id].cb=cb;
+  // Only keep selections that still exist in new opts, or keep 'all'
+  if(prevSel.indexOf('all')===-1){
+    var valid=prevSel.filter(function(v){return opts.indexOf(v)!==-1;});
+    _dd[id].sel=valid.length?valid:['all'];
+  }
   ddRender(id);
 }
 function ddRender(id){
@@ -941,13 +958,11 @@ function importOrc(input){
 // ============================================================
 function getAdm(){
   var cc=document.getElementById('admCC').value;
-  var conta=document.getElementById('admConta')?document.getElementById('admConta').value:'all';
   return dados.filter(function(r){
     if(r.conta==='REAPROPFIN')return false;
     if(!ddMatch('admAno',r.ano))return false;
     if(!ddMatch('admMes',r.mes))return false;
     if(cc!=='all'&&r.cc!==cc)return false;
-    if(conta!=='all'&&r.conta!==conta)return false;
     return true;
   });
 }
@@ -991,9 +1006,6 @@ function populateObraFilters(){
   var anoAtual=new Date().getFullYear();
   var anosOK=[...anosSet].filter(function(a){return a<=anoAtual;}).sort(function(a,b){return b-a;});
   var mList=[...mesSet].sort(function(a,b){return a-b;});
-  if(!_dd['obraAno'])_dd['obraAno']={opts:[],labels:[],sel:['all'],cb:'renderObra',allLbl:'Todos'};
-  if(!_dd['obraMes'])_dd['obraMes']={opts:[],labels:[],sel:['all'],cb:'renderObra',allLbl:'Todos'};
-  if(!_dd['obraObra'])_dd['obraObra']={opts:[],labels:[],sel:['all'],cb:'renderObra',allLbl:'Todas'};
   ddInit('obraAno',anosOK.map(String),anosOK.map(String),'renderObra');
   ddInit('obraMes',mList.map(String),mList.map(function(m){return MESES_LABEL[m-1];}),'renderObra');
   ddInit('obraObra',unicos(dadosOK,'obra'),unicos(dadosOK,'obra'),'renderObra');
@@ -1020,7 +1032,8 @@ function buildCCKpi(cc,ccC,ccP,orcFilt){
 function renderObra(){
   if(!dados.length){document.getElementById('obraEmpty').style.display='block';document.getElementById('obraContent').style.display='none';return;}
   document.getElementById('obraEmpty').style.display='none';document.getElementById('obraContent').style.display='block';
-  populateObraFilters();
+  // Only populate filters if not yet initialized
+  if(!_dd['obraAno']||!_dd['obraAno'].opts||!_dd['obraAno'].opts.length)populateObraFilters();
   var data=getObraData();
   var _obras2=getSelVals('obraObra');var obraF=_obras2.length===1&&_obras2[0]!=='all'?_obras2[0]:'all';
   
@@ -1256,7 +1269,9 @@ async function decompressData(b64){
   }catch(e){return decodeURIComponent(escape(atob(b64)));}
 }
 async function salvarNaNuvem(){
-  var token=document.getElementById('gistToken').value.trim();var gistId=document.getElementById('gistId').value.trim();
+  var tokenEl=document.getElementById('gistToken');
+  if(!tokenEl){showGistMsg('Erro: modal nao encontrado.','error');return;}
+  var token=tokenEl.value.trim();var gistId=document.getElementById('gistId').value.trim();
   if(!token){showGistMsg('Informe o GitHub Token.','warn');return;}
   showGistMsg('Comprimindo dados...','info');
   try{
@@ -1279,7 +1294,8 @@ async function salvarNaNuvem(){
   }catch(e){showGistMsg('Erro: '+e.message,'error');}
 }
 async function carregarDaNuvem(){
-  var gistId=document.getElementById('gistId').value.trim()||gistConfig.gistId;
+  var gistIdEl=document.getElementById('gistId');
+  var gistId=(gistIdEl?gistIdEl.value.trim():'')||gistConfig.gistId;
   if(!gistId){showGistMsg('Informe o Gist ID.','warn');return;}
   showGistMsg('Carregando...','info');
   try{
@@ -1294,7 +1310,7 @@ async function carregarDaNuvem(){
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
     orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
-    gistConfig.gistId=gistId;gistConfig.token=document.getElementById('gistToken').value.trim()||gistConfig.token;
+    gistConfig.gistId=gistId;gistConfig.token=(document.getElementById('gistToken')?document.getElementById('gistToken').value.trim():'')||gistConfig.token;
     document.getElementById('gistId').value=gistId;salvar();init();
     showGistMsg('&#10003; '+dados.length+' registros carregados!','ok');
   }catch(e){showGistMsg('Erro: '+e.message,'error');}
@@ -1311,6 +1327,7 @@ function updateHdr(){
 function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
   renderDados();renderRec();renderAR();renderOrc();renderEstoque();
+  populateObraFilters();
   renderAdm();renderObra();renderExec();
 }
 carregar();
