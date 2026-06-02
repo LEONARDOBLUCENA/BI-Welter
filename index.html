@@ -430,48 +430,35 @@ var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[];
 var dataEntregaGlobal='', obrasEntregaVisiveis={};
 var gistConfig={token:'',gistId:'',filename:'bi_welter_data.json'};
 var admCI=null, obraCI=null, _fatChartObra=null, _fatChartMes=null, _obraChartObra=null;
-
 var _dd={};
 function ddGet(id){return(_dd[id]&&_dd[id].sel&&_dd[id].sel.length)?_dd[id].sel:['all'];}
-function ddMatch(id,val){
-  var s=ddGet(id);
-  // If not yet initialized or empty opts, match all
-  if(!_dd[id]||!_dd[id].opts||!_dd[id].opts.length)return true;
-  return s.indexOf('all')!==-1||s.indexOf(String(val))!==-1;
-}
+function ddHas(id,val){var s=ddGet(id);return s.indexOf('all')!==-1||s.indexOf(String(val))!==-1;}
 function ddInit(id,opts,labels,cb){
-  if(!_dd[id]){
-    // First time: initialize with 'all' selected
-    _dd[id]={opts:[],labels:[],sel:['all'],cb:''};
-  }
-  // Update options and labels but KEEP existing selection
-  var prevSel=_dd[id].sel||['all'];
-  _dd[id].opts=opts;
-  _dd[id].labels=labels||opts;
-  if(cb)_dd[id].cb=cb;
-  // Only keep selections that still exist in new opts, or keep 'all'
-  if(prevSel.indexOf('all')===-1){
-    var valid=prevSel.filter(function(v){return opts.indexOf(v)!==-1;});
-    _dd[id].sel=valid.length?valid:['all'];
+  if(!_dd[id])_dd[id]={sel:['all']};
+  _dd[id].opts=opts; _dd[id].labels=labels||opts; if(cb)_dd[id].cb=cb;
+  // Preserve selection — remove values no longer in opts
+  var sel=_dd[id].sel;
+  if(sel.indexOf('all')===-1){
+    var keep=sel.filter(function(v){return opts.indexOf(v)!==-1;});
+    _dd[id].sel=keep.length?keep:['all'];
   }
   ddRender(id);
 }
 function ddRender(id){
-  var w=document.getElementById('dd_'+id);if(!w)return;
-  var d=_dd[id]||{opts:[],labels:[],sel:['all']};
-  var s=d.sel||['all'];
+  var w=document.getElementById('dd_'+id); if(!w)return;
+  var d=_dd[id]||{}; var sel=d.sel||['all']; var opts=d.opts||[]; var labels=d.labels||opts;
   var lbl=w.querySelector('.dd-lbl');
   if(lbl){
-    if(s.indexOf('all')!==-1||!s.length){lbl.textContent=d.allLbl||'Todos';}
-    else if(s.length===1){var i=d.opts.indexOf(s[0]);lbl.textContent=(d.labels&&i>=0)?d.labels[i]:s[0];}
-    else{lbl.textContent=s.length+' selecionados';}
+    if(sel.indexOf('all')!==-1||!sel.length){lbl.textContent=d.allLbl||'Todos';}
+    else if(sel.length===1){var i=opts.indexOf(sel[0]);lbl.textContent=i>=0?labels[i]:sel[0];}
+    else{lbl.textContent=sel.length+' selecionados';}
   }
-  var lst=w.querySelector('.dd-list');if(!lst)return;
+  var lst=w.querySelector('.dd-list'); if(!lst)return;
   var h='';
-  (d.opts||[]).forEach(function(o,i){
-    var chk=s.indexOf('all')===-1&&s.indexOf(o)!==-1;
+  opts.forEach(function(o,i){
+    var chk=sel.indexOf('all')===-1&&sel.indexOf(o)!==-1;
     h+='<div class="dd-item" data-id="'+id+'" data-v="'+o+'"><input type="checkbox"'+(chk?' checked':'')+'>'+
-      '<span>'+(d.labels?d.labels[i]:o)+'</span></div>';
+       '<span>'+labels[i]+'</span></div>';
   });
   lst.innerHTML=h;
   lst.querySelectorAll('.dd-item').forEach(function(el){
@@ -482,10 +469,10 @@ function ddRender(id){
   });
 }
 function ddTog(id,v){
-  if(!_dd[id])_dd[id]={opts:[],labels:[],sel:['all'],cb:''};
-  var s=_dd[id].sel;
-  if(s.indexOf('all')!==-1){_dd[id].sel=[v];}
-  else{var i=s.indexOf(v);if(i!==-1){s.splice(i,1);if(!s.length)_dd[id].sel=['all'];}else{s.push(v);}}
+  if(!_dd[id])_dd[id]={sel:['all']};
+  var sel=_dd[id].sel;
+  if(sel.indexOf('all')!==-1){_dd[id].sel=[v];}
+  else{var i=sel.indexOf(v);if(i!==-1){sel.splice(i,1);if(!sel.length)_dd[id].sel=['all'];}else{sel.push(v);}}
   ddRender(id);
 }
 function ddAll(id){if(_dd[id])_dd[id].sel=['all'];ddRender(id);}
@@ -960,8 +947,8 @@ function getAdm(){
   var cc=document.getElementById('admCC').value;
   return dados.filter(function(r){
     if(r.conta==='REAPROPFIN')return false;
-    if(!ddMatch('admAno',r.ano))return false;
-    if(!ddMatch('admMes',r.mes))return false;
+    if(!ddHas('admAno',r.ano))return false;
+    if(!ddHas('admMes',r.mes))return false;
     if(cc!=='all'&&r.cc!==cc)return false;
     return true;
   });
@@ -970,8 +957,8 @@ function clearAdm(){ddAll('admAno');ddAll('admMes');document.getElementById('adm
 function renderAdm(){
   if(!dados.length){document.getElementById('admEmpty').style.display='block';document.getElementById('admContent').style.display='none';return;}
   document.getElementById('admEmpty').style.display='none';document.getElementById('admContent').style.display='block';
-  if(!_dd['admAno'])_dd['admAno']={opts:[],labels:[],sel:['all'],cb:'renderAdm',allLbl:'Todos'};
-  if(!_dd['admMes'])_dd['admMes']={opts:[],labels:[],sel:['all'],cb:'renderAdm',allLbl:'Todos'};
+  if(!_dd['admAno'])_dd['admAno']={sel:['all'],allLbl:'Todos'};
+  if(!_dd['admMes'])_dd['admMes']={sel:['all'],allLbl:'Todos'};
   ddInit('admAno',anos(dados).map(String),anos(dados).map(String),'renderAdm');
   ddInit('admMes',['1','2','3','4','5','6','7','8','9','10','11','12'],
     ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],'renderAdm');
@@ -999,13 +986,16 @@ function renderAdm(){
 // ============================================================
 function populateObraFilters(){
   var dadosOK=dados.filter(function(r){return obraOK(r.obra);});
-  var anosSet=new Set();var mesSet=new Set();
+  var anosSet=new Set(); var mesSet=new Set();
   dadosOK.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   recebidas.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   areceber.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   var anoAtual=new Date().getFullYear();
   var anosOK=[...anosSet].filter(function(a){return a<=anoAtual;}).sort(function(a,b){return b-a;});
   var mList=[...mesSet].sort(function(a,b){return a-b;});
+  if(!_dd['obraAno'])_dd['obraAno']={sel:['all'],allLbl:'Todos'};
+  if(!_dd['obraMes'])_dd['obraMes']={sel:['all'],allLbl:'Todos'};
+  if(!_dd['obraObra'])_dd['obraObra']={sel:['all'],allLbl:'Todas'};
   ddInit('obraAno',anosOK.map(String),anosOK.map(String),'renderObra');
   ddInit('obraMes',mList.map(String),mList.map(function(m){return MESES_LABEL[m-1];}),'renderObra');
   ddInit('obraObra',unicos(dadosOK,'obra'),unicos(dadosOK,'obra'),'renderObra');
@@ -1013,8 +1003,8 @@ function populateObraFilters(){
 function getObraData(){
   return dados.filter(function(r){
     if(!obraOK(r.obra))return false;
-    if(!ddMatch('obraAno',r.ano))return false;
-    if(!ddMatch('obraMes',r.mes))return false;
+    if(!ddHas('obraAno',r.ano))return false;
+    if(!ddHas('obraMes',r.mes))return false;
     var ow=ddGet('obraObra');
     if(ow.indexOf('all')===-1&&ow.indexOf(r.obra.trim())===-1)return false;
     return true;
@@ -1032,8 +1022,7 @@ function buildCCKpi(cc,ccC,ccP,orcFilt){
 function renderObra(){
   if(!dados.length){document.getElementById('obraEmpty').style.display='block';document.getElementById('obraContent').style.display='none';return;}
   document.getElementById('obraEmpty').style.display='none';document.getElementById('obraContent').style.display='block';
-  // Only populate filters if not yet initialized
-  if(!_dd['obraAno']||!_dd['obraAno'].opts||!_dd['obraAno'].opts.length)populateObraFilters();
+  populateObraFilters();
   var data=getObraData();
   var _obras2=getSelVals('obraObra');var obraF=_obras2.length===1&&_obras2[0]!=='all'?_obras2[0]:'all';
   
@@ -1043,8 +1032,8 @@ function renderObra(){
   // Faturamento
   var recF=recebidas.filter(function(r){
     if(obraF!=='all'&&r.obra!==obraF)return false;
-    if(!ddMatch('obraAno',r.ano))return false;
-    if(!ddMatch('obraMes',r.mes))return false;
+    if(!ddHas('obraAno',r.ano))return false;
+    if(!ddHas('obraMes',r.mes))return false;
     return true;
   });
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
@@ -1269,9 +1258,8 @@ async function decompressData(b64){
   }catch(e){return decodeURIComponent(escape(atob(b64)));}
 }
 async function salvarNaNuvem(){
-  var tokenEl=document.getElementById('gistToken');
-  if(!tokenEl){showGistMsg('Erro: modal nao encontrado.','error');return;}
-  var token=tokenEl.value.trim();var gistId=document.getElementById('gistId').value.trim();
+  var _tokEl=document.getElementById('gistToken');
+  var token=(_tokEl&&_tokEl.value?_tokEl.value.trim():'');var gistId=document.getElementById('gistId').value.trim();
   if(!token){showGistMsg('Informe o GitHub Token.','warn');return;}
   showGistMsg('Comprimindo dados...','info');
   try{
@@ -1294,8 +1282,8 @@ async function salvarNaNuvem(){
   }catch(e){showGistMsg('Erro: '+e.message,'error');}
 }
 async function carregarDaNuvem(){
-  var gistIdEl=document.getElementById('gistId');
-  var gistId=(gistIdEl?gistIdEl.value.trim():'')||gistConfig.gistId;
+  var _gidEl=document.getElementById('gistId');
+  var gistId=(_gidEl&&_gidEl.value?_gidEl.value.trim():'')||gistConfig.gistId;
   if(!gistId){showGistMsg('Informe o Gist ID.','warn');return;}
   showGistMsg('Carregando...','info');
   try{
@@ -1310,7 +1298,7 @@ async function carregarDaNuvem(){
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
     orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
-    gistConfig.gistId=gistId;gistConfig.token=(document.getElementById('gistToken')?document.getElementById('gistToken').value.trim():'')||gistConfig.token;
+    gistConfig.gistId=gistId;var _te=document.getElementById('gistToken');gistConfig.token=(_te&&_te.value?_te.value.trim():'')||gistConfig.token;
     document.getElementById('gistId').value=gistId;salvar();init();
     showGistMsg('&#10003; '+dados.length+' registros carregados!','ok');
   }catch(e){showGistMsg('Erro: '+e.message,'error');}
@@ -1327,7 +1315,6 @@ function updateHdr(){
 function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
   renderDados();renderRec();renderAR();renderOrc();renderEstoque();
-  populateObraFilters();
   renderAdm();renderObra();renderExec();
 }
 carregar();
