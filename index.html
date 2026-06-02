@@ -47,9 +47,16 @@ main{flex:1;padding:28px 28px;overflow-y:auto;min-width:0;}
 /* INPUTS */
 input[type=text],input[type=password],select,textarea{background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-family:var(--font);font-size:12px;transition:border-color 0.15s;width:100%;}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
-select[multiple]{padding:4px;height:auto;}
-select[multiple] option{padding:4px 8px;border-radius:3px;}
-select[multiple] option:checked{background:rgba(185,148,90,0.2);color:var(--accent2);}
+.ms-wrap{position:relative;display:inline-block;flex:1;min-width:100px;}
+.ms-btn{background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:8px 28px 8px 11px;font-family:var(--font);font-size:12px;cursor:pointer;width:100%;text-align:left;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ms-btn::after{content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:10px;}
+.ms-btn:hover{border-color:var(--accent);}
+.ms-drop{display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);z-index:500;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.ms-drop.open{display:block;}
+.ms-item{display:flex;align-items:center;gap:8px;padding:7px 11px;cursor:pointer;font-size:12px;color:var(--text2);}
+.ms-item:hover{background:rgba(185,148,90,0.08);color:var(--text);}
+.ms-item input[type=checkbox]{width:13px;height:13px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.ms-item.all-item{border-bottom:1px solid var(--border);color:var(--text3);font-size:11px;}
 input::placeholder,textarea::placeholder{color:var(--text3);}
 select option{background:var(--bg3);}
 /* BUTTONS */
@@ -191,14 +198,14 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div class="card">
     <div class="ct">
       <span>Registros <span id="recCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
-      <button class="btn btn-sm btn-danger" onclick="limparRec()">&#10005; Limpar</button>
+      <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="exportRec()">&#8595; Exportar</button><button class="btn btn-sm btn-danger" onclick="limparRec()">&#10005; Limpar</button></div>
     </div>
     <div class="fbar">
-      <label>Ano</label><select id="fRecAno" multiple size="3" style="height:64px;" onchange="renderRec()"><option value="all">Todos</option></select>
+      <label>Ano</label><div class="ms-wrap" id="ms-fRecAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
       <label>Mes</label><select id="fRecMes" onchange="renderRec()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
       <div class="fdiv"></div>
-      <label>Obra</label><select id="fRecObra" multiple size="3" style="height:64px;" onchange="renderRec()"><option value="all">Todas</option></select>
+      <label>Obra</label><div class="ms-wrap" id="ms-fRecObra"><button class="ms-btn">Todas</button><div class="ms-drop"></div></div>
     </div>
     <div id="recEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="recWrap" style="display:none;">
@@ -223,11 +230,11 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="exportAR()">&#8595; Exportar</button><button class="btn btn-sm btn-danger" onclick="limparAR()">&#10005; Limpar</button></div>
     </div>
     <div class="fbar">
-      <label>Ano</label><select id="fArAno" multiple size="3" style="height:64px;" onchange="renderAR()"><option value="all">Todos</option></select>
+      <label>Ano</label><div class="ms-wrap" id="ms-fArAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
       <label>Mes</label><select id="fArMes" onchange="renderAR()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
       <div class="fdiv"></div>
-      <label>Obra</label><select id="fArObra" multiple size="3" style="height:64px;" onchange="renderAR()"><option value="all">Todas</option></select>
+      <label>Obra</label><div class="ms-wrap" id="ms-fArObra"><button class="ms-btn">Todas</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
       <label>Status</label><select id="fArStatus" onchange="renderAR()"><option value="all">Todos</option><option value="areceber">A Receber</option><option value="inadimplente">Inadimplente</option></select>
     </div>
@@ -280,10 +287,9 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="admEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
   <div id="admContent" style="display:none;">
     <div class="filters">
-      <div class="fg"><label>Ano</label><select id="admAno" multiple size="3" style="height:64px;" onchange="renderAdm()"><option value="all">Todos</option></select></div>
+      <div class="fg"><label>Ano</label><div class="ms-wrap" id="ms-admAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div></div>
       <div class="fg"><label>Mes</label><select id="admMes" onchange="renderAdm()"><option value="all">Todos</option><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select></div>
       <div class="fg"><label>Centro de Custo</label><select id="admCC" onchange="renderAdm()"><option value="Administrativo">Administrativo</option><option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option><option value="Geral (Robert ME)">Geral (Robert ME)</option></select></div>
-      <div class="fg"><label>Conta Corrente</label><select id="admConta" multiple size="3" style="height:64px;" onchange="renderAdm()"><option value="all">Todas</option></select></div>
       <button class="btn btn-sm" onclick="clearAdm()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="admKpi" class="kpi-row" style="margin-bottom:14px;"></div>
@@ -302,10 +308,9 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="obraEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
   <div id="obraContent" style="display:none;">
     <div class="filters">
-      <div class="fg"><label>Ano</label><select id="obraAno" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Mes</label><select id="obraMes" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Obra</label><select id="obraObra" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todas</option></select></div>
-      <div class="fg"><label>Unid. Construtiva</label><select id="obraUC" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todas</option></select></div>
+      <div class="fg"><label>Ano</label><div class="ms-wrap" id="ms-obraAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div></div>
+      <div class="fg"><label>Mes</label><div class="ms-wrap" id="ms-obraMes"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div></div>
+      <div class="fg"><label>Obra</label><div class="ms-wrap" id="ms-obraObra"><button class="ms-btn">Todas</button><div class="ms-drop"></div></div></div>
       <button class="btn btn-sm" onclick="clearObra()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="obraKpi" class="kpi-wrap"></div>
@@ -495,11 +500,75 @@ function chartOptsH(){
       y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a4744',font:{size:10}}}
     }};
 }
+// ============================================================
+// CUSTOM MULTI-SELECT DROPDOWN
+// ============================================================
+var _msState={};
+function msInit(id,options,lbl,onChange){
+  if(!_msState[id])_msState[id]=['all'];
+  var wrap=document.getElementById('ms-'+id);if(!wrap)return;
+  var btn=wrap.querySelector('.ms-btn');
+  var drop=wrap.querySelector('.ms-drop');
+  // Build items
+  var html='<div class="ms-item all-item" data-ms-id="'+id+'" data-ms-val="all" data-ms-cb="'+onChange+'" onclick="msClick(this)">'+
+    '<input type="checkbox" '+(msIsAll(id)?'checked':'')+' onclick="event.stopPropagation()">'+
+    '<span>'+(lbl||'Todos')+'</span></div>';
+  options.forEach(function(o){
+    html+='<div class="ms-item" data-ms-id="'+id+'" data-ms-val="'+o+'" data-ms-cb="'+onChange+'" onclick="msClick(this)">'+
+      '<input type="checkbox" '+(msHas(id,o)?'checked':'')+' onclick="event.stopPropagation()">'+
+      '<span>'+o+'</span></div>';
+  });
+  drop.innerHTML=html;
+  msUpdateBtn(id,lbl||'Todos');
+  // Toggle open on btn click
+  btn.onclick=function(e){e.stopPropagation();drop.classList.toggle('open');};
+  // Close on outside click
+  document.addEventListener('click',function(){drop.classList.remove('open');},{capture:true,once:false});
+}
+function msIsAll(id){return _msState[id]&&(_msState[id].indexOf('all')!==-1||_msState[id].length===0);}
+function msHas(id,v){return _msState[id]&&_msState[id].indexOf(String(v))!==-1;}
+function msClick(el){
+  var id=el.getAttribute('data-ms-id');
+  var v=el.getAttribute('data-ms-val');
+  var cb=el.getAttribute('data-ms-cb');
+  msToggle(id,v,cb);
+}
+function msToggle(id,v,onChange){
+  if(!_msState[id])_msState[id]=['all'];
+  if(v==='all'){_msState[id]=['all'];}
+  else{
+    var idx=_msState[id].indexOf('all');if(idx!==-1)_msState[id].splice(idx,1);
+    var i=_msState[id].indexOf(v);
+    if(i!==-1)_msState[id].splice(i,1);else _msState[id].push(v);
+    if(_msState[id].length===0)_msState[id]=['all'];
+  }
+  var wrap=document.getElementById('ms-'+id);
+  if(wrap){
+    wrap.querySelectorAll('.ms-item').forEach(function(item){
+      var cb=item.querySelector('input[type=checkbox]');
+      if(!cb)return;
+      var val=cb.id.replace('ms-all-'+id,'all').replace('ms-opt-'+id+'-','');
+      cb.checked=val==='all'?msIsAll(id):msHas(id,val);
+    });
+  }
+  if(onChange)eval(onChange+'()');
+}
+function msVals(id){return _msState[id]&&_msState[id].length?_msState[id]:['all'];}
+function msUpdateBtn(id,lbl){
+  var btn=document.getElementById('ms-'+id);if(!btn)return;
+  btn=btn.querySelector('.ms-btn');if(!btn)return;
+  var vals=msVals(id);
+  btn.textContent=vals.indexOf('all')!==-1||vals.length===0?lbl:(vals.length===1?vals[0]:vals.length+' selecionados');
+}
+function msRebuild(id,options,lbl,onChange){
+  _msState[id]=_msState[id]||['all'];
+  msInit(id,options,lbl,onChange);
+}
 function getSelVals(id){
+  // Check custom multi-select first
+  if(_msState&&_msState[id])return msVals(id);
   var el=document.getElementById(id);if(!el)return['all'];
-  if(!el.multiple)return[el.value];
-  var vals=[].slice.call(el.selectedOptions).map(function(o){return o.value;});
-  return vals.length?vals:['all'];
+  return[el.value];
 }
 function selMatch(vals,v){return vals.indexOf('all')!==-1||vals.indexOf(String(v))!==-1;}
 function setSelMulti(id,vals,lbl){
@@ -735,11 +804,18 @@ function processarRec(){
   document.getElementById('pasteRec').value='';renderRec();showMsg('recMsg','&#10003; '+novos.length+' adicionados! Total: '+recebidas.length,'ok');
 }
 function limparRec(){if(!confirm('Apagar?'))return;recebidas=[];salvar();renderRec();}
+function exportRec(){
+  if(!recebidas.length){alert('Nenhum dado.');return;}
+  var rows=[['Obra','Cliente','Dt. Baixa','Liquido']];
+  recebidas.forEach(function(r){rows.push([r.obra,r.cliente,r.dtBaixa,r.liquido]);});
+  var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Contas Recebidas');
+  XLSX.writeFile(wb,'contas_recebidas.xlsx');
+}
 function renderRec(){
   setSelMulti('fRecAno',anos(recebidas),'Todos');setSelMulti('fRecObra',unicos(recebidas,'obra'),'Todas');
   var anos2=getSelVals('fRecAno');var mes=document.getElementById('fRecMes').value;var obras2=getSelVals('fRecObra');
   var data=recebidas.filter(function(r){
-    if(!selMatch(anos2,r.ano))return false;
+    if(!selMatch(anos2,String(r.ano)))return false;
     if(mes!=='all'&&String(r.mes)!==mes)return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
     return true;
@@ -777,7 +853,7 @@ function renderAR(){
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
   var data=areceber.filter(function(r){
     r.inadimplente=r.dtMs?r.dtMs<hMs:false;
-    if(!selMatch(anos2,r.ano))return false;
+    if(!selMatch(anos2,String(r.ano)))return false;
     if(mes!=='all'&&String(r.mes)!==mes)return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
     if(status==='areceber'&&r.inadimplente)return false;
@@ -860,13 +936,12 @@ function importOrc(input){
 // ============================================================
 function getAdm(){
   var anos2=getSelVals('admAno');var mes=document.getElementById('admMes').value;
-  var cc=document.getElementById('admCC').value;var contas=getSelVals('admConta');
+  var cc=document.getElementById('admCC').value;
   return dados.filter(function(r){
     if(r.conta==='REAPROPFIN')return false;
-    if(!selMatch(anos2,r.ano))return false;
+    if(!selMatch(anos2,String(r.ano)))return false;
     if(mes!=='all'&&String(r.mes)!==mes)return false;
     if(cc!=='all'&&r.cc!==cc)return false;
-    if(!selMatch(contas,r.conta))return false;
     return true;
   });
 }
@@ -875,7 +950,6 @@ function renderAdm(){
   if(!dados.length){document.getElementById('admEmpty').style.display='block';document.getElementById('admContent').style.display='none';return;}
   document.getElementById('admEmpty').style.display='none';document.getElementById('admContent').style.display='block';
   setSelMulti('admAno',anos(dados),'Todos');
-  setSelMulti('admConta',unicos(dados.filter(function(r){return r.conta!=='REAPROPFIN';}),'conta'),'Todas');
   var data=getAdm();
   var total=data.reduce(function(s,r){return s+r.valFin;},0);
   document.getElementById('admKpi').innerHTML=kpiHtml('var(--accent)','Valor Pago',fBRL(total),data.length+' lancamentos');
@@ -905,28 +979,27 @@ function populateObraFilters(){
   areceber.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   var anoAtual=new Date().getFullYear();
   var anosOK=[...anosSet].filter(function(a){return a<=anoAtual;}).sort(function(a,b){return b-a;});
-  setSelMulti('obraAno',anosOK,'Todos');
+  msRebuild('obraAno',anosOK.map(String),'Todos','renderObra');
   var mList=[...mesSet].sort(function(a,b){return a-b;});
-  var curMes=document.getElementById('obraMes').value;
-  document.getElementById('obraMes').innerHTML='<option value="all">Todos</option>'+mList.map(function(m){return'<option value="'+m+'">'+MESES_L[m-1]+'</option>';}).join('');
-  if([].slice.call(document.getElementById('obraMes').options).some(function(o){return o.value===curMes;}))document.getElementById('obraMes').value=curMes;
-  setSelMulti('obraObra',unicos(dadosOK,'obra'),'Todas');
-  var ucsNorm=[...new Set(unicos(dadosOK,'uc').map(normUC))].filter(Boolean).sort();
-  setSelMulti('obraUC',ucsNorm,'Todas');
+  msRebuild('obraMes',mList.map(function(m){return MESES_L[m-1];}), 'Todos','renderObra');
+  msRebuild('obraObra',unicos(dadosOK,'obra'),'Todas','renderObra');
 }
 function getObraData(){
   var anos2=getSelVals('obraAno');var meses=getSelVals('obraMes');
-  var obras2=getSelVals('obraObra');var ucs=getSelVals('obraUC');
+  var obras2=getSelVals('obraObra');
   return dados.filter(function(r){
     if(!obraOK(r.obra))return false;
-    if(!selMatch(anos2,r.ano))return false;
-    if(!selMatch(meses,r.mes))return false;
+    if(!selMatch(anos2,String(r.ano)))return false;
+    // meses stored as month names
+    if(meses.indexOf('all')===-1){
+      var mNome=r.mes?MESES_L[r.mes-1]:'';
+      if(meses.indexOf(mNome)===-1)return false;
+    }
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra.trim())===-1)return false;
-    if(ucs.indexOf('all')===-1&&ucs.indexOf(normUC(r.uc))===-1)return false;
     return true;
   });
 }
-function clearObra(){document.getElementById('obraAno').value='all';document.getElementById('obraMes').value='all';document.getElementById('obraObra').value='all';document.getElementById('obraUC').value='all';renderObra();}
+function clearObra(){_msState['obraAno']=['all'];_msState['obraMes']=['all'];_msState['obraObra']=['all'];renderObra();}
 function buildCCKpi(cc,ccC,ccP,orcFilt){
   var orcCC=orcFilt.filter(function(r){var d=(r.descTot||'').toUpperCase();return d.includes('CUSTO CONSTRUTIVO')||d.includes('CUSTO CONS');}).reduce(function(s,r){return s+r.valor;},0);
   if(orcCC===0&&orcFilt.length>0)orcCC=orcFilt.reduce(function(s,r){return s+r.valor;},0);
