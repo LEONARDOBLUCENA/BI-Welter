@@ -47,6 +47,9 @@ main{flex:1;padding:28px 28px;overflow-y:auto;min-width:0;}
 /* INPUTS */
 input[type=text],input[type=password],select,textarea{background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-family:var(--font);font-size:12px;transition:border-color 0.15s;width:100%;}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+select[multiple]{padding:4px;height:auto;}
+select[multiple] option{padding:4px 8px;border-radius:3px;}
+select[multiple] option:checked{background:rgba(185,148,90,0.2);color:var(--accent2);}
 input::placeholder,textarea::placeholder{color:var(--text3);}
 select option{background:var(--bg3);}
 /* BUTTONS */
@@ -191,11 +194,11 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <button class="btn btn-sm btn-danger" onclick="limparRec()">&#10005; Limpar</button>
     </div>
     <div class="fbar">
-      <label>Ano</label><select id="fRecAno" onchange="renderRec()"><option value="all">Todos</option></select>
+      <label>Ano</label><select id="fRecAno" multiple size="3" style="height:64px;" onchange="renderRec()"><option value="all">Todos</option></select>
       <div class="fdiv"></div>
       <label>Mes</label><select id="fRecMes" onchange="renderRec()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
       <div class="fdiv"></div>
-      <label>Obra</label><select id="fRecObra" onchange="renderRec()"><option value="all">Todas</option></select>
+      <label>Obra</label><select id="fRecObra" multiple size="3" style="height:64px;" onchange="renderRec()"><option value="all">Todas</option></select>
     </div>
     <div id="recEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="recWrap" style="display:none;">
@@ -220,11 +223,11 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="exportAR()">&#8595; Exportar</button><button class="btn btn-sm btn-danger" onclick="limparAR()">&#10005; Limpar</button></div>
     </div>
     <div class="fbar">
-      <label>Ano</label><select id="fArAno" onchange="renderAR()"><option value="all">Todos</option></select>
+      <label>Ano</label><select id="fArAno" multiple size="3" style="height:64px;" onchange="renderAR()"><option value="all">Todos</option></select>
       <div class="fdiv"></div>
       <label>Mes</label><select id="fArMes" onchange="renderAR()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
       <div class="fdiv"></div>
-      <label>Obra</label><select id="fArObra" onchange="renderAR()"><option value="all">Todas</option></select>
+      <label>Obra</label><select id="fArObra" multiple size="3" style="height:64px;" onchange="renderAR()"><option value="all">Todas</option></select>
       <div class="fdiv"></div>
       <label>Status</label><select id="fArStatus" onchange="renderAR()"><option value="all">Todos</option><option value="areceber">A Receber</option><option value="inadimplente">Inadimplente</option></select>
     </div>
@@ -277,10 +280,10 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="admEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
   <div id="admContent" style="display:none;">
     <div class="filters">
-      <div class="fg"><label>Ano</label><select id="admAno" onchange="renderAdm()"><option value="all">Todos</option></select></div>
+      <div class="fg"><label>Ano</label><select id="admAno" multiple size="3" style="height:64px;" onchange="renderAdm()"><option value="all">Todos</option></select></div>
       <div class="fg"><label>Mes</label><select id="admMes" onchange="renderAdm()"><option value="all">Todos</option><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select></div>
-      <div class="fg"><label>Centro de Custo</label><select id="admCC" onchange="renderAdm()"><option value="all">Todos</option><option value="Administrativo">Administrativo</option><option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option><option value="Geral (Robert ME)">Geral (Robert ME)</option></select></div>
-      <div class="fg"><label>Conta Corrente</label><select id="admConta" onchange="renderAdm()"><option value="all">Todas</option></select></div>
+      <div class="fg"><label>Centro de Custo</label><select id="admCC" onchange="renderAdm()"><option value="Administrativo">Administrativo</option><option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option><option value="Geral (Robert ME)">Geral (Robert ME)</option></select></div>
+      <div class="fg"><label>Conta Corrente</label><select id="admConta" multiple size="3" style="height:64px;" onchange="renderAdm()"><option value="all">Todas</option></select></div>
       <button class="btn btn-sm" onclick="clearAdm()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="admKpi" class="kpi-row" style="margin-bottom:14px;"></div>
@@ -299,10 +302,10 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="obraEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
   <div id="obraContent" style="display:none;">
     <div class="filters">
-      <div class="fg"><label>Ano</label><select id="obraAno" onchange="renderObra()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Mes</label><select id="obraMes" onchange="renderObra()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Obra</label><select id="obraObra" onchange="renderObra()"><option value="all">Todas</option></select></div>
-      <div class="fg"><label>Unid. Construtiva</label><select id="obraUC" onchange="renderObra()"><option value="all">Todas</option></select></div>
+      <div class="fg"><label>Ano</label><select id="obraAno" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todos</option></select></div>
+      <div class="fg"><label>Mes</label><select id="obraMes" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todos</option></select></div>
+      <div class="fg"><label>Obra</label><select id="obraObra" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todas</option></select></div>
+      <div class="fg"><label>Unid. Construtiva</label><select id="obraUC" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todas</option></select></div>
       <button class="btn btn-sm" onclick="clearObra()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="obraKpi" class="kpi-wrap"></div>
@@ -492,6 +495,21 @@ function chartOptsH(){
       y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a4744',font:{size:10}}}
     }};
 }
+function getSelVals(id){
+  var el=document.getElementById(id);if(!el)return['all'];
+  if(!el.multiple)return[el.value];
+  var vals=[].slice.call(el.selectedOptions).map(function(o){return o.value;});
+  return vals.length?vals:['all'];
+}
+function selMatch(vals,v){return vals.indexOf('all')!==-1||vals.indexOf(String(v))!==-1;}
+function setSelMulti(id,vals,lbl){
+  var el=document.getElementById(id);if(!el)return;
+  var cur=getSelVals(id);
+  el.innerHTML='<option value="all">'+(lbl||'Todos')+'</option>'+vals.map(function(v){return'<option value="'+v+'">'+v+'</option>';}).join('');
+  // Restore previous selection
+  [].slice.call(el.options).forEach(function(o){o.selected=cur.indexOf(o.value)!==-1;});
+  if(!el.querySelector('option:checked'))el.options[0].selected=true;
+}
 var UC_COLORS={'TERRENO':'#b55a4a','EMPREENDIMENTO':'#4a7eb5','CUSTO CONSTRUTIVO':'#7a6aaa','CUSTO DA CONSTRUCAO':'#4a9e72','POS OBRA':'#b9945a'};
 var FAT_COLORS=['#4a9e72','#4a7eb5','#b9945a','#7a6aaa','#b55a4a'];
 
@@ -593,14 +611,32 @@ function normDados(rows){
       codOrc:g(r,cCodOrc),descOrc:g(r,cDescOrc),valObra:parseVal(cValObra?r[cValObra]:0)};
   }).filter(function(r){return r.data||r.valFin||r.valObra;});
 }
+function fixEncoding(s){
+  // Fix common Windows-1252 -> UTF-8 misread patterns
+  if(!s) return s;
+  try {
+    // If string contains replacement chars, try to fix common accented chars
+    return s
+      .replace(/Ã£/g,'ã').replace(/Ã¡/g,'á').replace(/Ã /g,'à').replace(/Ã¢/g,'â')
+      .replace(/Ã©/g,'é').replace(/Ã¨/g,'è').replace(/Ãª/g,'ê')
+      .replace(/Ã­/g,'í').replace(/Ã¬/g,'ì').replace(/Ã®/g,'î')
+      .replace(/Ã³/g,'ó').replace(/Ã²/g,'ò').replace(/Ã´/g,'ô').replace(/Ãµ/g,'õ')
+      .replace(/Ãº/g,'ú').replace(/Ã¹/g,'ù').replace(/Ã»/g,'û')
+      .replace(/Ã§/g,'ç').replace(/Ã±/g,'ñ')
+      .replace(/Ã‚/g,'Â').replace(/Ã€/g,'À').replace(/Ã‡/g,'Ç')
+      .replace(/Ã‰/g,'É').replace(/Ã"/g,'Ó').replace(/Ãš/g,'Ú')
+      .replace(/â€œ/g,'"').replace(/â€/g,'"').replace(/â€™/g,"'").replace(/â€"/g,'—').replace(/â€"/g,'–')
+      .replace(/ã/g,'ã');
+  } catch(e) { return s; }
+}
 function parsePaste(txt){
   var lines=txt.split('\n');var vl=[];
   for(var i=0;i<lines.length;i++){if(lines[i].trim())vl.push(lines[i]);}
   if(vl.length<2)return null;
-  var hdrs=vl[0].split('\t').map(function(h){return h.trim().replace(/^"|"$/g,'');});
+  var hdrs=vl[0].split('\t').map(function(h){return fixEncoding(h.trim().replace(/^"|"$/g,''));});
   var rows=[];
   for(var i=1;i<vl.length;i++){
-    var vals=vl[i].split('\t').map(function(v){return v.trim().replace(/^"|"$/g,'');});
+    var vals=vl[i].split('\t').map(function(v){return fixEncoding(v.trim().replace(/^"|"$/g,''));});
     if(vals.every(function(v){return!v;}))continue;
     var row={};hdrs.forEach(function(h,j){row[h]=vals[j]!==undefined?vals[j]:'';});rows.push(row);
   }
@@ -700,12 +736,12 @@ function processarRec(){
 }
 function limparRec(){if(!confirm('Apagar?'))return;recebidas=[];salvar();renderRec();}
 function renderRec(){
-  setSel('fRecAno',anos(recebidas),'Todos');setSel('fRecObra',unicos(recebidas,'obra'),'Todas');
-  var ano=document.getElementById('fRecAno').value;var mes=document.getElementById('fRecMes').value;var obra=document.getElementById('fRecObra').value;
+  setSelMulti('fRecAno',anos(recebidas),'Todos');setSelMulti('fRecObra',unicos(recebidas,'obra'),'Todas');
+  var anos2=getSelVals('fRecAno');var mes=document.getElementById('fRecMes').value;var obras2=getSelVals('fRecObra');
   var data=recebidas.filter(function(r){
-    if(ano!=='all'&&String(r.ano)!==ano)return false;
+    if(!selMatch(anos2,r.ano))return false;
     if(mes!=='all'&&String(r.mes)!==mes)return false;
-    if(obra!=='all'&&r.obra!==obra)return false;
+    if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
     return true;
   });
   document.getElementById('recEmpty').style.display=recebidas.length?'none':'block';
@@ -735,15 +771,15 @@ function exportAR(){
   var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Contas a Receber');XLSX.writeFile(wb,'contas_a_receber.xlsx');
 }
 function renderAR(){
-  setSel('fArAno',anos(areceber),'Todos');setSel('fArObra',unicos(areceber,'obra'),'Todas');
-  var ano=document.getElementById('fArAno').value;var mes=document.getElementById('fArMes').value;
-  var obra=document.getElementById('fArObra').value;var status=document.getElementById('fArStatus').value;
+  setSelMulti('fArAno',anos(areceber),'Todos');setSelMulti('fArObra',unicos(areceber,'obra'),'Todas');
+  var anos2=getSelVals('fArAno');var mes=document.getElementById('fArMes').value;
+  var obras2=getSelVals('fArObra');var status=document.getElementById('fArStatus').value;
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
   var data=areceber.filter(function(r){
     r.inadimplente=r.dtMs?r.dtMs<hMs:false;
-    if(ano!=='all'&&String(r.ano)!==ano)return false;
+    if(!selMatch(anos2,r.ano))return false;
     if(mes!=='all'&&String(r.mes)!==mes)return false;
-    if(obra!=='all'&&r.obra!==obra)return false;
+    if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
     if(status==='areceber'&&r.inadimplente)return false;
     if(status==='inadimplente'&&!r.inadimplente)return false;
     return true;
@@ -823,14 +859,14 @@ function importOrc(input){
 // P5: DASHBOARD ADM FIN
 // ============================================================
 function getAdm(){
-  var ano=document.getElementById('admAno').value;var mes=document.getElementById('admMes').value;
-  var cc=document.getElementById('admCC').value;var conta=document.getElementById('admConta').value;
+  var anos2=getSelVals('admAno');var mes=document.getElementById('admMes').value;
+  var cc=document.getElementById('admCC').value;var contas=getSelVals('admConta');
   return dados.filter(function(r){
     if(r.conta==='REAPROPFIN')return false;
-    if(ano!=='all'&&String(r.ano)!==ano)return false;
+    if(!selMatch(anos2,r.ano))return false;
     if(mes!=='all'&&String(r.mes)!==mes)return false;
     if(cc!=='all'&&r.cc!==cc)return false;
-    if(conta!=='all'&&r.conta!==conta)return false;
+    if(!selMatch(contas,r.conta))return false;
     return true;
   });
 }
@@ -838,8 +874,8 @@ function clearAdm(){document.getElementById('admAno').value='all';document.getEl
 function renderAdm(){
   if(!dados.length){document.getElementById('admEmpty').style.display='block';document.getElementById('admContent').style.display='none';return;}
   document.getElementById('admEmpty').style.display='none';document.getElementById('admContent').style.display='block';
-  setSel('admAno',anos(dados),'Todos');
-  setSel('admConta',unicos(dados.filter(function(r){return r.conta!=='REAPROPFIN';}),'conta'),'Todas');
+  setSelMulti('admAno',anos(dados),'Todos');
+  setSelMulti('admConta',unicos(dados.filter(function(r){return r.conta!=='REAPROPFIN';}),'conta'),'Todas');
   var data=getAdm();
   var total=data.reduce(function(s,r){return s+r.valFin;},0);
   document.getElementById('admKpi').innerHTML=kpiHtml('var(--accent)','Valor Pago',fBRL(total),data.length+' lancamentos');
@@ -867,24 +903,26 @@ function populateObraFilters(){
   dadosOK.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   recebidas.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   areceber.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
-  setSel('obraAno',[...anosSet].sort(function(a,b){return b-a;}),'Todos');
+  var anoAtual=new Date().getFullYear();
+  var anosOK=[...anosSet].filter(function(a){return a<=anoAtual;}).sort(function(a,b){return b-a;});
+  setSelMulti('obraAno',anosOK,'Todos');
   var mList=[...mesSet].sort(function(a,b){return a-b;});
   var curMes=document.getElementById('obraMes').value;
   document.getElementById('obraMes').innerHTML='<option value="all">Todos</option>'+mList.map(function(m){return'<option value="'+m+'">'+MESES_L[m-1]+'</option>';}).join('');
   if([].slice.call(document.getElementById('obraMes').options).some(function(o){return o.value===curMes;}))document.getElementById('obraMes').value=curMes;
-  setSel('obraObra',unicos(dadosOK,'obra'),'Todas');
+  setSelMulti('obraObra',unicos(dadosOK,'obra'),'Todas');
   var ucsNorm=[...new Set(unicos(dadosOK,'uc').map(normUC))].filter(Boolean).sort();
-  setSel('obraUC',ucsNorm,'Todas');
+  setSelMulti('obraUC',ucsNorm,'Todas');
 }
 function getObraData(){
-  var ano=document.getElementById('obraAno').value;var mes=document.getElementById('obraMes').value;
-  var obra=document.getElementById('obraObra').value;var uc=document.getElementById('obraUC').value;
+  var anos2=getSelVals('obraAno');var meses=getSelVals('obraMes');
+  var obras2=getSelVals('obraObra');var ucs=getSelVals('obraUC');
   return dados.filter(function(r){
     if(!obraOK(r.obra))return false;
-    if(ano!=='all'&&String(r.ano)!==ano)return false;
-    if(mes!=='all'&&String(r.mes)!==mes)return false;
-    if(obra!=='all'&&r.obra.trim().toLowerCase()!==obra.trim().toLowerCase())return false;
-    if(uc!=='all'&&normUC(r.uc)!==uc)return false;
+    if(!selMatch(anos2,r.ano))return false;
+    if(!selMatch(meses,r.mes))return false;
+    if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra.trim())===-1)return false;
+    if(ucs.indexOf('all')===-1&&ucs.indexOf(normUC(r.uc))===-1)return false;
     return true;
   });
 }
@@ -902,7 +940,7 @@ function renderObra(){
   document.getElementById('obraEmpty').style.display='none';document.getElementById('obraContent').style.display='block';
   populateObraFilters();
   var data=getObraData();
-  var obraF=document.getElementById('obraObra').value;
+  var _obras2=getSelVals('obraObra');var obraF=_obras2.length===1&&_obras2[0]!=='all'?_obras2[0]:'all';
   var anoF=document.getElementById('obraAno').value;
   var mesF=document.getElementById('obraMes').value;
   // orcFilt
