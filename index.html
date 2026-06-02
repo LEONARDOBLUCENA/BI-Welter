@@ -111,6 +111,34 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   .kpi-row{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
 }
 @media(min-width:769px){.mobile-nav{display:none;}}
+
+/* ── MULTISELECT DROPDOWN ── */
+.msd{position:relative;display:inline-flex;flex-direction:column;gap:4px;}
+.msd>label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.18em;}
+.msd-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;min-width:130px;max-width:220px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-family:var(--font);font-size:12px;color:var(--text2);white-space:nowrap;transition:border-color .15s;user-select:none;}
+.msd-btn:hover,.msd.open .msd-btn{border-color:var(--accent);color:var(--text);}
+.msd-btn-txt{overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.msd-arrow{font-size:9px;opacity:.5;flex-shrink:0;transition:transform .15s;}
+.msd.open .msd-arrow{transform:rotate(180deg);}
+.msd-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:500;overflow:hidden;}
+.msd.open .msd-panel{display:block;}
+.msd-search{padding:7px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+.msd-search input{background:transparent;border:none;color:var(--text);font-size:11px;width:100%;outline:none;font-family:var(--font);}
+.msd-search input::placeholder{color:var(--text3);}
+.msd-list{max-height:200px;overflow-y:auto;padding:4px 0;}
+.msd-list::-webkit-scrollbar{width:4px;}
+.msd-list::-webkit-scrollbar-track{background:transparent;}
+.msd-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.msd-item{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:var(--text2);transition:background .1s;}
+.msd-item:hover{background:rgba(185,148,90,.08);color:var(--text);}
+.msd-item.checked{color:var(--accent2);}
+.msd-item input[type=checkbox]{width:12px;height:12px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.msd-foot{padding:6px 10px;border-top:1px solid var(--border);display:flex;gap:6px;}
+.msd-foot button{font-size:10px;padding:3px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font);transition:all .1s;}
+.msd-foot button:hover{border-color:var(--accent);color:var(--accent);}
+/* fbar msd alinhamento */
+.fbar .msd{align-self:flex-end;}
+.filters .msd{flex:1;min-width:120px;}
 </style>
 </head>
 <body>
@@ -163,12 +191,9 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
     <div class="fbar">
       <label>Ano</label><select id="fAno" onchange="renderDados()"><option value="all">Todos</option></select>
       <div class="fdiv"></div>
-      <label>Mes</label>
-      <select id="fMes" multiple size="4" style="height:80px;" onchange="renderDados()">
-        <option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
-      </select>
+      <div class="msd" id="msd-fMes"><label>Mês</label><div class="msd-btn" onclick="toggleMsd('msd-fMes')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-search"><span style="color:var(--text3);font-size:11px;">🔍</span><input type="text" placeholder="Buscar..." oninput="filterMsd('msd-fMes',this.value)"></div><div class="msd-list" id="msd-fMes-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fMes')">Todos</button><button onclick="clearMsd('msd-fMes')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
-      <label>Centro de Custo</label><select id="fCC" multiple size="4" style="height:80px;" onchange="renderDados()"><option value="all">Todos</option></select>
+      <div class="msd" id="msd-fCC"><label>Centro de Custo</label><div class="msd-btn" onclick="toggleMsd('msd-fCC')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-search"><span style="color:var(--text3);font-size:11px;">🔍</span><input type="text" placeholder="Buscar..." oninput="filterMsd('msd-fCC',this.value)"></div><div class="msd-list" id="msd-fCC-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fCC')">Todos</button><button onclick="clearMsd('msd-fCC')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
       <input type="text" id="fBusca" placeholder="Buscar..." style="width:130px;padding:6px 9px;" oninput="renderDados()">
     </div>
@@ -196,11 +221,11 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="exportRec()">&#8595; Exportar</button><button class="btn btn-sm btn-danger" onclick="limparRec()">&#10005; Limpar</button></div>
     </div>
     <div class="fbar">
-      <label>Ano</label><select id="fRecAno" multiple size="3" style="height:64px;" onchange="renderRec()"><option value="all">Todos</option></select>
+      <div class="msd" id="msd-fRecAno"><label>Ano</label><div class="msd-btn" onclick="toggleMsd('msd-fRecAno')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fRecAno-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecAno')">Todos</button><button onclick="clearMsd('msd-fRecAno')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
-      <label>Mes</label><select id="fRecMes" multiple size="4" style="height:80px;" onchange="renderRec()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
+      <div class="msd" id="msd-fRecMes"><label>Mês</label><div class="msd-btn" onclick="toggleMsd('msd-fRecMes')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fRecMes-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecMes')">Todos</button><button onclick="clearMsd('msd-fRecMes')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
-      <label>Obra</label><select id="fRecObra" multiple size="3" style="height:64px;" onchange="renderRec()"><option value="all">Todas</option></select>
+      <div class="msd" id="msd-fRecObra"><label>Obra</label><div class="msd-btn" onclick="toggleMsd('msd-fRecObra')"><span class="msd-btn-txt">Todas</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-search"><span style="color:var(--text3);font-size:11px;">🔍</span><input type="text" placeholder="Buscar..." oninput="filterMsd('msd-fRecObra',this.value)"></div><div class="msd-list" id="msd-fRecObra-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecObra')">Todos</button><button onclick="clearMsd('msd-fRecObra')">Limpar</button></div></div></div>
     </div>
     <div id="recEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="recWrap" style="display:none;">
@@ -225,11 +250,11 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="exportAR()">&#8595; Exportar</button><button class="btn btn-sm btn-danger" onclick="limparAR()">&#10005; Limpar</button></div>
     </div>
     <div class="fbar">
-      <label>Ano</label><select id="fArAno" multiple size="3" style="height:64px;" onchange="renderAR()"><option value="all">Todos</option></select>
+      <div class="msd" id="msd-fArAno"><label>Ano</label><div class="msd-btn" onclick="toggleMsd('msd-fArAno')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fArAno-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fArAno')">Todos</button><button onclick="clearMsd('msd-fArAno')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
-      <label>Mes</label><select id="fArMes" multiple size="4" style="height:80px;" onchange="renderAR()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
+      <div class="msd" id="msd-fArMes"><label>Mês</label><div class="msd-btn" onclick="toggleMsd('msd-fArMes')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fArMes-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fArMes')">Todos</button><button onclick="clearMsd('msd-fArMes')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
-      <label>Obra</label><select id="fArObra" multiple size="3" style="height:64px;" onchange="renderAR()"><option value="all">Todas</option></select>
+      <div class="msd" id="msd-fArObra"><label>Obra</label><div class="msd-btn" onclick="toggleMsd('msd-fArObra')"><span class="msd-btn-txt">Todas</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-search"><span style="color:var(--text3);font-size:11px;">🔍</span><input type="text" placeholder="Buscar..." oninput="filterMsd('msd-fArObra',this.value)"></div><div class="msd-list" id="msd-fArObra-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fArObra')">Todos</button><button onclick="clearMsd('msd-fArObra')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
       <label>Status</label><select id="fArStatus" onchange="renderAR()"><option value="all">Todos</option><option value="areceber">A Receber</option><option value="inadimplente">Inadimplente</option></select>
     </div>
@@ -282,8 +307,8 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="admEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
   <div id="admContent" style="display:none;">
     <div class="filters">
-      <div class="fg"><label>Ano</label><select id="admAno" multiple size="3" style="height:64px;" onchange="renderAdm()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Mes</label><select id="admMes" multiple size="4" style="height:80px;" onchange="renderAdm()"><option value="all">Todos</option><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select></div>
+      <div class="msd" id="msd-admAno"><label>Ano</label><div class="msd-btn" onclick="toggleMsd('msd-admAno')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-admAno-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-admAno')">Todos</button><button onclick="clearMsd('msd-admAno')">Limpar</button></div></div></div>
+      <div class="msd" id="msd-admMes"><label>Mês</label><div class="msd-btn" onclick="toggleMsd('msd-admMes')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-admMes-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-admMes')">Todos</button><button onclick="clearMsd('msd-admMes')">Limpar</button></div></div></div>
       <div class="fg"><label>Centro de Custo</label><select id="admCC" onchange="renderAdm()"><option value="Administrativo">Administrativo</option><option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option><option value="Geral (Robert ME)">Geral (Robert ME)</option></select></div>
       <button class="btn btn-sm" onclick="clearAdm()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
@@ -303,9 +328,9 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="obraEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
   <div id="obraContent" style="display:none;">
     <div class="filters">
-      <div class="fg"><label>Ano</label><select id="obraAno" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Mes</label><select id="obraMes" multiple size="4" style="height:80px;" onchange="renderObra()"><option value="all">Todos</option></select></div>
-      <div class="fg"><label>Obra</label><select id="obraObra" multiple size="3" style="height:64px;" onchange="renderObra()"><option value="all">Todas</option></select></div>
+      <div class="msd" id="msd-obraAno"><label>Ano</label><div class="msd-btn" onclick="toggleMsd('msd-obraAno')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-obraAno-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-obraAno')">Todos</button><button onclick="clearMsd('msd-obraAno')">Limpar</button></div></div></div>
+      <div class="msd" id="msd-obraMes"><label>Mês</label><div class="msd-btn" onclick="toggleMsd('msd-obraMes')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-obraMes-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-obraMes')">Todos</button><button onclick="clearMsd('msd-obraMes')">Limpar</button></div></div></div>
+      <div class="msd" id="msd-obraObra"><label>Obra</label><div class="msd-btn" onclick="toggleMsd('msd-obraObra')"><span class="msd-btn-txt">Todas</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-search"><span style="color:var(--text3);font-size:11px;">🔍</span><input type="text" placeholder="Buscar..." oninput="filterMsd('msd-obraObra',this.value)"></div><div class="msd-list" id="msd-obraObra-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-obraObra')">Todos</button><button onclick="clearMsd('msd-obraObra')">Limpar</button></div></div></div>
       <button class="btn btn-sm" onclick="clearObra()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
     <div id="obraKpi" class="kpi-wrap"></div>
@@ -495,18 +520,121 @@ function chartOptsH(){
       y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a4744',font:{size:10}}}
     }};
 }
+// ============================================================
+// MULTISELECT DROPDOWN ENGINE
+// ============================================================
+var _msdData={};  // {id: {items:[{val,lbl}], checked:Set, allLabel}}
+function initMsd(id,items,allLabel,onChange){
+  // items: [{val,lbl}] or ['string']
+  var norm=items.map(function(x){return typeof x==='object'?x:{val:String(x),lbl:String(x)};});
+  if(!_msdData[id])_msdData[id]={items:[],checked:new Set(['all']),allLabel:allLabel||'Todos',onChange:onChange};
+  var prev=new Set(_msdData[id].checked);
+  _msdData[id].items=norm;
+  _msdData[id].allLabel=allLabel||'Todos';
+  _msdData[id].onChange=onChange;
+  // Restore checked that still exist, default all if nothing
+  var newChecked=new Set();
+  if(prev.has('all'))newChecked.add('all');
+  norm.forEach(function(x){if(prev.has(x.val))newChecked.add(x.val);});
+  if(!newChecked.size||(!newChecked.has('all')&&!norm.some(function(x){return newChecked.has(x.val);})))newChecked.add('all');
+  _msdData[id].checked=newChecked;
+  renderMsdList(id,'');
+  updateMsdBtn(id);
+}
+function renderMsdList(id,q){
+  var d=_msdData[id];if(!d)return;
+  var listEl=document.getElementById(id+'-list');if(!listEl)return;
+  var filtered=q?d.items.filter(function(x){return x.lbl.toLowerCase().includes(q.toLowerCase());}):d.items;
+  var html='';
+  if(!q){
+    var allCk=d.checked.has('all');
+    html+='<div class="msd-item'+(allCk?' checked':'')+'" onclick="toggleMsdItem(\''+id+'\',\'all\')">'
+      +'<input type="checkbox"'+(allCk?' checked':'')+' onclick="event.stopPropagation();toggleMsdItem(\''+id+'\',\'all\')">'
+      +'<span>'+d.allLabel+'</span></div>';
+  }
+  filtered.forEach(function(x){
+    var ck=d.checked.has(x.val)&&!d.checked.has('all')||false;
+    // When 'all' is checked none are individually checked in UI, but we show based on set
+    var shown=d.checked.has('all')?false:d.checked.has(x.val);
+    html+='<div class="msd-item'+(shown?' checked':'')+'" onclick="toggleMsdItem(\''+id+'\',\''+x.val.replace(/'/g,"\\'")+'\')">'
+      +'<input type="checkbox"'+(shown?' checked':'')+' onclick="event.stopPropagation();toggleMsdItem(\''+id+'\',\''+x.val.replace(/'/g,"\\'")+'\')"> '
+      +'<span>'+x.lbl+'</span></div>';
+  });
+  listEl.innerHTML=html;
+}
+function toggleMsdItem(id,val){
+  var d=_msdData[id];if(!d)return;
+  if(val==='all'){d.checked=new Set(['all']);}
+  else{
+    d.checked.delete('all');
+    if(d.checked.has(val))d.checked.delete(val);
+    else d.checked.add(val);
+    if(!d.checked.size)d.checked.add('all');
+  }
+  renderMsdList(id,'');
+  updateMsdBtn(id);
+  var si=document.querySelector('#'+id+' .msd-search input');
+  if(si)si.value='';
+  if(d.onChange)d.onChange();
+}
+function updateMsdBtn(id){
+  var d=_msdData[id];if(!d)return;
+  var btn=document.querySelector('#'+id+' .msd-btn-txt');if(!btn)return;
+  if(d.checked.has('all')){btn.textContent=d.allLabel;}
+  else{
+    var labels=d.items.filter(function(x){return d.checked.has(x.val);}).map(function(x){return x.lbl;});
+    btn.textContent=labels.length===1?labels[0]:labels.length+' selecionados';
+  }
+}
+function toggleMsd(id){
+  var el=document.getElementById(id);if(!el)return;
+  var isOpen=el.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.msd.open').forEach(function(m){m.classList.remove('open');});
+  if(!isOpen)el.classList.add('open');
+}
+function filterMsd(id,q){renderMsdList(id,q);}
+function selectAllMsd(id){
+  var d=_msdData[id];if(!d)return;
+  d.checked=new Set(['all']);renderMsdList(id,'');updateMsdBtn(id);
+  if(d.onChange)d.onChange();
+}
+function clearMsd(id){
+  var d=_msdData[id];if(!d)return;
+  d.checked=new Set(['all']);renderMsdList(id,'');updateMsdBtn(id);
+  if(d.onChange)d.onChange();
+}
+function getMsdVals(id){
+  var d=_msdData[id];if(!d)return['all'];
+  if(d.checked.has('all'))return['all'];
+  return Array.from(d.checked);
+}
+// Close dropdowns on outside click
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.msd'))document.querySelectorAll('.msd.open').forEach(function(m){m.classList.remove('open');});
+});
+// Legacy compat: getSelVals now delegates to getMsdVals when msd exists, else native select
 function getSelVals(id){
+  if(_msdData['msd-'+id])return getMsdVals('msd-'+id);
   var el=document.getElementById(id);if(!el)return['all'];
   if(!el.multiple)return[el.value];
   var vals=[].slice.call(el.selectedOptions).map(function(o){return o.value;});
   return vals.length?vals:['all'];
 }
 function selMatch(vals,v){return vals.indexOf('all')!==-1||vals.indexOf(String(v))!==-1;}
-function setSelMulti(id,vals,lbl){
+// setSelMulti now drives initMsd when msd wrapper exists, else falls back to native select
+var MESES_ITEMS=[{val:'1',lbl:'Jan'},{val:'2',lbl:'Fev'},{val:'3',lbl:'Mar'},{val:'4',lbl:'Abr'},{val:'5',lbl:'Mai'},{val:'6',lbl:'Jun'},{val:'7',lbl:'Jul'},{val:'8',lbl:'Ago'},{val:'9',lbl:'Set'},{val:'10',lbl:'Out'},{val:'11',lbl:'Nov'},{val:'12',lbl:'Dez'}];
+function setSelMulti(id,vals,lbl,onChange){
+  var msdId='msd-'+id;
+  if(document.getElementById(msdId)){
+    var items=vals.map(function(v){return{val:String(v),lbl:String(v)};});
+    initMsd(msdId,items,lbl||'Todos',onChange);
+    return;
+  }
+  // fallback native
   var el=document.getElementById(id);if(!el)return;
   var cur=getSelVals(id);
   el.innerHTML='<option value="all">'+(lbl||'Todos')+'</option>'+vals.map(function(v){return'<option value="'+v+'">'+v+'</option>';}).join('');
-  // Restore previous selection
   [].slice.call(el.options).forEach(function(o){o.selected=cur.indexOf(o.value)!==-1;});
   if(!el.querySelector('option:checked'))el.options[0].selected=true;
 }
@@ -689,7 +817,8 @@ function getFilteredDados(){
   });
 }
 function renderDados(){
-  setSelMulti('fCC',unicos(dados,'cc'),'Todos');
+  setSelMulti('fCC',unicos(dados,'cc'),'Todos',renderDados);
+  if(!_msdData['msd-fMes'])initMsd('msd-fMes',MESES_ITEMS,'Todos',renderDados);
   var data=getFilteredDados();
   document.getElementById('dadosEmpty').style.display=dados.length?'none':'block';
   document.getElementById('dadosWrap').style.display=dados.length?'block':'none';
@@ -746,7 +875,9 @@ function exportRec(){
 }
 function limparRec(){if(!confirm('Apagar?'))return;recebidas=[];salvar();renderRec();}
 function renderRec(){
-  setSelMulti('fRecAno',anos(recebidas),'Todos');setSelMulti('fRecObra',unicos(recebidas,'obra'),'Todas');
+  setSelMulti('fRecAno',anos(recebidas),'Todos',renderRec);
+  setSelMulti('fRecObra',unicos(recebidas,'obra'),'Todas',renderRec);
+  if(!_msdData['msd-fRecMes'])initMsd('msd-fRecMes',MESES_ITEMS,'Todos',renderRec);
   var anos2=getSelVals('fRecAno');var meses=getSelVals('fRecMes');var obras2=getSelVals('fRecObra');
   var data=recebidas.filter(function(r){
     if(!selMatch(anos2,r.ano))return false;
@@ -781,7 +912,9 @@ function exportAR(){
   var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Contas a Receber');XLSX.writeFile(wb,'contas_a_receber.xlsx');
 }
 function renderAR(){
-  setSelMulti('fArAno',anos(areceber),'Todos');setSelMulti('fArObra',unicos(areceber,'obra'),'Todas');
+  setSelMulti('fArAno',anos(areceber),'Todos',renderAR);
+  setSelMulti('fArObra',unicos(areceber,'obra'),'Todas',renderAR);
+  if(!_msdData['msd-fArMes'])initMsd('msd-fArMes',MESES_ITEMS,'Todos',renderAR);
   var anos2=getSelVals('fArAno');var meses=getSelVals('fArMes');
   var obras2=getSelVals('fArObra');var status=document.getElementById('fArStatus').value;
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
@@ -879,11 +1012,12 @@ function getAdm(){
     return true;
   });
 }
-function clearAdm(){document.getElementById('admAno').value='all';document.getElementById('admMes').value='all';document.getElementById('admCC').value='all';renderAdm();}
+function clearAdm(){selectAllMsd('msd-admAno');selectAllMsd('msd-admMes');document.getElementById('admCC').value='all';renderAdm();}
 function renderAdm(){
   if(!dados.length){document.getElementById('admEmpty').style.display='block';document.getElementById('admContent').style.display='none';return;}
   document.getElementById('admEmpty').style.display='none';document.getElementById('admContent').style.display='block';
-  setSelMulti('admAno',anos(dados),'Todos');
+  setSelMulti('admAno',anos(dados),'Todos',renderAdm);
+  if(!_msdData['msd-admMes'])initMsd('msd-admMes',MESES_ITEMS,'Todos',renderAdm);
   var data=getAdm();
   var total=data.reduce(function(s,r){return s+r.valFin;},0);
   document.getElementById('admKpi').innerHTML=kpiHtml('var(--accent)','Valor Pago',fBRL(total),data.length+' lancamentos');
@@ -913,12 +1047,10 @@ function populateObraFilters(){
   areceber.forEach(function(r){if(r.ano)anosSet.add(r.ano);if(r.mes)mesSet.add(r.mes);});
   var anoAtual=new Date().getFullYear();
   var anosOK=[...anosSet].filter(function(a){return a<=anoAtual;}).sort(function(a,b){return b-a;});
-  setSelMulti('obraAno',anosOK,'Todos');
+  setSelMulti('obraAno',anosOK,'Todos',renderObra);
   var mList=[...mesSet].sort(function(a,b){return a-b;});
-  var curMes=document.getElementById('obraMes').value;
-  document.getElementById('obraMes').innerHTML='<option value="all">Todos</option>'+mList.map(function(m){return'<option value="'+m+'">'+MESES_L[m-1]+'</option>';}).join('');
-  if([].slice.call(document.getElementById('obraMes').options).some(function(o){return o.value===curMes;}))document.getElementById('obraMes').value=curMes;
-  setSelMulti('obraObra',unicos(dadosOK,'obra'),'Todas');
+  setSelMulti('obraMes',mList.map(function(m){return{val:String(m),lbl:MESES_L[m-1]};}), 'Todos',renderObra);
+  setSelMulti('obraObra',unicos(dadosOK,'obra'),'Todas',renderObra);
 }
 function getObraData(){
   var anos2=getSelVals('obraAno');var meses=getSelVals('obraMes');
@@ -931,7 +1063,7 @@ function getObraData(){
     return true;
   });
 }
-function clearObra(){document.getElementById('obraAno').value='all';document.getElementById('obraMes').value='all';document.getElementById('obraObra').value='all';renderObra();}
+function clearObra(){selectAllMsd('msd-obraAno');selectAllMsd('msd-obraMes');selectAllMsd('msd-obraObra');renderObra();}
 function buildCCKpi(cc,ccC,ccP,orcFilt){
   var orcCC=orcFilt.filter(function(r){var d=(r.descTot||'').toUpperCase();return d.includes('CUSTO CONSTRUTIVO')||d.includes('CUSTO CONS');}).reduce(function(s,r){return s+r.valor;},0);
   if(orcCC===0&&orcFilt.length>0)orcCC=orcFilt.reduce(function(s,r){return s+r.valor;},0);
@@ -946,15 +1078,14 @@ function renderObra(){
   populateObraFilters();
   var data=getObraData();
   var _obras2=getSelVals('obraObra');var obraF=_obras2.length===1&&_obras2[0]!=='all'?_obras2[0]:'all';
-  var anoF=document.getElementById('obraAno').value;
-  var mesF=document.getElementById('obraMes').value;
+  var anosF=getSelVals('obraAno');var mesesF=getSelVals('obraMes');
   // orcFilt
   var orcFilt=[];if(obraF!=='all')orcFilt=orcamento.filter(function(r){return r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
   // Faturamento
   var recF=recebidas.filter(function(r){
     if(obraF!=='all'&&r.obra!==obraF)return false;
-    if(anoF!=='all'&&String(r.ano)!==anoF)return false;
-    if(mesF!=='all'&&String(r.mes)!==mesF)return false;
+    if(!selMatch(anosF,r.ano))return false;
+    if(!selMatch(mesesF,r.mes))return false;
     return true;
   });
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
