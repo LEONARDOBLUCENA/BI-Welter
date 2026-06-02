@@ -203,7 +203,7 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
     <div class="fbar">
       <label>Ano</label><div class="ms-wrap" id="ms-fRecAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
-      <label>Mes</label><select id="fRecMes" onchange="renderRec()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
+      <label>Mes</label><div class="ms-wrap" id="ms-fRecMes"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
       <label>Obra</label><div class="ms-wrap" id="ms-fRecObra"><button class="ms-btn">Todas</button><div class="ms-drop"></div></div>
     </div>
@@ -232,7 +232,7 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
     <div class="fbar">
       <label>Ano</label><div class="ms-wrap" id="ms-fArAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
-      <label>Mes</label><select id="fArMes" onchange="renderAR()"><option value="all">Todos</option><option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
+      <label>Mes</label><div class="ms-wrap" id="ms-fArMes"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
       <label>Obra</label><div class="ms-wrap" id="ms-fArObra"><button class="ms-btn">Todas</button><div class="ms-drop"></div></div>
       <div class="fdiv"></div>
@@ -288,7 +288,7 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div id="admContent" style="display:none;">
     <div class="filters">
       <div class="fg"><label>Ano</label><div class="ms-wrap" id="ms-admAno"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div></div>
-      <div class="fg"><label>Mes</label><select id="admMes" onchange="renderAdm()"><option value="all">Todos</option><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Marco</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select></div>
+      <div class="fg"><label>Mes</label><div class="ms-wrap" id="ms-admMes"><button class="ms-btn">Todos</button><div class="ms-drop"></div></div></div>
       <div class="fg"><label>Centro de Custo</label><select id="admCC" onchange="renderAdm()"><option value="Administrativo">Administrativo</option><option value="Geral (Welter Eirelli)">Geral (Welter Eirelli)</option><option value="Geral (Robert ME)">Geral (Robert ME)</option></select></div>
       <button class="btn btn-sm" onclick="clearAdm()" style="align-self:flex-end;">&#10005; Limpar</button>
     </div>
@@ -503,27 +503,35 @@ function chartOptsH(){
 // ============================================================
 // CUSTOM MULTI-SELECT DROPDOWN
 // ============================================================
-var _msState={};
-function msInit(id,options,lbl,onChange){
+var _msState={};var _msLabels={};
+function msInit(id,options,lbl,onChange,labels){
   if(!_msState[id])_msState[id]=['all'];
   var wrap=document.getElementById('ms-'+id);if(!wrap)return;
   var btn=wrap.querySelector('.ms-btn');
   var drop=wrap.querySelector('.ms-drop');
-  // Build items
+  _msLabels=_msLabels||{};_msLabels[id]={};
   var html='<div class="ms-item all-item" data-ms-id="'+id+'" data-ms-val="all" data-ms-cb="'+onChange+'" onclick="msClick(this)">'+
     '<input type="checkbox" '+(msIsAll(id)?'checked':'')+' onclick="event.stopPropagation()">'+
     '<span>'+(lbl||'Todos')+'</span></div>';
-  options.forEach(function(o){
+  options.forEach(function(o,i){
+    var displayLabel=labels?labels[i]:o;
+    _msLabels[id][o]=displayLabel;
     html+='<div class="ms-item" data-ms-id="'+id+'" data-ms-val="'+o+'" data-ms-cb="'+onChange+'" onclick="msClick(this)">'+
       '<input type="checkbox" '+(msHas(id,o)?'checked':'')+' onclick="event.stopPropagation()">'+
-      '<span>'+o+'</span></div>';
+      '<span>'+displayLabel+'</span></div>';
   });
   drop.innerHTML=html;
-  msUpdateBtn(id,lbl||'Todos');
-  // Toggle open on btn click
-  btn.onclick=function(e){e.stopPropagation();drop.classList.toggle('open');};
-  // Close on outside click
-  document.addEventListener('click',function(){drop.classList.remove('open');},{capture:true,once:false});
+  // Update button label
+  var vals=msVals(id);
+  if(vals.indexOf('all')!==-1||vals.length===0){btn.textContent=lbl||'Todos';}
+  else if(vals.length===1){btn.textContent=(_msLabels[id]&&_msLabels[id][vals[0]])||vals[0];}
+  else{btn.textContent=vals.length+' selecionados';}
+  btn._msId=id;btn._msLbl=lbl||'Todos';
+  btn.onclick=function(e){
+    e.stopPropagation();
+    document.querySelectorAll('.ms-drop.open').forEach(function(d){if(d!==drop)d.classList.remove('open');});
+    drop.classList.toggle('open');
+  };
 }
 function msIsAll(id){return _msState[id]&&(_msState[id].indexOf('all')!==-1||_msState[id].length===0);}
 function msHas(id,v){return _msState[id]&&_msState[id].indexOf(String(v))!==-1;}
@@ -551,18 +559,22 @@ function msToggle(id,v,onChange){
       cb.checked=val==='all'?msIsAll(id):msHas(id,val);
     });
   }
-  if(onChange)eval(onChange+'()');
+  msUpdateBtn(id);
+  if(onChange){try{eval(onChange+'()');}catch(e){}}
 }
 function msVals(id){return _msState[id]&&_msState[id].length?_msState[id]:['all'];}
+document.addEventListener('click',function(){document.querySelectorAll('.ms-drop.open').forEach(function(d){d.classList.remove('open');});});
 function msUpdateBtn(id,lbl){
-  var btn=document.getElementById('ms-'+id);if(!btn)return;
-  btn=btn.querySelector('.ms-btn');if(!btn)return;
-  var vals=msVals(id);
-  btn.textContent=vals.indexOf('all')!==-1||vals.length===0?lbl:(vals.length===1?vals[0]:vals.length+' selecionados');
+  var wrap=document.getElementById('ms-'+id);if(!wrap)return;
+  var btn=wrap.querySelector('.ms-btn');if(!btn)return;
+  var vals=msVals(id);var useLbl=lbl||btn._msLbl||'Todos';
+  if(vals.indexOf('all')!==-1||vals.length===0){btn.textContent=useLbl;}
+  else if(vals.length===1){btn.textContent=(_msLabels[id]&&_msLabels[id][vals[0]])||vals[0];}
+  else{btn.textContent=vals.length+' selecionados';}
 }
-function msRebuild(id,options,lbl,onChange){
+function msRebuild(id,options,lbl,onChange,labels){
   _msState[id]=_msState[id]||['all'];
-  msInit(id,options,lbl,onChange);
+  msInit(id,options,lbl,onChange,labels);
 }
 function getSelVals(id){
   // Check custom multi-select first
@@ -813,10 +825,10 @@ function exportRec(){
 }
 function renderRec(){
   setSelMulti('fRecAno',anos(recebidas),'Todos');setSelMulti('fRecObra',unicos(recebidas,'obra'),'Todas');
-  var anos2=getSelVals('fRecAno');var mes=document.getElementById('fRecMes').value;var obras2=getSelVals('fRecObra');
+  var anos2=getSelVals('fRecAno');var meses=getSelVals('fRecMes');var obras2=getSelVals('fRecObra');
   var data=recebidas.filter(function(r){
     if(!selMatch(anos2,String(r.ano)))return false;
-    if(mes!=='all'&&String(r.mes)!==mes)return false;
+    if(!selMatch(meses,String(r.mes)))return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
     return true;
   });
@@ -848,13 +860,13 @@ function exportAR(){
 }
 function renderAR(){
   setSelMulti('fArAno',anos(areceber),'Todos');setSelMulti('fArObra',unicos(areceber,'obra'),'Todas');
-  var anos2=getSelVals('fArAno');var mes=document.getElementById('fArMes').value;
+  var anos2=getSelVals('fArAno');var meses=getSelVals('fArMes');
   var obras2=getSelVals('fArObra');var status=document.getElementById('fArStatus').value;
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
   var data=areceber.filter(function(r){
     r.inadimplente=r.dtMs?r.dtMs<hMs:false;
     if(!selMatch(anos2,String(r.ano)))return false;
-    if(mes!=='all'&&String(r.mes)!==mes)return false;
+    if(!selMatch(meses,String(r.mes)))return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
     if(status==='areceber'&&r.inadimplente)return false;
     if(status==='inadimplente'&&!r.inadimplente)return false;
@@ -935,17 +947,17 @@ function importOrc(input){
 // P5: DASHBOARD ADM FIN
 // ============================================================
 function getAdm(){
-  var anos2=getSelVals('admAno');var mes=document.getElementById('admMes').value;
+  var anos2=getSelVals('admAno');var meses=getSelVals('admMes');
   var cc=document.getElementById('admCC').value;
   return dados.filter(function(r){
     if(r.conta==='REAPROPFIN')return false;
     if(!selMatch(anos2,String(r.ano)))return false;
-    if(mes!=='all'&&String(r.mes)!==mes)return false;
+    if(!selMatch(meses,String(r.mes)))return false;
     if(cc!=='all'&&r.cc!==cc)return false;
     return true;
   });
 }
-function clearAdm(){document.getElementById('admAno').value='all';document.getElementById('admMes').value='all';document.getElementById('admCC').value='all';document.getElementById('admConta').value='all';renderAdm();}
+function clearAdm(){_msState['admAno']=['all'];_msState['admMes']=['all'];document.getElementById('admCC').value='all';renderAdm();}
 function renderAdm(){
   if(!dados.length){document.getElementById('admEmpty').style.display='block';document.getElementById('admContent').style.display='none';return;}
   document.getElementById('admEmpty').style.display='none';document.getElementById('admContent').style.display='block';
@@ -981,7 +993,7 @@ function populateObraFilters(){
   var anosOK=[...anosSet].filter(function(a){return a<=anoAtual;}).sort(function(a,b){return b-a;});
   msRebuild('obraAno',anosOK.map(String),'Todos','renderObra');
   var mList=[...mesSet].sort(function(a,b){return a-b;});
-  msRebuild('obraMes',mList.map(function(m){return MESES_L[m-1];}), 'Todos','renderObra');
+  msRebuild('obraMes',mList.map(String),'Todos','renderObra',mList.map(function(m){return MESES_L[m-1];}));
   msRebuild('obraObra',unicos(dadosOK,'obra'),'Todas','renderObra');
 }
 function getObraData(){
@@ -990,11 +1002,7 @@ function getObraData(){
   return dados.filter(function(r){
     if(!obraOK(r.obra))return false;
     if(!selMatch(anos2,String(r.ano)))return false;
-    // meses stored as month names
-    if(meses.indexOf('all')===-1){
-      var mNome=r.mes?MESES_L[r.mes-1]:'';
-      if(meses.indexOf(mNome)===-1)return false;
-    }
+    if(!selMatch(meses,String(r.mes)))return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra.trim())===-1)return false;
     return true;
   });
