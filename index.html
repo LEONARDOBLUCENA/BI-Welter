@@ -453,7 +453,8 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">Saldo Orcamento Monte Sollaro</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <div class="fg2"><label>Entrega das chaves (mm/aaaa)</label><input type="text" id="fcMSEntrega" placeholder="Ex: 12/2027" oninput="renderFluxo()"></div>
-          <div style="font-size:10px;color:var(--text3);padding:6px 0;">O saldo orcado vs realizado sera distribuido igualmente ate a data de entrega.</div>
+          <div class="fg2"><label>Saldo a executar (R$)</label><input type="text" id="fcMSSaldo" placeholder="Ex: 8000000" oninput="renderFluxo()"></div>
+          <div style="font-size:10px;color:var(--text3);padding:6px 0;">Saldo distribuido igualmente ate a data de entrega.</div>
         </div>
       </div>
 
@@ -1520,19 +1521,12 @@ function renderFluxo(){
   var arMS=arPorObraMs("monte sollaro");
   var arLavi=arPorObraMs("lavi");
 
-  // ── SALDO ORÇADO MONTE SOLLARO ──
+  // ── SALDO ORÇADO MONTE SOLLARO (manual) ──
   var msSaldoMensal=0;
   if(msEntrega){
-    var msTotalOrc=orcamento.filter(function(r){
-      return r.obra&&r.obra.toLowerCase().includes('monte sollaro');
-    }).reduce(function(s,r){return s+r.valor;},0);
-    var msRealizado=dados.filter(function(r){
-      return obraOK(r.obra)&&r.obra.toLowerCase().includes('monte sollaro');
-    }).reduce(function(s,r){return s+Math.abs(r.valObra||0);},0);
-    var msSaldo=Math.max(0,msTotalOrc-msRealizado);
-    // meses restantes até entrega
+    var msSaldo=parseVal(document.getElementById('fcMSSaldo').value);
     var msMesesRest=(msEntrega.ano-hAno)*12+(msEntrega.mes-hMes);
-    if(msMesesRest>0)msSaldoMensal=msSaldo/msMesesRest;
+    if(msMesesRest>0&&msSaldo>0)msSaldoMensal=msSaldo/msMesesRest;
   }
 
   // ── GERAR LINHAS: mês atual até Dez/2040 ──
@@ -1555,12 +1549,17 @@ function renderFluxo(){
     // Pos obra = média fixa
     var custoPos=posMedia;
 
-    // Terreno L'Adret
+    // Terreno L'Adret: 1ª parcela = 840.000 fixo, restante distribuído igualmente
     var custoTerreno=0;
     if(terIni&&terVal>0&&terPar>0){
-      var terK=monthKey(terIni.ano,terIni.mes);
       var diffTer=(ano-terIni.ano)*12+(mes-terIni.mes);
-      if(diffTer>=0&&diffTer<terPar)custoTerreno=terVal/terPar;
+      if(diffTer===0){
+        custoTerreno=840000;
+      } else if(diffTer>0&&diffTer<terPar){
+        var saldoTer=Math.max(0,terVal-840000);
+        var parRest=terPar-1;
+        custoTerreno=parRest>0?saldoTer/parRest:0;
+      }
     }
 
     // CC L'Adret
