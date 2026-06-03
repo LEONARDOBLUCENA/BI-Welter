@@ -139,6 +139,17 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
 /* fbar msd alinhamento */
 .fbar .msd{align-self:flex-end;}
 .filters .msd{flex:1;min-width:120px;}
+/* FLUXO DE CAIXA */
+.fc-pos{color:var(--green)!important;}
+.fc-neg{color:var(--red)!important;}
+.fc-zero{color:var(--text3)!important;}
+.fc-sep{border-left:2px solid var(--gold)!important;}
+.fc-acum-pos{color:var(--green);font-weight:600;}
+.fc-acum-neg{color:var(--red);font-weight:600;}
+#tbFluxoBody tr:hover td{background:rgba(185,148,90,0.04);}
+#tbFluxoBody td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;vertical-align:middle;white-space:nowrap;}
+#tbFluxoBody td:first-child{position:sticky;left:0;background:var(--bg2);z-index:1;font-weight:600;color:var(--text);font-family:var(--mono);}
+#tbFluxoBody tr:hover td:first-child{background:var(--bg3);}
 </style>
 </head>
 <body>
@@ -171,6 +182,7 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
   <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Adm Financeiro</span></div>
   <div class="ni" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#127959;</span><span class="ni-label">Dashboard Obra</span></div>
   <div class="ni" id="tab7" onclick="goTab(7)"><span class="ni-icon">&#11088;</span><span class="ni-label">Dashboard Executivo</span></div>
+  <div class="ni" id="tab9" onclick="goTab(9)"><span class="ni-icon">&#128181;</span><span class="ni-label">Fluxo de Caixa</span></div>
 </aside>
 
 <main>
@@ -399,6 +411,83 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
       <table><thead><tr><th>Obra</th><th>Unidade</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody id="tbEst"></tbody></table>
     </div>
     <div id="estFooter" style="padding:6px 0 0;font-size:10px;color:var(--text3);"></div>
+  </div>
+</div>
+<!-- P9: FLUXO DE CAIXA -->
+<div class="page" id="page9">
+  <div class="st">Fluxo de Caixa</div>
+  <div class="sd">Projecao mensal de receitas e custos até Dezembro de 2040.</div>
+
+  <!-- Configurações manuais -->
+  <div class="card">
+    <div class="ct">Configuracoes</div>
+    <div style="display:flex;align-items:center;gap:14px;padding:10px 0 18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent2);white-space:nowrap;">Caixa Atual (R$)</span>
+      <input type="text" id="fcCaixaAtual" placeholder="Ex: 1500000" oninput="renderFluxo()" style="max-width:200px;">
+      <span style="font-size:10px;color:var(--text3);">Saldo inicial para calculo do acumulado</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
+
+      <!-- L'Adret Terreno -->
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">Terreno L'Adret</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="fg2"><label>Inicio do pagamento (mm/aaaa)</label><input type="text" id="fcTerrenoInicio" placeholder="Ex: 08/2026" oninput="renderFluxo()"></div>
+          <div class="fg2"><label>Valor total (R$)</label><input type="text" id="fcTerrenoValor" placeholder="Ex: 5000000" oninput="renderFluxo()"></div>
+          <div class="fg2"><label>Numero de parcelas</label><input type="text" id="fcTerrenoParcelas" placeholder="Ex: 24" oninput="renderFluxo()"></div>
+        </div>
+      </div>
+
+      <!-- L'Adret Custo Construtivo -->
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">Custo Construtivo L'Adret</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="fg2"><label>Inicio da obra (mm/aaaa)</label><input type="text" id="fcCCInicio" placeholder="Ex: 08/2026" oninput="renderFluxo()"></div>
+          <div class="fg2"><label>Orcamento total (R$)</label><input type="text" id="fcCCValor" placeholder="Ex: 25000000" oninput="renderFluxo()"></div>
+          <div class="fg2"><label>Duracao da obra (meses)</label><input type="text" id="fcCCMeses" placeholder="Ex: 36" oninput="renderFluxo()"></div>
+        </div>
+      </div>
+
+      <!-- Monte Sollaro -->
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">Saldo Orcamento Monte Sollaro</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="fg2"><label>Entrega das chaves (mm/aaaa)</label><input type="text" id="fcMSEntrega" placeholder="Ex: 12/2027" oninput="renderFluxo()"></div>
+          <div style="font-size:10px;color:var(--text3);padding:6px 0;">O saldo orcado vs realizado sera distribuido igualmente ate a data de entrega.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="card" style="padding:0;">
+    <div style="overflow-x:auto;">
+      <table id="tbFluxo" style="width:100%;border-collapse:collapse;font-size:11px;min-width:1100px;">
+        <thead>
+          <tr style="background:var(--bg3);">
+            <th style="padding:10px 12px;text-align:left;color:var(--accent);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;border-bottom:1px solid var(--gold);position:sticky;left:0;background:var(--bg3);z-index:2;white-space:nowrap;">Período</th>
+            <!-- Faturamento -->
+            <th style="padding:10px 12px;text-align:right;color:var(--green);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Fat. L'Adret</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--green);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Fat. Monte Sollaro</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--green);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Fat. Lavi</th>
+            <th style="padding:10px 8px;text-align:right;color:#4a9e72;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;border-left:2px solid var(--gold);">Total Fat.</th>
+            <!-- Custos -->
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;border-left:2px solid var(--gold);">Proj. Afetacao</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Custo Adm</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Pos Obra</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Terreno L'Adret</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">CC L'Adret</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Saldo Orc. MS</th>
+            <th style="padding:10px 8px;text-align:right;color:#b55a4a;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;border-left:2px solid var(--gold);">Total Custo</th>
+            <!-- Saldo -->
+            <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;border-left:2px solid var(--gold);color:var(--accent2);">Saldo Mes</th>
+            <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;color:var(--accent2);">Saldo Acum.</th>
+          </tr>
+        </thead>
+        <tbody id="tbFluxoBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 </main>
@@ -699,7 +788,7 @@ function carregarSessao(input){
 // ============================================================
 // TABS
 // ============================================================
-var TABS=[0,2,3,4,5,6,7,8];
+var TABS=[0,2,3,4,5,6,7,8,9];
 function goTab(i){
   TABS.forEach(function(j){
     var t=document.getElementById('tab'+j);var p=document.getElementById('page'+j);
@@ -711,6 +800,7 @@ function goTab(i){
   if(i===6)renderObra();
   if(i===7)renderExec();
   if(i===8)renderEstoque();
+  if(i===9)renderFluxo();
 }
 
 // ============================================================
@@ -1355,6 +1445,189 @@ async function carregarDaNuvem(){
 }
 
 // ============================================================
+// P9: FLUXO DE CAIXA
+// ============================================================
+function parseMonthYear(s){
+  // accepts mm/aaaa or m/aaaa
+  if(!s)return null;
+  var m=s.trim().match(/^(\d{1,2})\/(\d{4})$/);
+  if(!m)return null;
+  return{mes:parseInt(m[1]),ano:parseInt(m[2])};
+}
+function monthKey(ano,mes){return ano*100+mes;}
+function renderFluxo(){
+  var body=document.getElementById('tbFluxoBody');
+  if(!body)return;
+
+  // ── CONFIG INPUTS ──
+  var terIni=parseMonthYear(document.getElementById('fcTerrenoInicio').value);
+  var terVal=parseVal(document.getElementById('fcTerrenoValor').value);
+  var terPar=parseInt(document.getElementById('fcTerrenoParcelas').value)||0;
+
+  var ccIni=parseMonthYear(document.getElementById('fcCCInicio').value);
+  var ccVal=parseVal(document.getElementById('fcCCValor').value);
+  var ccMes=parseInt(document.getElementById('fcCCMeses').value)||0;
+
+  var msEntrega=parseMonthYear(document.getElementById('fcMSEntrega').value);
+
+  // ── CUSTO ADM: média últimos 12 meses CC=Administrativo ──
+  var hoje=new Date();
+  var hAno=hoje.getFullYear(), hMes=hoje.getMonth()+1;
+  var admRef=[];
+  for(var i=0;i<12;i++){
+    var mm=hMes-i; var aa=hAno;
+    if(mm<=0){mm+=12;aa--;}
+    admRef.push(monthKey(aa,mm));
+  }
+  var admDados=dados.filter(function(r){
+    return (r.cc||'').toLowerCase().includes('administrativo')&&admRef.indexOf(monthKey(r.ano,r.mes))!==-1;
+  });
+  // soma por mês presente, depois média
+  var admByM={};
+  admDados.forEach(function(r){var k=monthKey(r.ano,r.mes);admByM[k]=(admByM[k]||0)+Math.abs(r.valFin||0);});
+  var admMeses=Object.keys(admByM).length;
+  var admTotal=Object.values(admByM).reduce(function(s,v){return s+v;},0);
+  var admMedia=admMeses>0?admTotal/admMeses:0;
+
+  // ── CUSTO PÓS OBRA: média últimos 6 meses soma todas obras ──
+  var posRef=[];
+  for(var i=0;i<6;i++){
+    var mm=hMes-i; var aa=hAno;
+    if(mm<=0){mm+=12;aa--;}
+    posRef.push(monthKey(aa,mm));
+  }
+  var posDados=dados.filter(function(r){
+    return obraOK(r.obra)&&normUC(r.uc)==='POS OBRA'&&posRef.indexOf(monthKey(r.ano,r.mes))!==-1;
+  });
+  var posByM={};
+  posDados.forEach(function(r){var k=monthKey(r.ano,r.mes);posByM[k]=(posByM[k]||0)+Math.abs(r.valObra||0);});
+  var posMeses=Object.keys(posByM).length;
+  var posTotal=Object.values(posByM).reduce(function(s,v){return s+v;},0);
+  var posMedia=posMeses>0?posTotal/posMeses:0;
+
+  // ── A RECEBER por obra e mês ──
+  function arPorObraMs(obraKey){
+    var map={};
+    areceber.filter(function(r){
+      return r.obra&&r.obra.toLowerCase().includes(obraKey);
+    }).forEach(function(r){
+      var k=monthKey(r.ano,r.mes);
+      map[k]=(map[k]||0)+(r.total||r.liquido||0);
+    });
+    return map;
+  }
+  var arAdret=arPorObraMs("l'adret");
+  var arMS=arPorObraMs("monte sollaro");
+  var arLavi=arPorObraMs("lavi");
+
+  // ── SALDO ORÇADO MONTE SOLLARO ──
+  var msSaldoMensal=0;
+  if(msEntrega){
+    var msTotalOrc=orcamento.filter(function(r){
+      return r.obra&&r.obra.toLowerCase().includes('monte sollaro');
+    }).reduce(function(s,r){return s+r.valor;},0);
+    var msRealizado=dados.filter(function(r){
+      return obraOK(r.obra)&&r.obra.toLowerCase().includes('monte sollaro');
+    }).reduce(function(s,r){return s+Math.abs(r.valObra||0);},0);
+    var msSaldo=Math.max(0,msTotalOrc-msRealizado);
+    // meses restantes até entrega
+    var msMesesRest=(msEntrega.ano-hAno)*12+(msEntrega.mes-hMes);
+    if(msMesesRest>0)msSaldoMensal=msSaldo/msMesesRest;
+  }
+
+  // ── GERAR LINHAS: mês atual até Dez/2040 ──
+  var rows=[];
+  var ano=hAno, mes=hMes;
+  var saldoAcum=parseVal(document.getElementById('fcCaixaAtual').value);
+  while(ano<2040||(ano===2040&&mes<=12)){
+    var k=monthKey(ano,mes);
+    var fatAdret=arAdret[k]||0;
+    var fatMS=arMS[k]||0;
+    var fatLavi=arLavi[k]||0;
+    var totalFat=fatAdret+fatMS+fatLavi;
+
+    // Proj afetação = 4% do faturamento total do mês
+    var afetacao=totalFat*0.04;
+
+    // Custo adm = média fixa
+    var custoAdm=admMedia;
+
+    // Pos obra = média fixa
+    var custoPos=posMedia;
+
+    // Terreno L'Adret
+    var custoTerreno=0;
+    if(terIni&&terVal>0&&terPar>0){
+      var terK=monthKey(terIni.ano,terIni.mes);
+      var diffTer=(ano-terIni.ano)*12+(mes-terIni.mes);
+      if(diffTer>=0&&diffTer<terPar)custoTerreno=terVal/terPar;
+    }
+
+    // CC L'Adret
+    var custoCC=0;
+    if(ccIni&&ccVal>0&&ccMes>0){
+      var diffCC=(ano-ccIni.ano)*12+(mes-ccIni.mes);
+      if(diffCC>=0&&diffCC<ccMes)custoCC=ccVal/ccMes;
+    }
+
+    // Saldo MS
+    var custoMS=0;
+    if(msEntrega&&msSaldoMensal>0){
+      var diffMS=(msEntrega.ano-ano)*12+(msEntrega.mes-mes);
+      if(diffMS>=0)custoMS=msSaldoMensal;
+    }
+
+    var totalCusto=afetacao+custoAdm+custoPos+custoTerreno+custoCC+custoMS;
+    var saldoMes=totalFat-totalCusto;
+    saldoAcum+=saldoMes;
+
+    rows.push({
+      label:MESES_S[mes-1]+'/'+String(ano).slice(2),
+      fatAdret:fatAdret,fatMS:fatMS,fatLavi:fatLavi,totalFat:totalFat,
+      afetacao:afetacao,custoAdm:custoAdm,custoPos:custoPos,
+      custoTerreno:custoTerreno,custoCC:custoCC,custoMS:custoMS,
+      totalCusto:totalCusto,saldoMes:saldoMes,saldoAcum:saldoAcum
+    });
+
+    mes++;if(mes>12){mes=1;ano++;}
+  }
+
+  function fC(v){
+    if(v===0)return'<span class="fc-zero">—</span>';
+    var cl=v>0?'fc-pos':'fc-neg';
+    return'<span class="'+cl+'">'+fBRL(Math.abs(v))+'</span>';
+  }
+  function fCost(v){
+    if(v===0)return'<span class="fc-zero">—</span>';
+    return'<span class="fc-neg">'+fBRL(v)+'</span>';
+  }
+  function fRev(v){
+    if(v===0)return'<span class="fc-zero">—</span>';
+    return'<span class="fc-pos">'+fBRL(v)+'</span>';
+  }
+
+  body.innerHTML=rows.map(function(r){
+    var acCl=r.saldoAcum>=0?'fc-acum-pos':'fc-acum-neg';
+    return'<tr>'
+      +'<td>'+r.label+'</td>'
+      +'<td style="text-align:right">'+fRev(r.fatAdret)+'</td>'
+      +'<td style="text-align:right">'+fRev(r.fatMS)+'</td>'
+      +'<td style="text-align:right">'+fRev(r.fatLavi)+'</td>'
+      +'<td style="text-align:right;border-left:2px solid var(--gold)">'+fRev(r.totalFat)+'</td>'
+      +'<td style="text-align:right;border-left:2px solid var(--gold)">'+fCost(r.afetacao)+'</td>'
+      +'<td style="text-align:right">'+fCost(r.custoAdm)+'</td>'
+      +'<td style="text-align:right">'+fCost(r.custoPos)+'</td>'
+      +'<td style="text-align:right">'+fCost(r.custoTerreno)+'</td>'
+      +'<td style="text-align:right">'+fCost(r.custoCC)+'</td>'
+      +'<td style="text-align:right">'+fCost(r.custoMS)+'</td>'
+      +'<td style="text-align:right;border-left:2px solid var(--gold)">'+fCost(r.totalCusto)+'</td>'
+      +'<td style="text-align:right;border-left:2px solid var(--gold)">'+fC(r.saldoMes)+'</td>'
+      +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ============================================================
 // INIT
 // ============================================================
 function updateHdr(){
@@ -1365,7 +1638,7 @@ function updateHdr(){
 function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
   renderDados();renderRec();renderAR();renderOrc();renderEstoque();
-  renderAdm();renderObra();renderExec();
+  renderAdm();renderObra();renderExec();renderFluxo();
 }
 carregar();
 init();
