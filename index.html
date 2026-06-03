@@ -473,6 +473,10 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
 
   <!-- Tabela -->
   <div class="card" style="padding:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção</span>
+      <button class="btn btn-sm" onclick="exportFluxo()">&#8595; Exportar Excel</button>
+    </div>
     <div style="overflow-x:auto;">
       <table id="tbFluxo" style="width:100%;border-collapse:collapse;font-size:11px;min-width:1100px;">
         <thead>
@@ -1652,6 +1656,31 @@ function renderFluxo(){
       +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
       +'</tr>';
   }).join('');
+}
+
+}
+function exportFluxo(){
+  var header=['Período','Fat. L\'Adret','Fat. Monte Sollaro','Fat. Lavi','Total Faturamento',
+    'Proj. Afetação','Custo Adm','Pós Obra','Terreno L\'Adret','CC L\'Adret','Saldo Orc. MS',
+    'Total Custo','Permutas','Custo Líq.','Saldo Mês','Saldo Acumulado'];
+  var rows=[header];
+  var body=document.getElementById('tbFluxoBody');
+  if(!body||!body.rows.length){alert('Nenhum dado para exportar.');return;}
+  // Re-gera os dados numéricos lendo diretamente as células da tabela renderizada
+  [].slice.call(body.rows).forEach(function(tr){
+    var cells=[].slice.call(tr.cells).map(function(td){
+      var txt=td.innerText.trim().replace(/\u2014/g,'0').replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.');
+      var n=parseFloat(txt);
+      return isNaN(n)?td.innerText.trim():n;
+    });
+    rows.push(cells);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  // Largura das colunas
+  ws['!cols']=header.map(function(_,i){return{wch:i===0?10:16};});
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Fluxo de Caixa');
+  XLSX.writeFile(wb,'fluxo_de_caixa.xlsx');
 }
 
 // ============================================================
