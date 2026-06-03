@@ -1592,6 +1592,8 @@ function renderFluxo(){
       if(diffMS>=0)custoMS=msSaldoMensal;
     }
 
+    var totalCusto=afetacao+custoAdm+custoPos+custoTerreno+custoCC+custoMS;
+
     // Permutas
     var permuta=0;
     if(permutaIni&&permutaVal>0&&permutaPar>0){
