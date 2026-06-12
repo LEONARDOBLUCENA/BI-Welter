@@ -1582,11 +1582,19 @@ function renderFluxo(){
       }
     }
 
-    // CC L'Adret
+    // CC L'Adret: 12 primeiras parcelas = 390.000 fixo, restante distribuído igualmente
     var custoCC=0;
     if(ccIni&&ccVal>0&&ccMes>0){
       var diffCC=(ano-ccIni.ano)*12+(mes-ccIni.mes);
-      if(diffCC>=0&&diffCC<ccMes)custoCC=ccVal/ccMes;
+      if(diffCC>=0&&diffCC<ccMes){
+        if(diffCC<12){
+          custoCC=390000;
+        } else {
+          var saldoCC=Math.max(0,ccVal-(390000*Math.min(12,ccMes)));
+          var parRestCC=ccMes-12;
+          custoCC=parRestCC>0?saldoCC/parRestCC:0;
+        }
+      }
     }
 
     // Saldo MS
