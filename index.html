@@ -269,7 +269,8 @@ function renderFluxo(){
   const prevTot=previsto.reduce((s,v)=>s+v,0);
 
   // Caixa Inicial + Saldo acumulado
-  const ci=obraSel?parseFloat(DATA.caixaInicial[obraSel]||0)||0:parseFloat(DATA.caixaInicial['__all__']||0)||0;
+  // Caixa Inicial: obra selecionada = valor dela; todas as obras = soma de todas
+  const ci=obraSel?parseFloat(DATA.caixaInicial[obraSel]||0)||0:Object.values(DATA.caixaInicial).reduce((s,v)=>s+(parseFloat(v)||0),0);
   const saldo=[];let acc=ci;rv.forEach(v=>{acc+=v;saldo.push(acc);});
   const ciMeses=rv.map((_,i)=>i===0?ci:saldo[i-1]);
   const hasPrev=previsto.some(v=>v!==0);
