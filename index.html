@@ -448,6 +448,16 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
         </div>
       </div>
 
+      <!-- Permutas -->
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">Permutas</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="fg2"><label>Inicio (mm/aaaa)</label><input type="text" id="fcPermutaInicio" placeholder="Ex: 12/2026" oninput="renderFluxo()"></div>
+          <div class="fg2"><label>Valor total (R$)</label><input type="text" id="fcPermutaValor" placeholder="Ex: 1000000" oninput="renderFluxo()"></div>
+          <div class="fg2"><label>Numero de parcelas</label><input type="text" id="fcPermutaParcelas" placeholder="Ex: 10" oninput="renderFluxo()"></div>
+        </div>
+      </div>
+
       <!-- Monte Sollaro -->
       <div>
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">Saldo Orcamento Monte Sollaro</div>
@@ -463,6 +473,10 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
 
   <!-- Tabela -->
   <div class="card" style="padding:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção</span>
+      <button class="btn btn-sm" onclick="exportFluxo()">&#8595; Exportar Excel</button>
+    </div>
     <div style="overflow-x:auto;">
       <table id="tbFluxo" style="width:100%;border-collapse:collapse;font-size:11px;min-width:1100px;">
         <thead>
@@ -481,6 +495,8 @@ tfoot td{padding:9px 12px;font-weight:600;border-top:1px solid var(--gold);color
             <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">CC L'Adret</th>
             <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Saldo Orc. MS</th>
             <th style="padding:10px 8px;text-align:right;color:#b55a4a;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;border-left:2px solid var(--gold);">Total Custo</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--purple);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Permutas</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Custo Liq.</th>
             <!-- Saldo -->
             <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;border-left:2px solid var(--gold);color:var(--accent2);">Saldo Mes</th>
             <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;color:var(--accent2);">Saldo Acum.</th>
@@ -1529,6 +1545,10 @@ function renderFluxo(){
     if(msMesesRest>0&&msSaldo>0)msSaldoMensal=msSaldo/msMesesRest;
   }
 
+  var permutaIni=parseMonthYear(document.getElementById('fcPermutaInicio').value);
+  var permutaVal=parseVal(document.getElementById('fcPermutaValor').value);
+  var permutaPar=parseInt(document.getElementById('fcPermutaParcelas').value)||0;
+
   // ── GERAR LINHAS: mês atual até Dez/2040 ──
   var rows=[];
   var ano=hAno, mes=hMes;
@@ -1577,7 +1597,16 @@ function renderFluxo(){
     }
 
     var totalCusto=afetacao+custoAdm+custoPos+custoTerreno+custoCC+custoMS;
-    var saldoMes=totalFat-totalCusto;
+
+    // Permutas
+    var permuta=0;
+    if(permutaIni&&permutaVal>0&&permutaPar>0){
+      var diffPerm=(ano-permutaIni.ano)*12+(mes-permutaIni.mes);
+      if(diffPerm>=0&&diffPerm<permutaPar)permuta=permutaVal/permutaPar;
+    }
+
+    var custoLiq=totalCusto-permuta;
+    var saldoMes=totalFat-custoLiq;
     saldoAcum+=saldoMes;
 
     rows.push({
@@ -1585,7 +1614,8 @@ function renderFluxo(){
       fatAdret:fatAdret,fatMS:fatMS,fatLavi:fatLavi,totalFat:totalFat,
       afetacao:afetacao,custoAdm:custoAdm,custoPos:custoPos,
       custoTerreno:custoTerreno,custoCC:custoCC,custoMS:custoMS,
-      totalCusto:totalCusto,saldoMes:saldoMes,saldoAcum:saldoAcum
+      totalCusto:totalCusto,permuta:permuta,custoLiq:custoLiq,
+      saldoMes:saldoMes,saldoAcum:saldoAcum
     });
 
     mes++;if(mes>12){mes=1;ano++;}
@@ -1620,10 +1650,35 @@ function renderFluxo(){
       +'<td style="text-align:right">'+fCost(r.custoCC)+'</td>'
       +'<td style="text-align:right">'+fCost(r.custoMS)+'</td>'
       +'<td style="text-align:right;border-left:2px solid var(--gold)">'+fCost(r.totalCusto)+'</td>'
+      +'<td style="text-align:right"><span style="color:var(--purple)">'+fBRL(r.permuta)+'</span></td>'
+      +'<td style="text-align:right">'+fCost(r.custoLiq)+'</td>'
       +'<td style="text-align:right;border-left:2px solid var(--gold)">'+fC(r.saldoMes)+'</td>'
       +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
       +'</tr>';
   }).join('');
+}
+function exportFluxo(){
+  var header=['Período','Fat. L\'Adret','Fat. Monte Sollaro','Fat. Lavi','Total Faturamento',
+    'Proj. Afetação','Custo Adm','Pós Obra','Terreno L\'Adret','CC L\'Adret','Saldo Orc. MS',
+    'Total Custo','Permutas','Custo Líq.','Saldo Mês','Saldo Acumulado'];
+  var rows=[header];
+  var body=document.getElementById('tbFluxoBody');
+  if(!body||!body.rows.length){alert('Nenhum dado para exportar.');return;}
+  // Re-gera os dados numéricos lendo diretamente as células da tabela renderizada
+  [].slice.call(body.rows).forEach(function(tr){
+    var cells=[].slice.call(tr.cells).map(function(td){
+      var txt=td.innerText.trim().replace(/\u2014/g,'0').replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.');
+      var n=parseFloat(txt);
+      return isNaN(n)?td.innerText.trim():n;
+    });
+    rows.push(cells);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  // Largura das colunas
+  ws['!cols']=header.map(function(_,i){return{wch:i===0?10:16};});
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Fluxo de Caixa');
+  XLSX.writeFile(wb,'fluxo_de_caixa.xlsx');
 }
 
 // ============================================================
