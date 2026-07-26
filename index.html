@@ -875,6 +875,7 @@ function fixEncodingArr(arr){
   });
   return arr;
 }
+function parsePaste(txt){
   var lines=txt.split('\n');var vl=[];
   for(var i=0;i<lines.length;i++){if(lines[i].trim())vl.push(lines[i]);}
   if(vl.length<2)return null;
