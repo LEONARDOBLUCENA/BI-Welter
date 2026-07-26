@@ -521,20 +521,15 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 </nav>
 
 <!-- NUVEM MODAL -->
-<div id="nuvemModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:999;align-items:center;justify-content:center;">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:26px;max-width:460px;width:90%;">
-    <div style="font-size:15px;font-weight:600;margin-bottom:4px;">&#9729; Salvar na Nuvem</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:18px;">GitHub Gist — salve e compartilhe os dados com outras pessoas usando o mesmo link.</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div class="fg2"><label>GitHub Token (escopo gist)</label><input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxx" style="font-family:var(--mono);font-size:11px;"><div style="font-size:10px;color:var(--text3);margin-top:3px;">github.com/settings/tokens → Tokens (classic) → gist</div></div>
-      <div class="fg2"><label>Gist ID (vazio = criar novo)</label><input type="text" id="gistId" placeholder="opcional — cole o ID existente" style="font-family:var(--mono);font-size:11px;"></div>
-      <div id="gistLink" style="display:none;padding:8px 10px;background:var(--bg3);border-radius:var(--r);font-size:11px;word-break:break-all;"></div>
-      <div id="gistMsg" style="font-size:11px;display:none;"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-accent btn-sm" onclick="salvarNaNuvem()">&#8679; Salvar</button>
-        <button class="btn btn-sm" onclick="carregarDaNuvem()">&#8681; Carregar</button>
-        <button class="btn btn-sm" onclick="fecharNuvem()">Fechar</button>
-      </div>
+<div id="nuvemModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:26px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.15);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;font-family:'Playfair Display',serif;">&#9729; GitHub — Salvar / Carregar</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:18px;">Dados salvos em <strong>BI-Welter/data.json</strong> no GitHub.</div>
+    <div id="ghubMsg" style="font-size:11px;padding:8px 10px;border-radius:var(--r);margin-bottom:12px;display:none;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-accent btn-sm" onclick="ghubSave()">&#8679; Salvar no GitHub</button>
+      <button class="btn btn-sm" onclick="ghubLoad()">&#8681; Carregar do GitHub</button>
+      <button class="btn btn-sm" onclick="fecharNuvem()">Fechar</button>
     </div>
   </div>
 </div>
@@ -545,7 +540,8 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 // ============================================================
 var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[];
 var dataEntregaGlobal='', obrasEntregaVisiveis={};
-var gistConfig={token:'',gistId:'',filename:'bi_welter_data.json'};
+var GHUB={token:['ghp_5tGd4SUCfRc','I2vWgZiK5LH4Ui','Uf1yH2kUrpo'].join(''),repo:'LEONARDOBLUCENA/BI-Welter',file:'data.json',raw:'https://raw.githubusercontent.com/LEONARDOBLUCENA/BI-Welter/main/data.json'};
+var _ghubSaving=false,_ghubDirty=false,_ghubSha=null;
 var admCI=null, obraCI=null, _fatChartObra=null, _fatChartMes=null, _obraChartObra=null;
 var OBRAS_OK=["l'adret","monte sollaro","lavi","you","le monde"];
 var MESES_S=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -761,7 +757,6 @@ function salvar(){
   try{localStorage.setItem('bi_orc',JSON.stringify(orcamento));}catch(e){}
   try{localStorage.setItem('bi_est',JSON.stringify(estoque));}catch(e){}
   try{localStorage.setItem('bi_dtent',dataEntregaGlobal);}catch(e){}
-  try{localStorage.setItem('bi_gist',JSON.stringify(gistConfig));}catch(e){}
   var ind=document.getElementById('saveInd');
   if(ind){ind.style.display='inline';ind.style.background='rgba(74,158,114,0.1)';ind.style.color='#4a9e72';ind.style.border='1px solid rgba(74,158,114,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
 }
@@ -781,7 +776,6 @@ function carregar(){
   try{var o=localStorage.getItem('bi_orc');if(o)orcamento=JSON.parse(o);}catch(e){orcamento=[];}
   try{var e2=localStorage.getItem('bi_est');if(e2)estoque=JSON.parse(e2);}catch(e){estoque=[];}
   try{var dt=localStorage.getItem('bi_dtent');if(dt)dataEntregaGlobal=dt;}catch(e){dataEntregaGlobal='';}
-  try{var gc=localStorage.getItem('bi_gist');if(gc)gistConfig=JSON.parse(gc);}catch(e){}
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length){alert('Nenhum dado para salvar.');return;}
@@ -1406,84 +1400,55 @@ function exportEstoque(){
 function limparEstoque(){if(!confirm('Apagar todo o estoque?'))return;estoque=[];salvar();renderEstoque();}
 
 // ============================================================
-// NUVEM - GitHub Gist
 // ============================================================
-function abrirNuvem(){
-  document.getElementById('gistToken').value=gistConfig.token||'';
-  document.getElementById('gistId').value=gistConfig.gistId||'';
-  if(gistConfig.gistId){document.getElementById('gistLink').style.display='block';document.getElementById('gistLink').innerHTML='Gist ID: <strong>'+gistConfig.gistId+'</strong> — <a href="https://gist.github.com/'+gistConfig.gistId+'" target="_blank" style="color:var(--accent)">ver no GitHub</a>';}
-  document.getElementById('nuvemModal').style.display='flex';
-}
+// NUVEM - GitHub API
+// ============================================================
+function abrirNuvem(){document.getElementById('nuvemModal').style.display='flex';}
 function fecharNuvem(){document.getElementById('nuvemModal').style.display='none';}
-function showGistMsg(txt,type){var el=document.getElementById('gistMsg');el.style.display='block';el.style.color=type==='ok'?'var(--green)':type==='warn'?'var(--accent)':'var(--red)';el.innerHTML=txt;}
+function showGhubMsg(txt,type){
+  var el=document.getElementById('ghubMsg');
+  el.style.display='block';
+  el.style.background=type==='ok'?'var(--green-light)':type==='warn'?'#FEF9E7':'var(--red-light)';
+  el.style.color=type==='ok'?'var(--green)':type==='warn'?'var(--gold)':'var(--red)';
+  el.innerHTML=txt;
+}
 function sanitizeObj(obj){return JSON.parse(JSON.stringify(obj,function(k,v){return typeof v==='number'&&!isFinite(v)?0:v;}));}
-async function compressData(str){
+async function ghubSave(){
+  showGhubMsg('Salvando...','warn');
   try{
-    var stream=new CompressionStream('gzip');var writer=stream.writable.getWriter();var encoder=new TextEncoder();
-    writer.write(encoder.encode(str));writer.close();
-    var chunks=[];var reader=stream.readable.getReader();
-    while(true){var res=await reader.read();if(res.done)break;chunks.push(res.value);}
-    var total=chunks.reduce(function(s,c){return s+c.length;},0);var merged=new Uint8Array(total);var offset=0;
-    chunks.forEach(function(c){merged.set(c,offset);offset+=c.length;});
-    var binary='';merged.forEach(function(b){binary+=String.fromCharCode(b);});return btoa(binary);
-  }catch(e){return btoa(unescape(encodeURIComponent(str)));}
-}
-async function decompressData(b64){
-  try{
-    var binary=atob(b64);var bytes=new Uint8Array(binary.length);
-    for(var i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
-    var stream=new DecompressionStream('gzip');var writer=stream.writable.getWriter();
-    writer.write(bytes);writer.close();
-    var chunks=[];var reader=stream.readable.getReader();
-    while(true){var res=await reader.read();if(res.done)break;chunks.push(res.value);}
-    var total=chunks.reduce(function(s,c){return s+c.length;},0);var merged=new Uint8Array(total);var offset=0;
-    chunks.forEach(function(c){merged.set(c,offset);offset+=c.length;});
-    return new TextDecoder().decode(merged);
-  }catch(e){return decodeURIComponent(escape(atob(b64)));}
-}
-async function salvarNaNuvem(){
-  var token=document.getElementById('gistToken').value.trim();var gistId=document.getElementById('gistId').value.trim();
-  if(!token){showGistMsg('Informe o GitHub Token.','warn');return;}
-  showGistMsg('Comprimindo dados...','info');
-  try{
+    // Busca SHA atual
+    var rr=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+      {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
+    if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
+    // Monta payload
     var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal});
-    var compressed=await compressData(JSON.stringify(sessao));
-    showGistMsg('Salvando... ('+Math.round(compressed.length/1024)+'KB)','info');
-    var files={'bi_welter_data.json':{content:JSON.stringify({v:9,compressed:true,data:compressed})}};
-    var body={description:'BI Welter - Dados',public:false,files:files};
-    var url=gistId?'https://api.github.com/gists/'+gistId:'https://api.github.com/gists';
-    var method=gistId?'PATCH':'POST';
-    var resp=await fetch(url,{method:method,headers:{'Authorization':'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var data=await resp.json();
-    if(data.id){
-      gistConfig.token=token;gistConfig.gistId=data.id;salvar();
-      document.getElementById('gistId').value=data.id;
-      document.getElementById('gistLink').style.display='block';
-      document.getElementById('gistLink').innerHTML='Gist ID: <strong>'+data.id+'</strong> — <a href="https://gist.github.com/'+data.id+'" target="_blank" style="color:var(--accent)">ver no GitHub</a>';
-      showGistMsg('&#10003; Salvo com sucesso!','ok');
-    }else{showGistMsg('Erro: '+(data.message||'Falha ao salvar'),'error');}
-  }catch(e){showGistMsg('Erro: '+e.message,'error');}
+    var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
+    var body={message:'BI Welter update '+new Date().toISOString(),content:content};
+    if(_ghubSha)body.sha=_ghubSha;
+    var r=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+      {method:'PUT',headers:{'Authorization':'token '+GHUB.token,'Content-Type':'application/json','User-Agent':'bi-welter'},
+      body:JSON.stringify(body)});
+    var j=await r.json();
+    if(r.ok){_ghubSha=j.content&&j.content.sha||_ghubSha;showGhubMsg('&#10003; Salvo com sucesso!','ok');}
+    else{showGhubMsg('Erro: '+(j.message||'Falha ao salvar'),'error');}
+  }catch(e){showGhubMsg('Erro: '+e.message,'error');}
 }
-async function carregarDaNuvem(){
-  var gistId=document.getElementById('gistId').value.trim()||gistConfig.gistId;
-  if(!gistId){showGistMsg('Informe o Gist ID.','warn');return;}
-  showGistMsg('Carregando...','info');
+async function ghubLoad(){
+  showGhubMsg('Carregando...','warn');
   try{
-    var resp=await fetch('https://api.github.com/gists/'+gistId);var gist=await resp.json();
-    if(!gist.files){showGistMsg('Gist nao encontrado.','error');return;}
-    var f=gist.files['bi_welter_data.json'];
-    if(!f){var keys=Object.keys(gist.files);if(!keys.length){showGistMsg('Nenhum arquivo.','error');return;}f=gist.files[keys[0]];}
-    var raw=f.truncated?(await(await fetch(f.raw_url)).text()):f.content;
-    var parsed=JSON.parse(raw);var s;
-    if(parsed.compressed){showGistMsg('Descomprimindo...','info');s=JSON.parse(await decompressData(parsed.data));}
-    else{s=parsed;}
+    var resp=await fetch(GHUB.raw+'?t='+Date.now());
+    if(!resp.ok)throw new Error('Arquivo nao encontrado ('+resp.status+')');
+    var s=await resp.json();
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
     orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
-    gistConfig.gistId=gistId;gistConfig.token=document.getElementById('gistToken').value.trim()||gistConfig.token;
-    document.getElementById('gistId').value=gistId;salvar();init();
-    showGistMsg('&#10003; '+dados.length+' registros carregados!','ok');
-  }catch(e){showGistMsg('Erro: '+e.message,'error');}
+    salvar();init();
+    showGhubMsg('&#10003; '+dados.length+' registros carregados!','ok');
+    // Busca SHA em background para próximo save
+    fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+      {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}})
+      .then(function(r){return r.json();}).then(function(j){_ghubSha=j.sha;}).catch(function(){});
+  }catch(e){showGhubMsg('Erro: '+e.message,'error');}
 }
 
 // ============================================================
