@@ -961,7 +961,7 @@ function normRec(rows){
   var cCliente=colFind(k,['nomedocliente','nomedocliente','cliente','sacado']);
   var cCodCond=colFind(k,['codigodotipodecondicao','codigotipodecondicao','tipo condicao','condicao','cod condicao']);
   var cTipoBaixa=colFind(k,['nomédotipodebaixa','nomedotipodebaixa','tipo de baixa','tipo baixa','tipobaixa']);
-  var cLiq    =colFind(k,['valorliquido','valor liquido','valorldquido','líquido','liquido','total']);
+  var cBaixa  =colFind(k,['datadabaixa','data da baixa','databaixa','dt baixa','dt. baixa','baixa']);
   var cTitulo =colFind(k,['numerodotitulo','numerotitulo','numero titulo','titulo','numtitulo']);
   return rows.filter(function(r){
     // Filtrar CodigoDoTipoDeCondicao AI ou vazio
@@ -970,12 +970,16 @@ function normRec(rows){
     if(cTipoBaixa){var tb=String(r[cTipoBaixa]||'').trim().toLowerCase();if(!TIPOS_BAIXA_OK.some(function(t){return tb.includes(t);}))return false;}
     return true;
   }).map(function(r){
+    var ds=cBaixa?String(r[cBaixa]||'').trim():'';
+    var dp=parseDt(ds);
+    if(!dp&&ds){var m2=ds.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m2)dp=new Date(+m2[1],+m2[2]-1,+m2[3]);}
+    var dsF=dp?dp.toLocaleDateString('pt-BR'):ds;
     return{
       obra   :cObra?fixEncoding(String(r[cObra]||'').trim()):'',
       cliente:cCliente?fixEncoding(String(r[cCliente]||'').trim()):'',
       titulo :cTitulo?String(r[cTitulo]||'').trim():'',
       liquido:parseVal(cLiq?r[cLiq]:0),
-      dtBaixa:'',ano:null,mes:null,dtMs:null
+      dtBaixa:dsF,ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,dtMs:dp?dp.getTime():null
     };
   }).filter(function(r){return r.liquido;});
 }
