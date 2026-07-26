@@ -1195,13 +1195,15 @@ function renderObra(){
   document.getElementById('obraEmpty').style.display='none';document.getElementById('obraContent').style.display='block';
   populateObraFilters();
   var data=getObraData();
-  var _obras2=getSelVals('obraObra');var obraF=_obras2.length===1&&_obras2[0]!=='all'?_obras2[0]:'all';
+  var _obras2=getSelVals('obraObra');
+  var obraF=_obras2.length===1&&_obras2[0]!=='all'?_obras2[0]:'all'; // usado só para orcFilt (1 obra)
+  var obrasAll=_obras2.indexOf('all')!==-1; // true = todas as obras
   var anosF=getSelVals('obraAno');var mesesF=getSelVals('obraMes');
-  // orcFilt
+  // orcFilt (só faz sentido com 1 obra selecionada)
   var orcFilt=[];if(obraF!=='all')orcFilt=orcamento.filter(function(r){return r.obra.trim().toLowerCase()===obraF.trim().toLowerCase();});
   // Faturamento
   var recF=recebidas.filter(function(r){
-    if(obraF!=='all'&&r.obra!==obraF)return false;
+    if(!obrasAll&&_obras2.indexOf(r.obra)===-1)return false;
     if(!selMatch(anosF,r.ano))return false;
     if(!selMatch(mesesF,r.mes))return false;
     return true;
@@ -1217,7 +1219,7 @@ function renderObra(){
   // Inadimplencia
   var hoje=new Date();hoje.setHours(0,0,0,0);
   var inadF=areceber.filter(function(r){
-    if(obraF!=='all'&&r.obra!==obraF)return false;
+    if(!obrasAll&&_obras2.indexOf(r.obra)===-1)return false;
     if(!selMatch(anosF,r.ano))return false;
     if(!selMatch(mesesF,r.mes))return false;
     return r.dtMs&&r.dtMs<hoje.getTime();
