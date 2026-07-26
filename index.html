@@ -253,7 +253,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 <!-- P3: CONTAS A RECEBER -->
 <div class="page" id="page3">
   <div class="st">Contas a Receber</div>
-  <div class="sd">Titulos com Data Vcto anterior a hoje sao inadimplentes.</div>
+  <div class="sd">Titulos com Data Vcto anterior ao mes atual sao inadimplentes.</div>
   <div class="card">
     <div class="ct"><span>Colar dados</span><button class="btn btn-accent btn-sm" onclick="processarAR()">&#10003; Processar</button></div>
     <textarea id="pasteAR" rows="5" placeholder="Cole aqui..." style="font-family:var(--mono);font-size:11px;resize:vertical;"></textarea>
@@ -1022,7 +1022,7 @@ function processarRec(){
   var txt=document.getElementById('pasteRec').value.trim();
   if(!txt){showMsg('recMsg','Cole os dados primeiro.','warn');return;}
   var rows=parsePaste(txt);if(!rows||!rows.length){showMsg('recMsg','Dados insuficientes.','warn');return;}
-  var novos=normRec(rows);recebidas=recebidas.concat(novos);salvar();
+  var novos=normRec(rows);fixEncodingArr(novos);recebidas=recebidas.concat(novos);salvar();
   document.getElementById('pasteRec').value='';renderRec();showMsg('recMsg','&#10003; '+novos.length+' adicionados! Total: '+recebidas.length,'ok');
 }
 function exportRec(){
@@ -1060,7 +1060,7 @@ function processarAR(){
   var txt=document.getElementById('pasteAR').value.trim();
   if(!txt){showMsg('arMsg','Cole os dados primeiro.','warn');return;}
   var rows=parsePaste(txt);if(!rows||!rows.length){showMsg('arMsg','Dados insuficientes.','warn');return;}
-  var novos=normAR(rows);areceber=areceber.concat(novos);salvar();
+  var novos=normAR(rows);fixEncodingArr(novos);areceber=areceber.concat(novos);salvar();
   document.getElementById('pasteAR').value='';renderAR();showMsg('arMsg','&#10003; '+novos.length+' adicionados! Total: '+areceber.length,'ok');
 }
 function limparAR(){if(!confirm('Apagar?'))return;areceber=[];salvar();renderAR();}
@@ -1258,12 +1258,12 @@ function renderObra(){
   var pos=sumUC(data,'POS OBRA');var posP=sumUC(data,'POS OBRA','P');var posC=pos-posP;
   var totAprop=ter+emp+cc+cdc+pos;
   // Inadimplencia
-  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var hoje=new Date();var hAnoO=hoje.getFullYear();var hMesO=hoje.getMonth()+1;
   var inadF=areceber.filter(function(r){
     if(!obrasAll&&_obras2.indexOf(r.obra)===-1)return false;
     if(!selMatch(anosF,r.ano))return false;
     if(!selMatch(mesesF,r.mes))return false;
-    return r.dtMs&&r.dtMs<hoje.getTime();
+    return r.ano&&r.mes&&((r.ano<hAnoO)||(r.ano===hAnoO&&r.mes<hMesO));
   });
   var inadVal=inadF.reduce(function(s,r){return s+(r.total||r.liquido||0);},0);
   // KPIs
