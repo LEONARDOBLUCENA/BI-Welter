@@ -774,7 +774,7 @@ function fixDates(arr,isAR){
   });
 }
 function carregar(){
-  try{var d=localStorage.getItem('bi_d');if(d){var p=JSON.parse(d);if(Array.isArray(p)&&Array.isArray(p[0])){var h=p[0];dados=p.slice(1).map(function(r){var o={};h.forEach(function(k,i){o[k]=r[i];});return o;});}else{dados=p;}fixDadosDates(dados);}}catch(e){dados=[];}
+  try{var d=localStorage.getItem('bi_d');if(d){var p=JSON.parse(d);if(Array.isArray(p)&&Array.isArray(p[0])){var h=p[0];dados=p.slice(1).map(function(r){var o={};h.forEach(function(k,i){o[k]=r[i];});return o;});}else{dados=p;}fixEncodingArr(dados);fixDadosDates(dados);}}catch(e){dados=[];}
   try{var dp=localStorage.getItem('bi_dp');if(dp)depara=JSON.parse(dp);}catch(e){depara=[];}
   try{var r=localStorage.getItem('bi_rec');if(r){recebidas=JSON.parse(r);fixDates(recebidas,false);}}catch(e){recebidas=[];}
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
@@ -798,7 +798,7 @@ function carregarSessao(input){
       if(dados.length&&!confirm('Substituir dados existentes?'))return;
       dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
       orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
-      fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
+      fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();alert(dados.length+' registros carregados!');
     }catch(ex){alert('Erro ao ler arquivo.');}
   };
@@ -867,7 +867,14 @@ function fixEncoding(s){
       .replace(/ã/g,'ã');
   } catch(e) { return s; }
 }
-function parsePaste(txt){
+function fixEncodingArr(arr){
+  arr.forEach(function(r){
+    Object.keys(r).forEach(function(k){
+      if(typeof r[k]==='string')r[k]=fixEncoding(r[k]);
+    });
+  });
+  return arr;
+}
   var lines=txt.split('\n');var vl=[];
   for(var i=0;i<lines.length;i++){if(lines[i].trim())vl.push(lines[i]);}
   if(vl.length<2)return null;
@@ -1457,7 +1464,7 @@ async function carregarDaNuvem(){
     else{s=parsed;}
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
     orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
-    fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
+    fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
     gistConfig.gistId=gistId;gistConfig.token=document.getElementById('gistToken').value.trim()||gistConfig.token;
     document.getElementById('gistId').value=gistId;salvar();init();
     showGistMsg('&#10003; '+dados.length+' registros carregados!','ok');
