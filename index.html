@@ -1076,9 +1076,9 @@ function renderAR(){
   if(!_msdData['msd-fArMes'])initMsd('msd-fArMes',MESES_ITEMS,'Todos',renderAR);
   var anos2=getSelVals('fArAno');var meses=getSelVals('fArMes');
   var obras2=getSelVals('fArObra');var status=document.getElementById('fArStatus').value;
-  var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
+  var hoje=new Date();var hAno=hoje.getFullYear(),hMes=hoje.getMonth()+1;var hMs=hoje.getTime();
   var data=areceber.filter(function(r){
-    r.inadimplente=r.dtMs?r.dtMs<hMs:false;
+    r.inadimplente=r.ano&&r.mes?((r.ano<hAno)||(r.ano===hAno&&r.mes<hMes)):false;
     if(!selMatch(anos2,r.ano))return false;
     if(!selMatch(meses,r.mes))return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
@@ -1361,6 +1361,7 @@ function renderExec(){
   var inclEstoque=document.getElementById('execIncluirEstoque').checked;
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
   var dtEnt=parseDt(dataEntregaGlobal);var dtEntMs=dtEnt?dtEnt.getTime():null;
+  var hAno=hoje.getFullYear();var hMes=hoje.getMonth()+1;
   // Faturamento
   var recF=recebidas.filter(function(r){return obraF==='all'||r.obra===obraF;});
   var arF=areceber.filter(function(r){
@@ -1368,7 +1369,7 @@ function renderExec(){
     if(dtEntMs&&r.dtMs&&r.dtMs>dtEntMs)return false;
     return true;
   });
-  arF.forEach(function(r){r.inadimplente=r.dtMs?r.dtMs<hMs:false;});
+  arF.forEach(function(r){r.inadimplente=r.ano&&r.mes?((r.ano<hAno)||(r.ano===hAno&&r.mes<hMes)):false;});
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
   var aRecVal=arF.filter(function(r){return!r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
   var inadVal=arF.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
