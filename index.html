@@ -959,8 +959,8 @@ function normRec(rows){
   var k=Object.keys(rows[0]);
   var cObra     =colFind(k,['NomeDoCentroDeCusto','nomedocentrodecusto','centro de custo','obra']);
   var cCliente  =colFind(k,['NomeDoCliente','nomedocliente','cliente','sacado']);
-  var cCodCond  =colFind(k,['CodigoDoTipoDeCondicao','codigodotipodecondicao','cod condicao']);
-  var cTipoBaixa=colFind(k,['NomeDoTipoDeBaixa','nomedotipodebaixa','tipo de baixa','tipobaixa']);
+  var cCodCond  =colFind(k,['CodigoDoTipoDeCondicao']);
+  var cTipoBaixa=colFind(k,['NomeDoTipoDeBaixa']);
   var cBaixa    =colFind(k,['DataDaBaixa','datadabaixa','data da baixa','dt baixa']);
   var cLiq      =colFind(k,['ValorLiquido','valorliquido','valor liquido','liquido','total']);
   var cTitulo   =colFind(k,['NumeroDoTitulo','numerodotitulo','numero titulo','titulo']);
