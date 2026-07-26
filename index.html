@@ -759,7 +759,8 @@ function salvar(){
   try{localStorage.setItem('bi_est',JSON.stringify(estoque));}catch(e){}
   try{localStorage.setItem('bi_dtent',dataEntregaGlobal);}catch(e){}
   var ind=document.getElementById('saveInd');
-  if(ind){ind.style.display='inline';ind.style.background='rgba(74,158,114,0.1)';ind.style.color='#4a9e72';ind.style.border='1px solid rgba(74,158,114,0.2)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
+  if(ind){ind.style.display='inline';ind.style.background='var(--green-light)';ind.style.color='var(--green)';ind.style.border='1px solid var(--green)';ind.textContent='Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
+  ghubAutoSave();
 }
 function fixDadosDates(arr){arr.forEach(function(r){if((!r.ano||!r.mes)&&r.data){var dp=parseDt(r.data);if(dp){r.ano=dp.getFullYear();r.mes=dp.getMonth()+1;}}});}
 function fixDates(arr,isAR){
@@ -1712,8 +1713,29 @@ function exportFluxo(){
   XLSX.writeFile(wb,'fluxo_de_caixa.xlsx');
 }
 
-// ============================================================
-// INIT
+var _ghubAutoTimer=null;
+function ghubAutoSave(){
+  clearTimeout(_ghubAutoTimer);
+  _ghubAutoTimer=setTimeout(async function(){
+    if(_ghubSaving){_ghubDirty=true;return;}
+    _ghubSaving=true;_ghubDirty=false;
+    try{
+      var rr=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+        {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
+      if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
+      var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal});
+      var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
+      var body={message:'BI Welter autosave '+new Date().toISOString(),content:content};
+      if(_ghubSha)body.sha=_ghubSha;
+      var r=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+        {method:'PUT',headers:{'Authorization':'token '+GHUB.token,'Content-Type':'application/json','User-Agent':'bi-welter'},
+        body:JSON.stringify(body)});
+      if(r.ok){var j=await r.json();_ghubSha=j.content&&j.content.sha||_ghubSha;}
+    }catch(e){}
+    _ghubSaving=false;
+    if(_ghubDirty)ghubAutoSave();
+  },2000);
+}
 // ============================================================
 function updateHdr(){
   var el=document.getElementById('hdrRec');
@@ -1727,6 +1749,31 @@ function init(){
 }
 carregar();
 init();
+// Auto-load do GitHub na abertura
+(async function(){
+  try{
+    var ind=document.getElementById('saveInd');
+    if(ind){ind.style.display='inline';ind.style.background='var(--blue-light)';ind.style.color='var(--blue)';ind.style.border='1px solid var(--blue)';ind.textContent='Sincronizando...';}
+    var resp=await fetch(GHUB.raw+'?t='+Date.now());
+    if(!resp.ok)return;
+    var s=await resp.json();
+    // Só substitui se o GitHub tiver dados mais completos
+    if((s.dados||[]).length>=(dados.length)){
+      dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
+      orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
+      fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
+      salvar();init();
+    }
+    if(ind){ind.style.background='var(--green-light)';ind.style.color='var(--green)';ind.style.border='1px solid var(--green)';ind.textContent='Sincronizado';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},2000);}
+    // Busca SHA para próximo save
+    fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+      {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}})
+      .then(function(r){return r.json();}).then(function(j){_ghubSha=j.sha;}).catch(function(){});
+  }catch(e){
+    var ind=document.getElementById('saveInd');
+    if(ind){ind.style.display='none';}
+  }
+})();
 if(window.innerWidth<=768)goTab(6);
 </script>
 </body>
