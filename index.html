@@ -957,12 +957,13 @@ var TIPOS_BAIXA_OK=['recebimento','outros','por bens'];
 function normRec(rows){
   if(!rows.length)return[];
   var k=Object.keys(rows[0]);
-  var cObra   =colFind(k,['nomeDocentrodecusto','nomedocentrodecusto','centrodecusto','centro de custo','obra']);
-  var cCliente=colFind(k,['nomedocliente','nomedocliente','cliente','sacado']);
-  var cCodCond=colFind(k,['codigodotipodecondicao','codigotipodecondicao','tipo condicao','condicao','cod condicao']);
-  var cTipoBaixa=colFind(k,['nomédotipodebaixa','nomedotipodebaixa','tipo de baixa','tipo baixa','tipobaixa']);
-  var cBaixa  =colFind(k,['datadabaixa','data da baixa','databaixa','dt baixa','dt. baixa','baixa']);
-  var cTitulo =colFind(k,['numerodotitulo','numerotitulo','numero titulo','titulo','numtitulo']);
+  var cObra     =colFind(k,['NomeDoCentroDeCusto','nomedocentrodecusto','centro de custo','obra']);
+  var cCliente  =colFind(k,['NomeDoCliente','nomedocliente','cliente','sacado']);
+  var cCodCond  =colFind(k,['CodigoDoTipoDeCondicao','codigodotipodecondicao','cod condicao']);
+  var cTipoBaixa=colFind(k,['NomeDoTipoDeBaixa','nomedotipodebaixa','tipo de baixa','tipobaixa']);
+  var cBaixa    =colFind(k,['DataDaBaixa','datadabaixa','data da baixa','dt baixa']);
+  var cLiq      =colFind(k,['ValorLiquido','valorliquido','valor liquido','liquido','total']);
+  var cTitulo   =colFind(k,['NumeroDoTitulo','numerodotitulo','numero titulo','titulo']);
   return rows.filter(function(r){
     // Filtrar CodigoDoTipoDeCondicao AI ou vazio
     if(cCodCond){var cod=String(r[cCodCond]||'').trim().toUpperCase();if(!cod||cod==='AI')return false;}
