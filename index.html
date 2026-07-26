@@ -767,7 +767,7 @@ function fixDates(arr,isAR){
   var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
   arr.forEach(function(r){
     if(!r.ano&&r.dtBaixa){var dp=parseDt(r.dtBaixa);if(dp){r.ano=dp.getFullYear();r.mes=dp.getMonth()+1;r.dtMs=dp.getTime();}}
-    if(isAR)r.inadimplente=r.dtMs?r.dtMs<hMs:false;
+    if(isAR){var hAno2=hoje.getFullYear(),hMes2=hoje.getMonth()+1;r.inadimplente=r.ano&&r.mes?((r.ano<hAno2)||(r.ano===hAno2&&r.mes<hMes2)):false;}
   });
 }
 function carregar(){
@@ -953,31 +953,71 @@ function exportDados(){
 // ============================================================
 // P2: CONTAS RECEBIDAS
 // ============================================================
-function normContas(rows,isAR){
+var TIPOS_BAIXA_OK=['recebimento','outros','por bens'];
+function normRec(rows){
   if(!rows.length)return[];
   var k=Object.keys(rows[0]);
-  var cObra=colFind(k,['obra','cc']);
-  var cCliente=colFind(k,['cliente','sacado','devedor']);
-  var cBaixa=colFind(k,['dt. baixa','dt baixa','data baixa','baixa','data vcto','data vecto','dt vcto','vcto','vencimento']);
-  var cLiq=colFind(k,['liquido','\u006c\u00edquido']);
-  if(!cLiq)cLiq=colFind(k,['total']);
-  var hoje=new Date();hoje.setHours(0,0,0,0);var hMs=hoje.getTime();
+  var cObra   =colFind(k,['nomeDocentrodecusto','nomedocentrodecusto','centrodecusto','centro de custo','obra']);
+  var cCliente=colFind(k,['nomedocliente','nomedocliente','cliente','sacado']);
+  var cCodCond=colFind(k,['codigodotipodecondicao','codigotipodecondicao','tipo condicao','condicao','cod condicao']);
+  var cTipoBaixa=colFind(k,['nomédotipodebaixa','nomedotipodebaixa','tipo de baixa','tipo baixa','tipobaixa']);
+  var cLiq    =colFind(k,['valorliquido','valor liquido','valorldquido','líquido','liquido','total']);
+  var cTitulo =colFind(k,['numerodotitulo','numerotitulo','numero titulo','titulo','numtitulo']);
+  return rows.filter(function(r){
+    // Filtrar CodigoDoTipoDeCondicao AI ou vazio
+    if(cCodCond){var cod=String(r[cCodCond]||'').trim().toUpperCase();if(!cod||cod==='AI')return false;}
+    // Filtrar NomeDoTipoDeBaixa
+    if(cTipoBaixa){var tb=String(r[cTipoBaixa]||'').trim().toLowerCase();if(!TIPOS_BAIXA_OK.some(function(t){return tb.includes(t);}))return false;}
+    return true;
+  }).map(function(r){
+    return{
+      obra   :cObra?fixEncoding(String(r[cObra]||'').trim()):'',
+      cliente:cCliente?fixEncoding(String(r[cCliente]||'').trim()):'',
+      titulo :cTitulo?String(r[cTitulo]||'').trim():'',
+      liquido:parseVal(cLiq?r[cLiq]:0),
+      dtBaixa:'',ano:null,mes:null,dtMs:null
+    };
+  }).filter(function(r){return r.liquido;});
+}
+function normAR(rows){
+  if(!rows.length)return[];
+  var k=Object.keys(rows[0]);
+  var cDt     =colFind(k,['dtvencto','dt vencto','data vencto','vencimento','vcto','dtvencimento']);
+  var cCliente=colFind(k,['nmcliente','nm cliente','cliente','sacado','nome cliente']);
+  var cVal    =colFind(k,['vltotal','vl total','valor total','total','liquido']);
+  var cTitulo =colFind(k,['nutitulo','nu titulo','numero titulo','titulo','numtitulo']);
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var hAno=hoje.getFullYear(),hMes=hoje.getMonth()+1;
   return rows.map(function(r){
-    var ds=cBaixa?String(r[cBaixa]||'').trim():'';
+    var ds=cDt?String(r[cDt]||'').trim():'';
     var dp=parseDt(ds);
     if(!dp&&ds){var m2=ds.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m2)dp=new Date(+m2[1],+m2[2]-1,+m2[3]);}
     var dsF=dp?dp.toLocaleDateString('pt-BR'):ds;
-    return{obra:cObra?String(r[cObra]||'').trim():'',
-      cliente:cCliente?String(r[cCliente]||'').trim():'',
-      dtBaixa:dsF,ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,dtMs:dp?dp.getTime():null,
-      liquido:parseVal(cLiq?r[cLiq]:0),inadimplente:isAR&&dp&&dp.getTime()<hMs};
-  }).filter(function(r){return r.obra||r.liquido;});
+    var tituloNum=cTitulo?String(r[cTitulo]||'').trim():'';
+    // Herdar obra do titulo correspondente em recebidas
+    var obraHerdada='';
+    if(tituloNum){
+      var match=recebidas.find(function(rec){return rec.titulo===tituloNum;});
+      if(match)obraHerdada=match.obra;
+    }
+    // Inadimplente se mês/ano do vencimento < mês/ano atual
+    var inad=false;
+    if(dp){var dAno=dp.getFullYear(),dMes=dp.getMonth()+1;inad=(dAno<hAno)||(dAno===hAno&&dMes<hMes);}
+    return{
+      obra    :obraHerdada,
+      cliente :cCliente?fixEncoding(String(r[cCliente]||'').trim()):'',
+      titulo  :tituloNum,
+      liquido :parseVal(cVal?r[cVal]:0),
+      dtBaixa :dsF,ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,dtMs:dp?dp.getTime():null,
+      inadimplente:inad
+    };
+  }).filter(function(r){return r.liquido;});
 }
 function processarRec(){
   var txt=document.getElementById('pasteRec').value.trim();
   if(!txt){showMsg('recMsg','Cole os dados primeiro.','warn');return;}
   var rows=parsePaste(txt);if(!rows||!rows.length){showMsg('recMsg','Dados insuficientes.','warn');return;}
-  var novos=normContas(rows,false);recebidas=recebidas.concat(novos);salvar();
+  var novos=normRec(rows);recebidas=recebidas.concat(novos);salvar();
   document.getElementById('pasteRec').value='';renderRec();showMsg('recMsg','&#10003; '+novos.length+' adicionados! Total: '+recebidas.length,'ok');
 }
 function exportRec(){
@@ -1015,7 +1055,7 @@ function processarAR(){
   var txt=document.getElementById('pasteAR').value.trim();
   if(!txt){showMsg('arMsg','Cole os dados primeiro.','warn');return;}
   var rows=parsePaste(txt);if(!rows||!rows.length){showMsg('arMsg','Dados insuficientes.','warn');return;}
-  var novos=normContas(rows,true);areceber=areceber.concat(novos);salvar();
+  var novos=normAR(rows);areceber=areceber.concat(novos);salvar();
   document.getElementById('pasteAR').value='';renderAR();showMsg('arMsg','&#10003; '+novos.length+' adicionados! Total: '+areceber.length,'ok');
 }
 function limparAR(){if(!confirm('Apagar?'))return;areceber=[];salvar();renderAR();}
