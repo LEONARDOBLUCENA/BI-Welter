@@ -1214,10 +1214,22 @@ function renderObra(){
   var cdc=sumUC(data,'CUSTO DA CONSTRUCAO');var cdcP=sumUC(data,'CUSTO DA CONSTRUCAO','P');var cdcC=cdc-cdcP;
   var pos=sumUC(data,'POS OBRA');var posP=sumUC(data,'POS OBRA','P');var posC=pos-posP;
   var totAprop=ter+emp+cc+cdc+pos;
+  // Inadimplencia
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var inadF=areceber.filter(function(r){
+    if(obraF!=='all'&&r.obra!==obraF)return false;
+    if(!selMatch(anosF,r.ano))return false;
+    if(!selMatch(mesesF,r.mes))return false;
+    return r.dtMs&&r.dtMs<hoje.getTime();
+  });
+  var inadVal=inadF.reduce(function(s,r){return s+(r.total||r.liquido||0);},0);
   // KPIs
   document.getElementById('obraKpi').innerHTML=
     '<span class="kpi-section">Faturamento</span>'+
-    '<div class="kpi-row">'+kpiHtml('var(--green)','Faturamento',fBRL(fatVal),recF.length+' titulos')+'</div>'+
+    '<div class="kpi-row">'+
+      kpiHtml('var(--green)','Faturamento',fBRL(fatVal),recF.length+' titulos')+
+      kpiHtml('var(--red)','Inadimplencia',fBRL(inadVal),inadF.length+' titulo'+(inadF.length!==1?'s':'')+' em atraso')+
+    '</div>'+
     '<span class="kpi-section">Apropriacoes</span>'+
     '<div class="kpi-row">'+
       kpiHtml('var(--accent)','Total Despesas',fBRL(totAprop),data.length+' lancamentos')+
