@@ -241,7 +241,12 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
       <div class="msd" id="msd-fRecMes"><label>Mês</label><div class="msd-btn" onclick="toggleMsd('msd-fRecMes')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fRecMes-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecMes')">Todos</button><button onclick="clearMsd('msd-fRecMes')">Limpar</button></div></div></div>
       <div class="fdiv"></div>
       <div class="msd" id="msd-fRecObra"><label>Obra</label><div class="msd-btn" onclick="toggleMsd('msd-fRecObra')"><span class="msd-btn-txt">Todas</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-search"><span style="color:var(--text3);font-size:11px;">🔍</span><input type="text" placeholder="Buscar..." oninput="filterMsd('msd-fRecObra',this.value)"></div><div class="msd-list" id="msd-fRecObra-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecObra')">Todos</button><button onclick="clearMsd('msd-fRecObra')">Limpar</button></div></div></div>
+      <div class="fdiv"></div>
+      <div class="msd" id="msd-fRecTipoBaixa"><label>Tipo Baixa</label><div class="msd-btn" onclick="toggleMsd('msd-fRecTipoBaixa')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fRecTipoBaixa-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecTipoBaixa')">Todos</button><button onclick="clearMsd('msd-fRecTipoBaixa')">Limpar</button></div></div></div>
+      <div class="fdiv"></div>
+      <div class="msd" id="msd-fRecCodCond"><label>Cod. Condicao</label><div class="msd-btn" onclick="toggleMsd('msd-fRecCodCond')"><span class="msd-btn-txt">Todos</span><span class="msd-arrow">▼</span></div><div class="msd-panel"><div class="msd-list" id="msd-fRecCodCond-list"></div><div class="msd-foot"><button onclick="selectAllMsd('msd-fRecCodCond')">Todos</button><button onclick="clearMsd('msd-fRecCodCond')">Limpar</button></div></div></div>
     </div>
+    <div id="recKpiWrap" class="kpi-row" style="margin-bottom:16px;"></div>
     <div id="recEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="recWrap" style="display:none;">
       <table><thead><tr><th>Obra</th><th>Cliente</th><th>Dt. Baixa</th><th>Cod. Condicao</th><th>Tipo Baixa</th><th style="text-align:right">Liquido</th></tr></thead><tbody id="tbRec"></tbody></table>
@@ -1038,18 +1043,34 @@ function limparRec(){if(!confirm('Apagar?'))return;recebidas=[];salvar();renderR
 function renderRec(){
   setSelMulti('fRecAno',anos(recebidas),'Todos',renderRec);
   setSelMulti('fRecObra',unicos(recebidas,'obra'),'Todas',renderRec);
+  setSelMulti('fRecTipoBaixa',unicos(recebidas,'tipoBaixa'),'Todos',renderRec);
+  setSelMulti('fRecCodCond',unicos(recebidas,'codCond'),'Todos',renderRec);
   if(!_msdData['msd-fRecMes'])initMsd('msd-fRecMes',MESES_ITEMS,'Todos',renderRec);
   var anos2=getSelVals('fRecAno');var meses=getSelVals('fRecMes');var obras2=getSelVals('fRecObra');
+  var tiposBaixa=getSelVals('fRecTipoBaixa');var codsCond=getSelVals('fRecCodCond');
   var data=recebidas.filter(function(r){
     if(!selMatch(anos2,r.ano))return false;
     if(!selMatch(meses,r.mes))return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
+    if(tiposBaixa.indexOf('all')===-1&&tiposBaixa.indexOf(r.tipoBaixa)===-1)return false;
+    if(codsCond.indexOf('all')===-1&&codsCond.indexOf(r.codCond)===-1)return false;
     return true;
   });
+  // KPIs por Tipo Baixa
+  var TIPOS=['Recebimento','Outros','Por Bens'];
+  var kpiHtml2=TIPOS.map(function(t){
+    var v=data.filter(function(r){return r.tipoBaixa&&r.tipoBaixa.toLowerCase()===t.toLowerCase();}).reduce(function(s,r){return s+r.liquido;},0);
+    var tot=data.reduce(function(s,r){return s+r.liquido;},0);
+    var pct=tot>0?Math.round(v/tot*100):0;
+    return'<div class="kpi" style="--kc:var(--accent)"><div class="kpi-label">'+t+'</div><div class="kpi-value">'+fBRL(v)+'</div><div class="kpi-sub">'+pct+'% do total</div></div>';
+  }).join('');
+  var totalRec=data.reduce(function(s,r){return s+r.liquido;},0);
+  var kpiWrap=document.getElementById('recKpiWrap');
+  if(kpiWrap)kpiWrap.innerHTML='<div class="kpi" style="--kc:var(--green)"><div class="kpi-label">Total Recebido</div><div class="kpi-value">'+fBRL(totalRec)+'</div><div class="kpi-sub">'+data.length+' titulos</div></div>'+kpiHtml2;
   document.getElementById('recEmpty').style.display=recebidas.length?'none':'block';
   document.getElementById('recWrap').style.display=recebidas.length?'block':'none';
   document.getElementById('recCount').textContent='('+recebidas.length+' total)';
-  document.getElementById('recFooter').textContent=data.length+' registros | Total: '+fBRL(data.reduce(function(s,r){return s+r.liquido;},0));
+  document.getElementById('recFooter').textContent=data.length+' registros | Total: '+fBRL(totalRec);
   document.getElementById('tbRec').innerHTML=data.slice(0,500).map(function(r){
     return'<tr><td>'+r.obra+'</td><td>'+r.cliente+'</td><td style="white-space:nowrap">'+r.dtBaixa+'</td><td>'+r.codCond+'</td><td>'+r.tipoBaixa+'</td><td class="mono" style="text-align:right">'+fBRL(r.liquido)+'</td></tr>';
   }).join('');
