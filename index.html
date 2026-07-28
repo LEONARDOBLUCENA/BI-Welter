@@ -249,7 +249,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
     <div id="recKpiWrap" class="kpi-row" style="margin-bottom:16px;"></div>
     <div id="recEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="recWrap" style="display:none;">
-      <table><thead><tr><th>Obra</th><th>Cliente</th><th>Dt. Baixa</th><th>Cod. Condicao</th><th>Tipo Baixa</th><th style="text-align:right">Liquido</th></tr></thead><tbody id="tbRec"></tbody></table>
+      <table><thead><tr><th>Nº Título</th><th>Obra</th><th>Cliente</th><th>Dt. Baixa</th><th>Cod. Condicao</th><th>Tipo Baixa</th><th style="text-align:right">Liquido</th></tr></thead><tbody id="tbRec"></tbody></table>
     </div>
     <div id="recFooter" style="padding:6px 0 0;font-size:10px;color:var(--text3);"></div>
   </div>
@@ -278,11 +278,27 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
       <div class="fdiv"></div>
       <label>Status</label><select id="fArStatus" onchange="renderAR()"><option value="all">Todos</option><option value="areceber">A Receber</option><option value="inadimplente">Inadimplente</option></select>
     </div>
+    <div id="arKpiWrap" class="kpi-row" style="margin-bottom:16px;"></div>
     <div id="arEmpty" class="nodata" style="display:none;"><p>Nenhum dado.</p></div>
     <div class="tbl-wrap" id="arWrap" style="display:none;">
-      <table><thead><tr><th>Obra</th><th>Cliente</th><th>Data Vcto</th><th>Status</th><th style="text-align:right">Total</th></tr></thead><tbody id="tbAR"></tbody></table>
+      <table><thead><tr><th>Nº Título</th><th>Obra</th><th>Cliente</th><th>Data Vcto</th><th>Status</th><th style="text-align:right">Total</th></tr></thead><tbody id="tbAR"></tbody></table>
     </div>
     <div id="arFooter" style="padding:6px 0 0;font-size:10px;color:var(--text3);"></div>
+  </div>
+  <!-- Classificacao Manual de Titulos -->
+  <div class="card">
+    <div class="ct">
+      <span>Classificacao Manual de Titulos <span id="titCCCount" style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px;"></span></span>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Para titulos sem obra identificada, cole abaixo: <strong>Nº Titulo</strong> (Tab) <strong>Obra</strong> — uma linha por titulo.</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;">
+      <textarea id="pasteTitCC" rows="4" placeholder="Ex:&#10;12345&#9;L'Adret&#10;67890&#9;Monte Sollaro" style="font-family:var(--mono);font-size:11px;resize:vertical;flex:1;min-width:260px;"></textarea>
+      <button class="btn btn-accent btn-sm" onclick="salvarTitCC()" style="align-self:flex-end;">&#10003; Classificar</button>
+    </div>
+    <div id="titCCMsg" class="msg"></div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Nº Título</th><th>Obra</th><th></th></tr></thead><tbody id="tbTitCC"></tbody></table>
+    </div>
   </div>
 </div>
 
@@ -544,7 +560,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 // ============================================================
 // STATE
 // ============================================================
-var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[];
+var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], titCC={};
 var dataEntregaGlobal='', obrasEntregaVisiveis={};
 var GHUB={token:['ghp_5tGd4SUCfRc','I2vWgZiK5LH4Ui','Uf1yH2kUrpo'].join(''),repo:'LEONARDOBLUCENA/BI-Welter',file:'data.json',raw:'https://raw.githubusercontent.com/LEONARDOBLUCENA/BI-Welter/main/data.json'};
 var _ghubSaving=false,_ghubDirty=false,_ghubSha=null;
@@ -786,7 +802,7 @@ function carregar(){
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length){alert('Nenhum dado para salvar.');return;}
-  var blob=new Blob([JSON.stringify({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,dataEntregaGlobal:dataEntregaGlobal})],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bi_welter_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
 function carregarSessao(input){
@@ -798,7 +814,7 @@ function carregarSessao(input){
       if(!s.dados){alert('Arquivo invalido.');return;}
       if(dados.length&&!confirm('Substituir dados existentes?'))return;
       dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-      orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
+      orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
       fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();alert(dados.length+' registros carregados!');
     }catch(ex){alert('Erro ao ler arquivo.');}
@@ -1072,25 +1088,56 @@ function renderRec(){
   document.getElementById('recCount').textContent='('+recebidas.length+' total)';
   document.getElementById('recFooter').textContent=data.length+' registros | Total: '+fBRL(totalRec);
   document.getElementById('tbRec').innerHTML=data.slice(0,500).map(function(r){
-    return'<tr><td>'+r.obra+'</td><td>'+r.cliente+'</td><td style="white-space:nowrap">'+r.dtBaixa+'</td><td>'+r.codCond+'</td><td>'+r.tipoBaixa+'</td><td class="mono" style="text-align:right">'+fBRL(r.liquido)+'</td></tr>';
+    return'<tr><td class="mono">'+r.titulo+'</td><td>'+r.obra+'</td><td>'+r.cliente+'</td><td style="white-space:nowrap">'+r.dtBaixa+'</td><td>'+r.codCond+'</td><td>'+r.tipoBaixa+'</td><td class="mono" style="text-align:right">'+fBRL(r.liquido)+'</td></tr>';
   }).join('');
 }
 
 // ============================================================
 // P3: CONTAS A RECEBER
 // ============================================================
+function obraAR(titulo){
+  // 1) Busca em recebidas pelo NumeroDoTitulo
+  var match=recebidas.find(function(r){return r.titulo===titulo;});
+  if(match&&match.obra)return match.obra;
+  // 2) Fallback: classificação manual titCC
+  return titCC[titulo]||'';
+}
 function processarAR(){
   var txt=document.getElementById('pasteAR').value.trim();
   if(!txt){showMsg('arMsg','Cole os dados primeiro.','warn');return;}
   var rows=parsePaste(txt);if(!rows||!rows.length){showMsg('arMsg','Dados insuficientes.','warn');return;}
-  var novos=normAR(rows);fixEncodingArr(novos);areceber=areceber.concat(novos);salvar();
+  var novos=normAR(rows);fixEncodingArr(novos);
+  // Aplicar obra via titCC/recebidas
+  novos.forEach(function(r){if(!r.obra&&r.titulo)r.obra=obraAR(r.titulo);});
+  areceber=areceber.concat(novos);salvar();
   document.getElementById('pasteAR').value='';renderAR();showMsg('arMsg','&#10003; '+novos.length+' adicionados! Total: '+areceber.length,'ok');
 }
 function limparAR(){if(!confirm('Apagar?'))return;areceber=[];salvar();renderAR();}
+function salvarTitCC(){
+  var txt=document.getElementById('pasteTitCC').value.trim();
+  if(!txt){showMsg('titCCMsg','Cole os dados primeiro.','warn');return;}
+  var lines=txt.split('\n');var count=0;
+  lines.forEach(function(l){
+    var p=l.split('\t');if(p.length<2)return;
+    var num=p[0].trim();var cc=fixEncoding(p[1].trim());
+    if(num&&cc){titCC[num]=cc;count++;}
+  });
+  salvar();renderTitCC();renderAR();
+  showMsg('titCCMsg','&#10003; '+count+' titulos classificados.','ok');
+  document.getElementById('pasteTitCC').value='';
+}
+function removerTitCC(num){delete titCC[num];salvar();renderTitCC();}
+function renderTitCC(){
+  var keys=Object.keys(titCC);
+  document.getElementById('titCCCount').textContent='('+keys.length+' titulos)';
+  document.getElementById('tbTitCC').innerHTML=keys.map(function(k){
+    return'<tr><td class="mono">'+k+'</td><td>'+titCC[k]+'</td><td><button class="btn btn-sm btn-danger" onclick="removerTitCC(\''+k.replace(/'/g,"\\'")+'\')" style="padding:2px 7px;font-size:10px;">&#10005;</button></td></tr>';
+  }).join('');
+}
 function exportAR(){
   if(!areceber.length){alert('Nenhum dado.');return;}
-  var rows=[['Obra','Cliente','Data Vcto','Status','Total']];
-  areceber.forEach(function(r){rows.push([r.obra,r.cliente,r.dtBaixa,r.inadimplente?'Inadimplente':'A Receber',r.liquido]);});
+  var rows=[['Nº Título','Obra','Cliente','Data Vcto','Status','Total']];
+  areceber.forEach(function(r){rows.push([r.titulo,r.obra,r.cliente,r.dtBaixa,r.inadimplente?'Inadimplente':'A Receber',r.liquido]);});
   var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Contas a Receber');XLSX.writeFile(wb,'contas_a_receber.xlsx');
 }
 function renderAR(){
@@ -1109,14 +1156,24 @@ function renderAR(){
     if(status==='inadimplente'&&!r.inadimplente)return false;
     return true;
   });
+  // KPIs
+  var totVal=data.reduce(function(s,r){return s+r.liquido;},0);
+  var emDiaVal=data.filter(function(r){return!r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
+  var inadVal2=data.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
+  var arKpi=document.getElementById('arKpiWrap');
+  if(arKpi)arKpi.innerHTML=
+    '<div class="kpi" style="--kc:var(--accent)"><div class="kpi-label">Total a Receber</div><div class="kpi-value">'+fBRL(totVal)+'</div><div class="kpi-sub">'+data.length+' titulos</div></div>'+
+    '<div class="kpi" style="--kc:var(--green)"><div class="kpi-label">Em Dia</div><div class="kpi-value">'+fBRL(emDiaVal)+'</div><div class="kpi-sub">'+data.filter(function(r){return!r.inadimplente;}).length+' titulos</div></div>'+
+    '<div class="kpi" style="--kc:var(--red)"><div class="kpi-label">Inadimplencia</div><div class="kpi-value">'+fBRL(inadVal2)+'</div><div class="kpi-sub">'+data.filter(function(r){return r.inadimplente;}).length+' titulos em atraso</div></div>';
   document.getElementById('arEmpty').style.display=areceber.length?'none':'block';
   document.getElementById('arWrap').style.display=areceber.length?'block':'none';
   document.getElementById('arCount').textContent='('+areceber.length+' total)';
-  document.getElementById('arFooter').textContent=data.length+' registros | Total: '+fBRL(data.reduce(function(s,r){return s+r.liquido;},0));
+  document.getElementById('arFooter').textContent=data.length+' registros | Total: '+fBRL(totVal);
   document.getElementById('tbAR').innerHTML=data.slice(0,500).map(function(r){
     var b=r.inadimplente?'<span class="badge-r">Inadimplente</span>':'<span class="badge-g">A Receber</span>';
-    return'<tr><td>'+r.obra+'</td><td>'+r.cliente+'</td><td style="white-space:nowrap;color:'+(r.inadimplente?'var(--red)':'var(--text2)')+'">'+r.dtBaixa+'</td><td>'+b+'</td><td class="mono" style="text-align:right">'+fBRL(r.liquido)+'</td></tr>';
+    return'<tr><td class="mono">'+r.titulo+'</td><td>'+r.obra+'</td><td>'+r.cliente+'</td><td style="white-space:nowrap;color:'+(r.inadimplente?'var(--red)':'var(--text2)')+'">'+r.dtBaixa+'</td><td>'+b+'</td><td class="mono" style="text-align:right">'+fBRL(r.liquido)+'</td></tr>';
   }).join('');
+  renderTitCC();
 }
 
 // ============================================================
@@ -1492,7 +1549,7 @@ async function ghubSave(){
       {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
     if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
     // Monta payload
-    var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal});
+    var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,dataEntregaGlobal:dataEntregaGlobal});
     var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
     var body={message:'BI Welter update '+new Date().toISOString(),content:content};
     if(_ghubSha)body.sha=_ghubSha;
@@ -1530,7 +1587,7 @@ async function importarDoGist(){
       s=JSON.parse(new TextDecoder().decode(merged));
     } else {s=parsed;}
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-    orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
+    orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
     salvar();init();
     showGhubMsg('&#10003; '+dados.length+' registros importados! Clique em Salvar no GitHub.','ok');
@@ -1543,7 +1600,7 @@ async function ghubLoad(){
     if(!resp.ok)throw new Error('Arquivo nao encontrado ('+resp.status+')');
     var s=await resp.json();
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-    orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
+    orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
     salvar();init();
     showGhubMsg('&#10003; '+dados.length+' registros carregados!','ok');
@@ -1792,7 +1849,7 @@ function ghubAutoSave(){
       var rr=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
         {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
       if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
-      var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,dataEntregaGlobal:dataEntregaGlobal});
+      var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,dataEntregaGlobal:dataEntregaGlobal});
       var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
       var body={message:'BI Welter autosave '+new Date().toISOString(),content:content};
       if(_ghubSha)body.sha=_ghubSha;
@@ -1813,7 +1870,7 @@ function updateHdr(){
 }
 function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
-  renderDados();renderRec();renderAR();renderOrc();renderEstoque();
+  renderDados();renderRec();renderAR();renderTitCC();renderOrc();renderEstoque();
   renderAdm();renderObra();renderExec();renderFluxo();
 }
 carregar();
@@ -1829,7 +1886,7 @@ init();
     // Só substitui se o GitHub tiver dados mais completos
     if((s.dados||[]).length>=(dados.length)){
       dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-      orcamento=s.orcamento||[];estoque=s.estoque||[];dataEntregaGlobal=s.dataEntregaGlobal||'';
+      orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
       fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();
     }
