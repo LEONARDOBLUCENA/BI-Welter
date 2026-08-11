@@ -850,13 +850,13 @@ function normDados(rows){
   var cData=colFind(k,['data pagamento']);
   var cConta=colFind(k,['conta corrente']);
   var cCC=colFind(k,['desc centro custo']);
-  var cCodFin=colFind(k,['cod plan fin','codigo plano fin','código plano fin','cod plano fin','codigo plano financeiro']);
-  var cDescFin=colFind(k,['dec plano fin','desc plano fin','descricao plano fin','desc plano financeiro','descricao plano financeiro']);
-  var cValFin=colFind(k,['valor aprop fin','valor aprop. fin']);
+  var cCodFin=colFind(k,['ca³digo plano fin','cod plan fin','codigo plano fin','cod plano fin','codigo plano financeiro']);
+  var cDescFin=colFind(k,['desc plano fin','dec plano fin','descricao plano fin','descricao plano financeiro']);
+  var cValFin=colFind(k,['valor aprop fin']);
   var cObra=colFind(k,['desc obra']);
   var cUC=colFind(k,['desc unid construtiva']);
-  var cCodOrc=colFind(k,['codigo do orcamento','codigo item orcamento','cod item orcamento','código item orçamento']);
-  var cDescOrc=colFind(k,['descricao orc','desc item orcamento','desc item orçamento','descricao item orcamento']);
+  var cCodOrc=colFind(k,['ca³digo item ora§amento','codigo item orcamento','codigo do orcamento','cod item orcamento']);
+  var cDescOrc=colFind(k,['desc item ora§amento','desc item orcamento','descricao orc','descricao item orcamento']);
   var cValObra=colFind(k,['valor aprop obra']);
   function g(r,c){return c?fixEncoding(String(r[c]||'').trim()):'';}
   return rows.map(function(r){
