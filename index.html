@@ -849,13 +849,13 @@ function normDados(rows){
   var cData=colFind(k,['data pagamento']);
   var cConta=colFind(k,['conta corrente']);
   var cCC=colFind(k,['desc centro custo']);
-  var cCodFin=colFind(k,['codigo plano financeiro']);
-  var cDescFin=colFind(k,['descricao plano financeiro']);
-  var cValFin=colFind(k,['valor aprop fin']);
+  var cCodFin=colFind(k,['código plano fin','codigo plano fin','cod plano fin','codigo plano financeiro']);
+  var cDescFin=colFind(k,['desc plano fin','descricao plano fin','desc plano financeiro','descricao plano financeiro']);
+  var cValFin=colFind(k,['valor aprop fin','valor aprop. fin']);
   var cObra=colFind(k,['desc obra']);
   var cUC=colFind(k,['desc unid construtiva']);
-  var cCodOrc=colFind(k,['codigo item orcamento']);
-  var cDescOrc=colFind(k,['descricao item orcamento']);
+  var cCodOrc=colFind(k,['código item orçamento','codigo item orcamento','cod item orcamento']);
+  var cDescOrc=colFind(k,['desc item orçamento','desc item orcamento','descricao item orcamento']);
   var cValObra=colFind(k,['valor aprop obra']);
   function g(r,c){return c?fixEncoding(String(r[c]||'').trim()):'';}
   return rows.map(function(r){
