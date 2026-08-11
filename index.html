@@ -594,9 +594,10 @@ function showMsg(id,txt,type){
   el.style.color=type==='ok'?'var(--green)':type==='warn'?'var(--accent)':'var(--blue)';
   el.innerHTML=txt;clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},5000);
 }
+function normStr(s){return s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function colFind(keys,names){
-  for(var i=0;i<names.length;i++){var f=keys.find(function(k){return k.toLowerCase().trim()===names[i].toLowerCase();});if(f)return f;}
-  for(var i=0;i<names.length;i++){var f=keys.find(function(k){return k.toLowerCase().trim().includes(names[i].toLowerCase());});if(f)return f;}
+  for(var i=0;i<names.length;i++){var f=keys.find(function(k){return normStr(k)===normStr(names[i]);});if(f)return f;}
+  for(var i=0;i<names.length;i++){var f=keys.find(function(k){return normStr(k).includes(normStr(names[i]));});if(f)return f;}
   return null;
 }
 function normUC(v){
@@ -849,13 +850,13 @@ function normDados(rows){
   var cData=colFind(k,['data pagamento']);
   var cConta=colFind(k,['conta corrente']);
   var cCC=colFind(k,['desc centro custo']);
-  var cCodFin=colFind(k,['código plano fin','codigo plano fin','cod plano fin','codigo plano financeiro']);
-  var cDescFin=colFind(k,['desc plano fin','descricao plano fin','desc plano financeiro','descricao plano financeiro']);
+  var cCodFin=colFind(k,['cod plan fin','codigo plano fin','código plano fin','cod plano fin','codigo plano financeiro']);
+  var cDescFin=colFind(k,['dec plano fin','desc plano fin','descricao plano fin','desc plano financeiro','descricao plano financeiro']);
   var cValFin=colFind(k,['valor aprop fin','valor aprop. fin']);
   var cObra=colFind(k,['desc obra']);
   var cUC=colFind(k,['desc unid construtiva']);
-  var cCodOrc=colFind(k,['código item orçamento','codigo item orcamento','cod item orcamento']);
-  var cDescOrc=colFind(k,['desc item orçamento','desc item orcamento','descricao item orcamento']);
+  var cCodOrc=colFind(k,['codigo do orcamento','codigo item orcamento','cod item orcamento','código item orçamento']);
+  var cDescOrc=colFind(k,['descricao orc','desc item orcamento','desc item orçamento','descricao item orcamento']);
   var cValObra=colFind(k,['valor aprop obra']);
   function g(r,c){return c?fixEncoding(String(r[c]||'').trim()):'';}
   return rows.map(function(r){
