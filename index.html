@@ -560,7 +560,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 // ============================================================
 // STATE
 // ============================================================
-var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], titCC={};
+var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], titCC={}, fluxoConfig={};
 var dataEntregaGlobal='', obrasEntregaVisiveis={};
 var GHUB={token:['ghp_5tGd4SUCfRc','I2vWgZiK5LH4Ui','Uf1yH2kUrpo'].join(''),repo:'LEONARDOBLUCENA/BI-Welter',file:'data.json',raw:'https://raw.githubusercontent.com/LEONARDOBLUCENA/BI-Welter/main/data.json'};
 var _ghubSaving=false,_ghubDirty=false,_ghubSha=null;
@@ -803,7 +803,7 @@ function carregar(){
 }
 function salvarSessao(){
   if(!dados.length&&!recebidas.length&&!areceber.length){alert('Nenhum dado para salvar.');return;}
-  var blob=new Blob([JSON.stringify({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,dataEntregaGlobal:dataEntregaGlobal})],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,fluxoConfig:fluxoConfig,dataEntregaGlobal:dataEntregaGlobal})],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bi_welter_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
 function carregarSessao(input){
@@ -815,7 +815,7 @@ function carregarSessao(input){
       if(!s.dados){alert('Arquivo invalido.');return;}
       if(dados.length&&!confirm('Substituir dados existentes?'))return;
       dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-      orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
+      orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};fluxoConfig=s.fluxoConfig||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
       fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();alert(dados.length+' registros carregados!');
     }catch(ex){alert('Erro ao ler arquivo.');}
@@ -1011,7 +1011,7 @@ function normRec(rows){
 function normAR(rows){
   if(!rows.length)return[];
   var k=Object.keys(rows[0]);
-  var cDt     =colFind(k,['dtvencto','dt vencto','data vencto','vencimento','vcto','dtvencimento']);
+  var cDt=colFind(k,['data vecto','dtvencto','dt vencto','data vencto','vencimento','vcto','dtvencimento']);
   var cCliente=colFind(k,['nmcliente','nm cliente','cliente','sacado','nome cliente']);
   var cVal    =colFind(k,['vltotal','vl total','valor total','total','liquido']);
   var cTitulo =colFind(k,['nutitulo','nu titulo','numero titulo','titulo','numtitulo']);
@@ -1550,7 +1550,7 @@ async function ghubSave(){
       {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
     if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
     // Monta payload
-    var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,dataEntregaGlobal:dataEntregaGlobal});
+    var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,fluxoConfig:fluxoConfig,dataEntregaGlobal:dataEntregaGlobal});
     var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
     var body={message:'BI Welter update '+new Date().toISOString(),content:content};
     if(_ghubSha)body.sha=_ghubSha;
@@ -1588,7 +1588,7 @@ async function importarDoGist(){
       s=JSON.parse(new TextDecoder().decode(merged));
     } else {s=parsed;}
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-    orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
+    orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};fluxoConfig=s.fluxoConfig||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
     salvar();init();
     showGhubMsg('&#10003; '+dados.length+' registros importados! Clique em Salvar no GitHub.','ok');
@@ -1601,7 +1601,7 @@ async function ghubLoad(){
     if(!resp.ok)throw new Error('Arquivo nao encontrado ('+resp.status+')');
     var s=await resp.json();
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-    orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
+    orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};fluxoConfig=s.fluxoConfig||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
     fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
     salvar();init();
     showGhubMsg('&#10003; '+dados.length+' registros carregados!','ok');
@@ -1623,7 +1623,17 @@ function parseMonthYear(s){
   return{mes:parseInt(m[1]),ano:parseInt(m[2])};
 }
 function monthKey(ano,mes){return ano*100+mes;}
+var FC_FIELDS=['fcCaixaAtual','fcTerrenoInicio','fcTerrenoValor','fcTerrenoParcelas','fcCCInicio','fcCCValor','fcCCMeses','fcPermutaInicio','fcPermutaValor','fcPermutaParcelas','fcMSEntrega','fcMSSaldo'];
+function salvarFluxoConfig(){
+  var cfg={};FC_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)cfg[id]=el.value;});
+  fluxoConfig=cfg;salvar();
+}
+function carregarFluxoConfig(){
+  if(!fluxoConfig||!Object.keys(fluxoConfig).length)return;
+  FC_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&fluxoConfig[id]!==undefined)el.value=fluxoConfig[id];});
+}
 function renderFluxo(){
+  salvarFluxoConfig();
   var body=document.getElementById('tbFluxoBody');
   if(!body)return;
 
@@ -1850,7 +1860,7 @@ function ghubAutoSave(){
       var rr=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
         {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
       if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
-      var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,dataEntregaGlobal:dataEntregaGlobal});
+      var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,fluxoConfig:fluxoConfig,dataEntregaGlobal:dataEntregaGlobal});
       var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
       var body={message:'BI Welter autosave '+new Date().toISOString(),content:content};
       if(_ghubSha)body.sha=_ghubSha;
@@ -1872,7 +1882,7 @@ function updateHdr(){
 function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
   renderDados();renderRec();renderAR();renderTitCC();renderOrc();renderEstoque();
-  renderAdm();renderObra();renderExec();renderFluxo();
+  renderAdm();renderObra();renderExec();carregarFluxoConfig();renderFluxo();
 }
 carregar();
 init();
@@ -1887,7 +1897,7 @@ init();
     // Só substitui se o GitHub tiver dados mais completos
     if((s.dados||[]).length>=(dados.length)){
       dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
-      orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
+      orcamento=s.orcamento||[];estoque=s.estoque||[];titCC=s.titCC||{};fluxoConfig=s.fluxoConfig||{};dataEntregaGlobal=s.dataEntregaGlobal||'';
       fixEncodingArr(dados);fixDadosDates(dados);fixDates(recebidas,false);fixDates(areceber,true);
       salvar();init();
     }
