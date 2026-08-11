@@ -1626,11 +1626,17 @@ function monthKey(ano,mes){return ano*100+mes;}
 var FC_FIELDS=['fcCaixaAtual','fcTerrenoInicio','fcTerrenoValor','fcTerrenoParcelas','fcCCInicio','fcCCValor','fcCCMeses','fcPermutaInicio','fcPermutaValor','fcPermutaParcelas','fcMSEntrega','fcMSSaldo'];
 function salvarFluxoConfig(){
   var cfg={};FC_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el)cfg[id]=el.value;});
-  fluxoConfig=cfg;salvar();
+  fluxoConfig=cfg;
+  try{localStorage.setItem('bi_fluxo',JSON.stringify(cfg));}catch(e){}
+  salvar();
 }
 function carregarFluxoConfig(){
-  if(!fluxoConfig||!Object.keys(fluxoConfig).length)return;
-  FC_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&fluxoConfig[id]!==undefined)el.value=fluxoConfig[id];});
+  // Tenta fluxoConfig da memória (vindo do GitHub/arquivo)
+  var cfg=fluxoConfig&&Object.keys(fluxoConfig).length?fluxoConfig:null;
+  // Fallback: localStorage
+  if(!cfg){try{var s=localStorage.getItem('bi_fluxo');if(s)cfg=JSON.parse(s);}catch(e){}}
+  if(!cfg)return;
+  FC_FIELDS.forEach(function(id){var el=document.getElementById(id);if(el&&cfg[id]!==undefined)el.value=cfg[id];});
 }
 function renderFluxo(){
   salvarFluxoConfig();
