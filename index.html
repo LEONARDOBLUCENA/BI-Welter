@@ -169,6 +169,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
     <button class="btn btn-sm" onclick="document.getElementById('loadFile').click()">&#8593; Carregar</button>
     <input type="file" id="loadFile" accept=".json" style="display:none" onchange="carregarSessao(this)">
     <button class="btn btn-sm" onclick="abrirNuvem()" title="Nuvem">&#9729; Nuvem</button>
+    <button class="btn btn-sm" id="btnSiengeHdr" onclick="abrirSienge()" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;">&#8635; Sync Sienge</button>
   </div>
 </header>
 
@@ -552,6 +553,29 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
       <button class="btn btn-sm" onclick="ghubLoad()">&#8681; Carregar do GitHub</button>
       <button class="btn btn-sm" onclick="importarDoGist()">&#8635; Importar do Gist</button>
       <button class="btn btn-sm" onclick="fecharNuvem()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SIENGE -->
+<div id="siengeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:26px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.15);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;font-family:'Playfair Display',serif;">&#8635; Sync Sienge</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:16px;">Atualiza <strong>Contas Pagas, Recebidas e a Receber</strong> direto do ERP.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <div><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:3px;">Data início</label><input type="text" id="siengeStart" placeholder="2026-01-01" style="width:130px;padding:6px 9px;"></div>
+      <div><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:3px;">Data fim</label><input type="text" id="siengeEnd" placeholder="2026-12-31" style="width:130px;padding:6px 9px;"></div>
+    </div>
+    <div id="siengeProgress" style="display:none;margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;" id="siengeStep">Iniciando...</div>
+      <div style="background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;">
+        <div id="siengeBar" style="background:var(--accent);height:100%;width:0%;transition:width 0.4s;"></div>
+      </div>
+    </div>
+    <div id="siengeMsg" class="msg" style="margin-bottom:12px;display:none;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-accent btn-sm" id="btnSiengeExec" onclick="executarSyncSienge()">&#8635; Sincronizar</button>
+      <button class="btn btn-sm" onclick="fecharSienge()">Fechar</button>
     </div>
   </div>
 </div>
@@ -1890,6 +1914,169 @@ function init(){
   renderDados();renderRec();renderAR();renderTitCC();renderOrc();renderEstoque();
   renderAdm();renderObra();renderExec();carregarFluxoConfig();renderFluxo();
 }
+// ============================================================
+// INTEGRAÇÃO SIENGE API — SYNC UNIFICADO
+// ============================================================
+var SIENGE={
+  user:'welter-apiclaude',
+  pass:'IPTrbfiej5uRLAFFbjg1nmL6RPGaONBs',
+  bulk:'https://api.sienge.com.br/welter/public/api/bulk-data/v1',
+  rest:'https://api.sienge.com.br/welter/public/api/v1'
+};
+
+function abrirSienge(){
+  var hoje=new Date();
+  var ini=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
+  var fim=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
+  var fimStr=fim.getFullYear()+'-'+String(fim.getMonth()+1).padStart(2,'0')+'-'+String(fim.getDate()).padStart(2,'0');
+  if(!document.getElementById('siengeStart').value)document.getElementById('siengeStart').value=ini;
+  if(!document.getElementById('siengeEnd').value)document.getElementById('siengeEnd').value=fimStr;
+  document.getElementById('siengeProgress').style.display='none';
+  document.getElementById('siengeMsg').style.display='none';
+  document.getElementById('btnSiengeExec').disabled=false;
+  document.getElementById('btnSiengeExec').innerHTML='&#8635; Sincronizar';
+  document.getElementById('siengeModal').style.display='flex';
+}
+function fecharSienge(){document.getElementById('siengeModal').style.display='none';}
+
+function setSiengeProgress(pct,txt){
+  document.getElementById('siengeProgress').style.display='block';
+  document.getElementById('siengeBar').style.width=pct+'%';
+  document.getElementById('siengeStep').textContent=txt;
+}
+
+function formatDt(iso){
+  if(!iso)return'';
+  var p=iso.split('-');
+  if(p.length!==3)return iso;
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+function mapearOutcome(registro){
+  var resultado=[];
+  var payments=(registro.payments||[]).filter(function(p){return p.operationTypeId===1||p.operationTypeId===10;});
+  if(!payments.length)return[];
+  payments.forEach(function(pag){
+    var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
+    var dp=parseDt(formatDt(dataStr));
+    var bm=(pag.bankMovements||[]).find(function(b){return b.accountType==='B'||b.accountType==='C';});
+    var conta=bm?bm.accountNumber:'';
+    var payCategs=registro.paymentsCategories||[];
+    var buildCosts=registro.buildingsCosts||[];
+    if(!payCategs.length){
+      resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+        conta:conta,cc:'',codFin:'',descFin:'',valFin:pag.netAmount||0,obra:'',uc:'',codOrc:'',descOrc:'',valObra:0});
+    } else {
+      payCategs.forEach(function(pc,idx){
+        var valFin=Math.round((pag.netAmount||0)*(pc.financialCategoryRate||100)/100*100)/100;
+        var bc=buildCosts[idx]||buildCosts[0]||{};
+        var valObra=Math.round((pag.netAmount||0)*(bc.rate||0)/100*100)/100;
+        resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+          conta:conta,cc:pc.costCenterName||'',codFin:String(pc.financialCategoryId||''),
+          descFin:pc.financialCategoryName||'',valFin:valFin,
+          obra:bc.buildingName||'',uc:bc.buildingUnitName||'',
+          codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra});
+      });
+    }
+  });
+  return resultado;
+}
+
+function mapearIncome(registro){
+  // Mapeia /income para o formato de Contas Recebidas
+  var resultado=[];
+  var payments=(registro.payments||[]).filter(function(p){
+    // Só baixas reais: Recebimento(1), Por Bens(11), Outros tipos válidos
+    return p.operationTypeId===1||p.operationTypeId===11||p.operationTypeId===2;
+  });
+  if(!payments.length)return[];
+  payments.forEach(function(pag){
+    var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
+    var payCategs=registro.paymentsCategories||[];
+    var cc=payCategs.length?(payCategs[0].costCenterName||''):'';
+    var codCond=registro.conditionTypeId||'';
+    var tipoBaixa=pag.operationTypeName||'Recebimento';
+    var titulo=String(registro.billId||'');
+    resultado.push({
+      obra:cc,
+      cliente:registro.customerName||registro.creditorName||'',
+      dtBaixa:formatDt(dataStr),
+      codCond:codCond,
+      tipoBaixa:tipoBaixa,
+      liquido:pag.netAmount||0,
+      titulo:titulo
+    });
+  });
+  return resultado;
+}
+
+async function fetchSienge(url){
+  var creds=btoa(SIENGE.user+':'+SIENGE.pass);
+  var resp=await fetch(url,{headers:{'Authorization':'Basic '+creds,'Accept':'application/json'}});
+  if(!resp.ok){var e=await resp.json().catch(function(){return{};});throw new Error(e.clientMessage||resp.status);}
+  return resp.json();
+}
+
+async function executarSyncSienge(){
+  var start=document.getElementById('siengeStart').value.trim();
+  var end=document.getElementById('siengeEnd').value.trim();
+  if(!start||!end){
+    var m=document.getElementById('siengeMsg');m.style.display='block';
+    showMsg('siengeMsg','Informe as datas.','warn');return;
+  }
+  var btn=document.getElementById('btnSiengeExec');
+  btn.disabled=true;btn.innerHTML='Sincronizando...';
+  document.getElementById('siengeMsg').style.display='none';
+
+  try{
+    // PASSO 1 — Contas Pagas (/outcome)
+    setSiengeProgress(10,'1/3 — Buscando Contas Pagas...');
+    var jsonOut=await fetchSienge(SIENGE.bulk+'/outcome?startDate='+start+'&endDate='+end+'&selectionType=P&correctionIndexerId=0&correctionDate='+end);
+    var novosOut=[];
+    (jsonOut.data||[]).forEach(function(r){novosOut=novosOut.concat(mapearOutcome(r));});
+
+    // PASSO 2 — Contas Recebidas (/income)
+    setSiengeProgress(45,'2/3 — Buscando Contas Recebidas...');
+    var jsonInc=await fetchSienge(SIENGE.bulk+'/income?startDate='+start+'&endDate='+end+'&selectionType=B&correctionIndexerId=0&correctionDate='+end);
+    var novosInc=[];
+    (jsonInc.data||[]).forEach(function(r){novosInc=novosInc.concat(mapearIncome(r));});
+
+    // PASSO 3 — Atualizar arrays removendo período e inserindo novos
+    setSiengeProgress(80,'3/3 — Salvando...');
+    var startDt=new Date(start);var endDt=new Date(end+'T23:59:59');
+
+    // Contas Pagas: remove período e insere
+    dados=dados.filter(function(d){
+      if(!d.ano||!d.mes)return true;
+      var dp=new Date(d.ano,d.mes-1,1);return dp<startDt||dp>endDt;
+    });
+    dados=dados.concat(novosOut);
+    fixEncodingArr(dados);
+
+    // Contas Recebidas: remove período e insere
+    recebidas=recebidas.filter(function(r){
+      var dp=parseDt(r.dtBaixa);if(!dp)return true;
+      return dp<startDt||dp>endDt;
+    });
+    recebidas=recebidas.concat(novosInc);
+
+    salvar();
+    updateHdr();setSel('fAno',anos(dados),'Todos');
+    renderDados();renderRec();renderObra();renderAdm();renderExec();
+
+    setSiengeProgress(100,'Concluído!');
+    var m=document.getElementById('siengeMsg');m.style.display='block';
+    var totalMsg='&#10003; Sincronizado: '+novosOut.length+' lançamentos pagos, '+novosInc.length+' recebidos ('+start+' → '+end+')';
+    showMsg('siengeMsg',totalMsg,'ok');
+
+  }catch(e){
+    var m=document.getElementById('siengeMsg');m.style.display='block';
+    showMsg('siengeMsg','Erro: '+e.message,'warn');
+    document.getElementById('siengeProgress').style.display='none';
+  }
+  btn.disabled=false;btn.innerHTML='&#8635; Sincronizar';
+}
+
 carregar();
 init();
 // Auto-load do GitHub na abertura
