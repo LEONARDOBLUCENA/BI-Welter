@@ -563,8 +563,8 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
     <div style="font-size:15px;font-weight:700;margin-bottom:4px;font-family:'Playfair Display',serif;">&#8635; Sync Sienge</div>
     <div style="font-size:11px;color:var(--text2);margin-bottom:16px;">Atualiza <strong>Contas Pagas, Recebidas e a Receber</strong> direto do ERP.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-      <div><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:3px;">Data início</label><input type="text" id="siengeStart" placeholder="01/01/2026" style="width:130px;padding:6px 9px;"></div>
-      <div><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:3px;">Data fim</label><input type="text" id="siengeEnd" placeholder="31/12/2026" style="width:130px;padding:6px 9px;"></div>
+      <div><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:3px;">Data início</label><input type="text" id="siengeStart" placeholder="2026-01-01" style="width:130px;padding:6px 9px;"></div>
+      <div><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:3px;">Data fim</label><input type="text" id="siengeEnd" placeholder="2026-12-31" style="width:130px;padding:6px 9px;"></div>
     </div>
     <div id="siengeProgress" style="display:none;margin-bottom:12px;">
       <div style="font-size:11px;color:var(--text2);margin-bottom:6px;" id="siengeStep">Iniciando...</div>
@@ -1754,8 +1754,8 @@ function renderFluxo(){
     // Proj afetação = 4% do faturamento total do mês
     var afetacao=totalFat*0.04;
 
-    // Custo adm = média fixa
-    var custoAdm=admMedia;
+    // Custo adm = média fixa até nov/2029, zero depois
+    var custoAdm=(ano<2029||(ano===2029&&mes<=11))?admMedia:0;
 
     // Pos obra = média fixa
     var custoPos=posMedia;
@@ -1923,9 +1923,9 @@ var SIENGE={
 
 function abrirSienge(){
   var hoje=new Date();
-  var ini='01/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+  var ini=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-01';
   var fim=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
-  var fimStr=String(fim.getDate()).padStart(2,'0')+'/'+String(fim.getMonth()+1).padStart(2,'0')+'/'+fim.getFullYear();
+  var fimStr=fim.getFullYear()+'-'+String(fim.getMonth()+1).padStart(2,'0')+'-'+String(fim.getDate()).padStart(2,'0');
   if(!document.getElementById('siengeStart').value)document.getElementById('siengeStart').value=ini;
   if(!document.getElementById('siengeEnd').value)document.getElementById('siengeEnd').value=fimStr;
   document.getElementById('siengeProgress').style.display='none';
@@ -1979,26 +1979,32 @@ function mapearOutcome(registro){
   return resultado;
 }
 
-function mapearIncomeAR(registro){
-  // Mapeia /income para Contas a Receber (parcelas em aberto)
-  var hoje=new Date();
-  var dtVencto=registro.dueDate?registro.dueDate.substring(0,10):'';
-  var dtFmt=formatDt(dtVencto);
-  var inad=false;
-  if(dtVencto){
-    var p=dtVencto.split('-');
-    var vAno=parseInt(p[0]),vMes=parseInt(p[1]);
-    inad=(vAno<hoje.getFullYear())||(vAno===hoje.getFullYear()&&vMes<hoje.getMonth()+1);
-  }
-  var obra=(registro.receiptsCategories&&registro.receiptsCategories.length)?registro.receiptsCategories[0].costCenterName||'':'';
-  return [{
-    titulo:String(registro.billId||''),
-    obra:obra,
-    cliente:registro.clientName||'',
-    dtBaixa:dtFmt,
-    liquido:registro.correctedBalanceAmount||registro.balanceAmount||0,
-    inadimplente:inad
-  }];
+function mapearIncome(registro){
+  // Mapeia /income para o formato de Contas Recebidas
+  var resultado=[];
+  var payments=(registro.payments||[]).filter(function(p){
+    // Só baixas reais: Recebimento(1), Por Bens(11), Outros tipos válidos
+    return p.operationTypeId===1||p.operationTypeId===11||p.operationTypeId===2;
+  });
+  if(!payments.length)return[];
+  payments.forEach(function(pag){
+    var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
+    var payCategs=registro.paymentsCategories||[];
+    var cc=payCategs.length?(payCategs[0].costCenterName||''):'';
+    var codCond=registro.conditionTypeId||'';
+    var tipoBaixa=pag.operationTypeName||'Recebimento';
+    var titulo=String(registro.billId||'');
+    resultado.push({
+      obra:cc,
+      cliente:registro.customerName||registro.creditorName||'',
+      dtBaixa:formatDt(dataStr),
+      codCond:codCond,
+      tipoBaixa:tipoBaixa,
+      liquido:pag.netAmount||0,
+      titulo:titulo
+    });
+  });
+  return resultado;
 }
 
 async function fetchSienge(url){
@@ -2008,34 +2014,31 @@ async function fetchSienge(url){
 }
 
 async function executarSyncSienge(){
-  var startRaw=document.getElementById('siengeStart').value.trim();
-  var endRaw=document.getElementById('siengeEnd').value.trim();
-  if(!startRaw||!endRaw){
+  var start=document.getElementById('siengeStart').value.trim();
+  var end=document.getElementById('siengeEnd').value.trim();
+  if(!start||!end){
     var m=document.getElementById('siengeMsg');m.style.display='block';
     showMsg('siengeMsg','Informe as datas.','warn');return;
   }
-  function toISO(d){var p=d.split('/');return p.length===3?p[2]+'-'+p[1]+'-'+p[0]:d;}
-  var start=toISO(startRaw);
-  var end=toISO(endRaw);
   var btn=document.getElementById('btnSiengeExec');
   btn.disabled=true;btn.innerHTML='Sincronizando...';
   document.getElementById('siengeMsg').style.display='none';
 
   try{
     // PASSO 1 — Contas Pagas (/outcome)
-    setSiengeProgress(10,'1/2 — Buscando Contas Pagas...');
+    setSiengeProgress(10,'1/3 — Buscando Contas Pagas...');
     var jsonOut=await fetchSienge(SIENGE.proxy+'/sienge/outcome?start='+start+'&end='+end);
     var novosOut=[];
     (jsonOut.data||[]).forEach(function(r){novosOut=novosOut.concat(mapearOutcome(r));});
 
-    // PASSO 2 — Contas a Receber (/income)
-    setSiengeProgress(50,'2/2 — Buscando Contas a Receber...');
+    // PASSO 2 — Contas Recebidas (/income)
+    setSiengeProgress(45,'2/3 — Buscando Contas Recebidas...');
     var jsonInc=await fetchSienge(SIENGE.proxy+'/sienge/income?start='+start+'&end='+end);
-    var novosAR=[];
-    (jsonInc.data||[]).forEach(function(r){novosAR=novosAR.concat(mapearIncomeAR(r));});
+    var novosInc=[];
+    (jsonInc.data||[]).forEach(function(r){novosInc=novosInc.concat(mapearIncome(r));});
 
-    // PASSO 3 — Salvar
-    setSiengeProgress(80,'Salvando...');
+    // PASSO 3 — Atualizar arrays removendo período e inserindo novos
+    setSiengeProgress(80,'3/3 — Salvando...');
     var startDt=new Date(start);var endDt=new Date(end+'T23:59:59');
 
     // Contas Pagas: remove período e insere
@@ -2046,16 +2049,20 @@ async function executarSyncSienge(){
     dados=dados.concat(novosOut);
     fixEncodingArr(dados);
 
-    // Contas a Receber: substitui completamente (snapshot atual)
-    areceber=novosAR;
+    // Contas Recebidas: remove período e insere
+    recebidas=recebidas.filter(function(r){
+      var dp=parseDt(r.dtBaixa);if(!dp)return true;
+      return dp<startDt||dp>endDt;
+    });
+    recebidas=recebidas.concat(novosInc);
 
     salvar();
     updateHdr();setSel('fAno',anos(dados),'Todos');
-    renderDados();renderAR();renderObra();renderAdm();renderExec();
+    renderDados();renderRec();renderObra();renderAdm();renderExec();
 
     setSiengeProgress(100,'Concluído!');
     var m=document.getElementById('siengeMsg');m.style.display='block';
-    var totalMsg='&#10003; '+novosOut.length+' pagamentos | '+novosAR.length+' títulos a receber ('+startRaw+' → '+endRaw+')';
+    var totalMsg='&#10003; Sincronizado: '+novosOut.length+' lançamentos pagos, '+novosInc.length+' recebidos ('+start+' → '+end+')';
     showMsg('siengeMsg',totalMsg,'ok');
 
   }catch(e){
