@@ -1978,25 +1978,45 @@ function mapearOutcome(registro){
     var conta=bm?bm.accountNumber:'';
     var payCategs=registro.paymentsCategories||[];
     var buildCosts=registro.buildingsCosts||[];
-    if(!payCategs.length){
+    if(!payCategs.length&&!buildCosts.length){
       resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
-        conta:conta,cc:'',codFin:'',descFin:'',valFin:pag.netAmount||0,obra:'',uc:'',codOrc:'',descOrc:'',valObra:0});
-    } else {
-      payCategs.forEach(function(pc,idx){
+        conta:conta,cc:'',codFin:'',descFin:'',valFin:pag.netAmount||0,obra:'',uc:'',codOrc:'',descOrc:'',valObra:0,
+        credor:registro.creditorName||'',tipoOp:pag.operationTypeName||'',porBens:pag.operationTypeId===11});
+    } else if(!buildCosts.length){
+      // Só plano financeiro, sem obra
+      payCategs.forEach(function(pc){
         var valFin=Math.round((pag.netAmount||0)*(pc.financialCategoryRate||100)/100*100)/100;
-        var bc=buildCosts[idx]||buildCosts[0]||{};
-        var valObra=Math.round((pag.netAmount||0)*(bc.rate||0)/100*100)/100;
-        // Se não tem buildingsCosts, usa o CC do plano financeiro como obra
-        var obraFinal=bc.buildingName||pc.costCenterName||'';
-        var ucFinal=bc.buildingUnitName||'';
         resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
           conta:conta,cc:pc.costCenterName||'',codFin:String(pc.financialCategoryId||''),
           descFin:pc.financialCategoryName||'',valFin:valFin,
-          obra:obraFinal,uc:ucFinal,
+          obra:pc.costCenterName||'',uc:'',codOrc:'',descOrc:'',valObra:0,
+          credor:registro.creditorName||'',tipoOp:pag.operationTypeName||'',porBens:pag.operationTypeId===11});
+      });
+    } else if(!payCategs.length){
+      // Só obra, sem plano financeiro
+      buildCosts.forEach(function(bc){
+        var valObra=Math.round((pag.netAmount||0)*(bc.rate||0)/100*100)/100;
+        resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+          conta:conta,cc:'',codFin:'',descFin:'',valFin:0,
+          obra:bc.buildingName||'',uc:bc.buildingUnitName||'',
           codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra,
-          credor:registro.creditorName||'',
-          tipoOp:pag.operationTypeName||'',
-          porBens:pag.operationTypeId===11});
+          credor:registro.creditorName||'',tipoOp:pag.operationTypeName||'',porBens:pag.operationTypeId===11});
+      });
+    } else {
+      // Tem ambos: uma linha por buildingsCosts, com valFin e valObra pelo rate
+      buildCosts.forEach(function(bc){
+        var rate=bc.rate||0;
+        var valFin=Math.round((pag.netAmount||0)*rate/100*100)/100;
+        var valObra=valFin;
+        // Plano financeiro: pega o que corresponde ao mesmo CC do buildingsCosts, ou o primeiro
+        var pcMatch=payCategs.find(function(p){return p.costCenterId===bc.buildingId;})||payCategs[0]||{};
+        resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+          conta:conta,cc:pcMatch.costCenterName||bc.buildingName||'',
+          codFin:String(pcMatch.financialCategoryId||''),
+          descFin:pcMatch.financialCategoryName||'',valFin:valFin,
+          obra:bc.buildingName||'',uc:bc.buildingUnitName||'',
+          codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra,
+          credor:registro.creditorName||'',tipoOp:pag.operationTypeName||'',porBens:pag.operationTypeId===11});
       });
     }
   });
