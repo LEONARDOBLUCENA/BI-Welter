@@ -1951,7 +1951,10 @@ function formatDt(iso){
 
 function mapearOutcome(registro){
   var resultado=[];
-  var payments=(registro.payments||[]).filter(function(p){return p.operationTypeId===1||p.operationTypeId===10;});
+  // Pagamento(1), Outros(2), Adiantamento(10), Por Bens(11) — exclui Cancelamento(3), Substituição(5), Abatimento(8)
+  var payments=(registro.payments||[]).filter(function(p){
+    return p.operationTypeId===1||p.operationTypeId===2||p.operationTypeId===10||p.operationTypeId===11;
+  });
   if(!payments.length)return[];
   payments.forEach(function(pag){
     var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
@@ -1972,7 +1975,8 @@ function mapearOutcome(registro){
           conta:conta,cc:pc.costCenterName||'',codFin:String(pc.financialCategoryId||''),
           descFin:pc.financialCategoryName||'',valFin:valFin,
           obra:bc.buildingName||'',uc:bc.buildingUnitName||'',
-          codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra});
+          codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra,
+          porBens:pag.operationTypeId===11});
       });
     }
   });
