@@ -1979,32 +1979,47 @@ function mapearOutcome(registro){
   return resultado;
 }
 
-function mapearIncome(registro){
-  // Mapeia /income para o formato de Contas Recebidas
+function mapearIncomeRec(registro){
+  // Contas RECEBIDAS: registros com receipts[] preenchido
+  var receipts=registro.receipts||[];
+  if(!receipts.length)return[];
   var resultado=[];
-  var payments=(registro.payments||[]).filter(function(p){
-    // Só baixas reais: Recebimento(1), Por Bens(11), Outros tipos válidos
-    return p.operationTypeId===1||p.operationTypeId===11||p.operationTypeId===2;
-  });
-  if(!payments.length)return[];
-  payments.forEach(function(pag){
-    var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
-    var payCategs=registro.paymentsCategories||[];
-    var cc=payCategs.length?(payCategs[0].costCenterName||''):'';
-    var codCond=registro.conditionTypeId||'';
-    var tipoBaixa=pag.operationTypeName||'Recebimento';
-    var titulo=String(registro.billId||'');
+  var cc=(registro.receiptsCategories&&registro.receiptsCategories.length)?registro.receiptsCategories[0].costCenterName||'':'';
+  receipts.forEach(function(rec){
+    var dataStr=rec.receiptDate?rec.receiptDate.substring(0,10):(rec.paymentDate?rec.paymentDate.substring(0,10):'');
     resultado.push({
       obra:cc,
-      cliente:registro.customerName||registro.creditorName||'',
+      cliente:registro.clientName||'',
       dtBaixa:formatDt(dataStr),
-      codCond:codCond,
-      tipoBaixa:tipoBaixa,
-      liquido:pag.netAmount||0,
-      titulo:titulo
+      codCond:'',
+      tipoBaixa:'Recebimento',
+      liquido:rec.netAmount||rec.amount||0,
+      titulo:String(registro.billId||'')
     });
   });
   return resultado;
+}
+
+function mapearIncomeAR(registro){
+  // Contas a RECEBER: todos os registros (com ou sem receipts)
+  var hoje=new Date();
+  var dtVencto=registro.dueDate?registro.dueDate.substring(0,10):'';
+  var dtFmt=formatDt(dtVencto);
+  var inad=false;
+  if(dtVencto){
+    var p=dtVencto.split('-');
+    var vAno=parseInt(p[0]),vMes=parseInt(p[1]);
+    inad=(vAno<hoje.getFullYear())||(vAno===hoje.getFullYear()&&vMes<hoje.getMonth()+1);
+  }
+  var obra=(registro.receiptsCategories&&registro.receiptsCategories.length)?registro.receiptsCategories[0].costCenterName||'':'';
+  return [{
+    titulo:String(registro.billId||''),
+    obra:obra,
+    cliente:registro.clientName||'',
+    dtBaixa:dtFmt,
+    liquido:registro.correctedBalanceAmount||registro.balanceAmount||0,
+    inadimplente:inad
+  }];
 }
 
 async function fetchSienge(url){
@@ -2031,13 +2046,17 @@ async function executarSyncSienge(){
     var novosOut=[];
     (jsonOut.data||[]).forEach(function(r){novosOut=novosOut.concat(mapearOutcome(r));});
 
-    // PASSO 2 — Contas Recebidas (/income)
-    setSiengeProgress(45,'2/3 — Buscando Contas Recebidas...');
+    // PASSO 2 — /income: separa em Recebidas e A Receber
+    setSiengeProgress(45,'2/3 — Buscando Recebimentos...');
     var jsonInc=await fetchSienge(SIENGE.proxy+'/sienge/income?start='+start+'&end='+end);
-    var novosInc=[];
-    (jsonInc.data||[]).forEach(function(r){novosInc=novosInc.concat(mapearIncome(r));});
+    var novosRec=[];
+    var novosAR=[];
+    (jsonInc.data||[]).forEach(function(r){
+      novosRec=novosRec.concat(mapearIncomeRec(r));
+      novosAR=novosAR.concat(mapearIncomeAR(r));
+    });
 
-    // PASSO 3 — Atualizar arrays removendo período e inserindo novos
+    // PASSO 3 — Salvar
     setSiengeProgress(80,'3/3 — Salvando...');
     var startDt=new Date(start);var endDt=new Date(end+'T23:59:59');
 
@@ -2054,15 +2073,18 @@ async function executarSyncSienge(){
       var dp=parseDt(r.dtBaixa);if(!dp)return true;
       return dp<startDt||dp>endDt;
     });
-    recebidas=recebidas.concat(novosInc);
+    recebidas=recebidas.concat(novosRec);
+
+    // Contas a Receber: substitui completamente (snapshot atual)
+    areceber=novosAR;
 
     salvar();
     updateHdr();setSel('fAno',anos(dados),'Todos');
-    renderDados();renderRec();renderObra();renderAdm();renderExec();
+    renderDados();renderRec();renderAR();renderObra();renderAdm();renderExec();
 
     setSiengeProgress(100,'Concluído!');
     var m=document.getElementById('siengeMsg');m.style.display='block';
-    var totalMsg='&#10003; Sincronizado: '+novosOut.length+' lançamentos pagos, '+novosInc.length+' recebidos ('+start+' → '+end+')';
+    var totalMsg='&#10003; '+novosOut.length+' pagos | '+novosRec.length+' recebidos | '+novosAR.length+' a receber ('+start+' → '+end+')';
     showMsg('siengeMsg',totalMsg,'ok');
 
   }catch(e){
