@@ -215,7 +215,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
     </div>
     <div id="dadosEmpty" class="nodata" style="display:none;"><p>Nenhum dado. Cole acima.</p></div>
     <div class="tbl-wrap" id="dadosWrap" style="display:none;">
-      <table><thead><tr><th>Data</th><th>Conta Corr.</th><th>Centro Custo</th><th>Cod Plano Fin.</th><th>Desc Plano Fin.</th><th style="text-align:right">Val Fin.</th><th>Obra</th><th>Unid Constr.</th><th>Cod Orc.</th><th>Desc Orc.</th><th style="text-align:right">Val Obra</th></tr></thead>
+      <table><thead><tr><th>Data</th><th>Credor</th><th>Tipo Operação</th><th>Conta Corr.</th><th>Centro Custo</th><th>Cod Plano Fin.</th><th>Desc Plano Fin.</th><th style="text-align:right">Val Fin.</th><th>Obra</th><th>Unid Constr.</th><th>Cod Orc.</th><th>Desc Orc.</th><th style="text-align:right">Val Obra</th></tr></thead>
       <tbody id="tbDados"></tbody></table>
     </div>
     <div id="dadosFooter" style="padding:6px 0 0;font-size:10px;color:var(--text3);"></div>
@@ -989,14 +989,15 @@ function renderDados(){
   document.getElementById('dadosCount').textContent='('+dados.length+' total)';
   document.getElementById('dadosFooter').textContent=data.length>500?'Exibindo 500 de '+data.length:data.length+' registros';
   document.getElementById('tbDados').innerHTML=data.slice(0,500).map(function(r){
-    return'<tr><td style="white-space:nowrap">'+r.data+'</td><td>'+r.conta+'</td><td>'+r.cc+'</td><td>'+r.codFin+'</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.descFin+'</td><td class="mono" style="text-align:right">'+fBRL(r.valFin)+'</td><td>'+r.obra+'</td><td>'+r.uc+'</td><td>'+r.codOrc+'</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.descOrc+'</td><td class="mono" style="text-align:right">'+fBRL(r.valObra)+'</td></tr>';
+    var tipoLabel=r.porBens?'Por Bens':r.tipoOp||'Pagamento';
+    return'<tr><td style="white-space:nowrap">'+r.data+'</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+( r.credor||'')+'</td><td><span style="font-size:10px;padding:2px 6px;border-radius:4px;background:'+(r.porBens?'var(--bg3)':'var(--green-light)')+';color:'+(r.porBens?'var(--text2)':'var(--green)')+'">'+tipoLabel+'</span></td><td>'+r.conta+'</td><td>'+r.cc+'</td><td>'+r.codFin+'</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.descFin+'</td><td class="mono" style="text-align:right">'+fBRL(r.valFin)+'</td><td>'+r.obra+'</td><td>'+r.uc+'</td><td>'+r.codOrc+'</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.descOrc+'</td><td class="mono" style="text-align:right">'+fBRL(r.valObra)+'</td></tr>';
   }).join('');
 }
 function exportDados(){
   if(!dados.length){alert('Nenhum dado.');return;}
   var data=getFilteredDados();
-  var rows=[['Data','Conta Corrente','Desc CC','Cod Plano Fin','Desc Plano Fin','Val Fin','Desc Obra','Unid Constr','Cod Orc','Desc Orc','Val Obra']];
-  data.forEach(function(r){rows.push([r.data,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});
+  var rows=[['Data','Credor','Tipo Operação','Conta Corrente','Desc CC','Cod Plano Fin','Desc Plano Fin','Val Fin','Desc Obra','Unid Constr','Cod Orc','Desc Orc','Val Obra']];
+  data.forEach(function(r){rows.push([r.data,r.credor||'',r.tipoOp||'',r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});
   var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Dados');XLSX.writeFile(wb,'contas_pagas.xlsx');
 }
 
@@ -1993,6 +1994,8 @@ function mapearOutcome(registro){
           descFin:pc.financialCategoryName||'',valFin:valFin,
           obra:obraFinal,uc:ucFinal,
           codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra,
+          credor:registro.creditorName||'',
+          tipoOp:pag.operationTypeName||'',
           porBens:pag.operationTypeId===11});
       });
     }
