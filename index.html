@@ -1985,10 +1985,13 @@ function mapearOutcome(registro){
         var valFin=Math.round((pag.netAmount||0)*(pc.financialCategoryRate||100)/100*100)/100;
         var bc=buildCosts[idx]||buildCosts[0]||{};
         var valObra=Math.round((pag.netAmount||0)*(bc.rate||0)/100*100)/100;
+        // Se não tem buildingsCosts, usa o CC do plano financeiro como obra
+        var obraFinal=bc.buildingName||pc.costCenterName||'';
+        var ucFinal=bc.buildingUnitName||'';
         resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
           conta:conta,cc:pc.costCenterName||'',codFin:String(pc.financialCategoryId||''),
           descFin:pc.financialCategoryName||'',valFin:valFin,
-          obra:bc.buildingName||'',uc:bc.buildingUnitName||'',
+          obra:obraFinal,uc:ucFinal,
           codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valObra,
           porBens:pag.operationTypeId===11});
       });
