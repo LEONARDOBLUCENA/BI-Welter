@@ -2053,17 +2053,47 @@ function mapearIncome(registro){
 }
 
 function mapearBankMovement(registro){
-  if(registro.operationType!=='S')return[];
-  var dataStr=registro.movementDate?registro.movementDate.substring(0,10):'';
+  // Só saídas (S) — entradas (E) não entram em Contas Pagas
+  if(registro.bankMovementOperationType!=='S')return[];
+  var dataStr=registro.bankMovementDate?registro.bankMovementDate.substring(0,10):'';
   var dp=parseDt(formatDt(dataStr));
-  var cc=(registro.costCenters&&registro.costCenters.length)?registro.costCenters[0].costCenterName||'':'';
-  var obra=(registro.buildings&&registro.buildings.length)?registro.buildings[0].buildingName||cc:cc;
-  var uc=(registro.buildings&&registro.buildings.length)?registro.buildings[0].buildingUnitName||'':'';
-  return[{data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
-    conta:registro.accountNumber||'',cc:cc,codFin:String(registro.financialCategoryId||''),
-    descFin:registro.financialCategoryName||registro.historicName||'',valFin:registro.amount||0,
-    obra:obra,uc:uc,codOrc:'',descOrc:'',valObra:registro.amount||0,
-    credor:registro.historicName||'',tipoOp:'Movimento Bancário',porBens:false}];
+  var conta=registro.accountNumber||'';
+  var credor=registro.creditorName||registro.clientName||registro.bankMovementHistoricName||'';
+  var finCats=registro.financialCategories||[];
+  var bldCosts=registro.buldingCosts||[]; // nome de campo assim mesmo (sem "i"), vem do Sienge
+  var resultado=[];
+
+  if(!finCats.length&&!bldCosts.length){
+    // Sem plano financeiro nem obra vinculada
+    resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+      conta:conta,cc:'',codFin:'',descFin:registro.bankMovementHistoricName||'',valFin:registro.bankMovementAmount||0,
+      obra:'',uc:'',codOrc:'',descOrc:'',valObra:0,
+      credor:credor,tipoOp:'Movimento Bancário',porBens:false});
+  } else if(!bldCosts.length){
+    // Só plano financeiro (financialCategories), sem obra — rateio por financialCategoryRate
+    finCats.forEach(function(fc){
+      var valFin=Math.round((registro.bankMovementAmount||0)*(fc.financialCategoryRate||100)/100*100)/100;
+      resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+        conta:conta,cc:fc.costCenterName||'',codFin:String(fc.financialCategoryId||''),
+        descFin:fc.financialCategoryName||'',valFin:valFin,
+        obra:fc.costCenterName||'',uc:'',codOrc:'',descOrc:'',valObra:0,
+        credor:credor,tipoOp:'Movimento Bancário',porBens:false});
+    });
+  } else {
+    // Tem obra (buldingCosts) — uma linha por obra, valor pelo rate
+    bldCosts.forEach(function(bc){
+      var rate=bc.rate||0;
+      var valFin=Math.round((registro.bankMovementAmount||0)*rate/100*100)/100;
+      var fcMatch=finCats.find(function(f){return f.costCenterId===bc.buildingId;})||finCats[0]||{};
+      resultado.push({data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+        conta:conta,cc:fcMatch.costCenterName||bc.buildingName||'',
+        codFin:String(fcMatch.financialCategoryId||''),descFin:fcMatch.financialCategoryName||'',valFin:valFin,
+        obra:bc.buildingName||'',uc:bc.buildingUnitName||'',
+        codOrc:bc.costEstimationSheetId||'',descOrc:bc.costEstimationSheetName||'',valObra:valFin,
+        credor:credor,tipoOp:'Movimento Bancário',porBens:false});
+    });
+  }
+  return resultado;
 }
 
 async function fetchSienge(url){
