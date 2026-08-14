@@ -2138,10 +2138,11 @@ async function executarSyncSienge(){
     setSiengeProgress(85,'Salvando...');
     var startDt=new Date(start);var endDt=new Date(end+'T23:59:59');
 
-    // Contas Pagas: remove período e insere (outcome + movimentos bancários)
+    // Contas Pagas: remove período (por data exata do registro) e insere (outcome + movimentos bancários)
     dados=dados.filter(function(d){
-      if(!d.ano||!d.mes)return true;
-      var dp=new Date(d.ano,d.mes-1,1);return dp<startDt||dp>endDt;
+      var dp=parseDt(d.data);
+      if(!dp)return true; // sem data reconhecível, mantém (não mexe)
+      return dp<startDt||dp>endDt;
     });
     dados=dados.concat(novosOut).concat(novosBM);
     fixEncodingArr(dados);
