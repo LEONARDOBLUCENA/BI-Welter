@@ -644,8 +644,9 @@ function setSel(id,vals,lbl){
 function sumUC(data,ucName,permuta){
   return data.filter(function(r){
     if(normUC(r.uc)!==ucName)return false;
-    if(permuta==='P'&&r.conta!=='REAPROPFIN')return false;
-    if(permuta==='C'&&r.conta==='REAPROPFIN')return false;
+    var isPermuta=r.conta==='REAPROPFIN'||r.porBens===true||(r.tipoOp&&(r.tipoOp==='Por Bens'||r.tipoOp==='Outros'));
+    if(permuta==='P'&&!isPermuta)return false;
+    if(permuta==='C'&&isPermuta)return false;
     return true;
   }).reduce(function(s,r){return s+r.valObra;},0);
 }
@@ -797,7 +798,7 @@ var FAT_COLORS=['#4a9e72','#4a7eb5','#b9945a','#7a6aaa','#b55a4a'];
 // STORAGE
 // ============================================================
 function salvar(){
-  try{var dc=[['data','ano','mes','conta','cc','codFin','descFin','valFin','obra','uc','codOrc','descOrc','valObra']];dados.forEach(function(r){dc.push([r.data,r.ano,r.mes,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra]);});localStorage.setItem('bi_d',JSON.stringify(dc));}catch(e){}
+  try{var dc=[['data','ano','mes','conta','cc','codFin','descFin','valFin','obra','uc','codOrc','descOrc','valObra','credor','tipoOp','porBens']];dados.forEach(function(r){dc.push([r.data,r.ano,r.mes,r.conta,r.cc,r.codFin,r.descFin,r.valFin,r.obra,r.uc,r.codOrc,r.descOrc,r.valObra,r.credor||'',r.tipoOp||'',r.porBens?1:0]);});localStorage.setItem('bi_d',JSON.stringify(dc));}catch(e){}
   try{localStorage.setItem('bi_dp',JSON.stringify(depara));}catch(e){}
   try{localStorage.setItem('bi_rec',JSON.stringify(recebidas));}catch(e){}
   try{localStorage.setItem('bi_ar',JSON.stringify(areceber));}catch(e){}
@@ -819,7 +820,7 @@ function fixDates(arr,isAR){
   });
 }
 function carregar(){
-  try{var d=localStorage.getItem('bi_d');if(d){var p=JSON.parse(d);if(Array.isArray(p)&&Array.isArray(p[0])){var h=p[0];dados=p.slice(1).map(function(r){var o={};h.forEach(function(k,i){o[k]=r[i];});return o;});}else{dados=p;}fixEncodingArr(dados);fixDadosDates(dados);}}catch(e){dados=[];}
+  try{var d=localStorage.getItem('bi_d');if(d){var p=JSON.parse(d);if(Array.isArray(p)&&Array.isArray(p[0])){var h=p[0];dados=p.slice(1).map(function(r){var o={};h.forEach(function(k,i){o[k]=r[i];});if(o.porBens!==undefined)o.porBens=o.porBens===1||o.porBens===true;return o;});}else{dados=p;}fixEncodingArr(dados);fixDadosDates(dados);}}catch(e){dados=[];}
   try{var dp=localStorage.getItem('bi_dp');if(dp)depara=JSON.parse(dp);}catch(e){depara=[];}
   try{var r=localStorage.getItem('bi_rec');if(r){recebidas=JSON.parse(r);fixDates(recebidas,false);}}catch(e){recebidas=[];}
   try{var a=localStorage.getItem('bi_ar');if(a){areceber=JSON.parse(a);fixDates(areceber,true);}}catch(e){areceber=[];}
