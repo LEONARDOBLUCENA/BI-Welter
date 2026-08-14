@@ -2053,29 +2053,17 @@ function mapearIncome(registro){
 }
 
 function mapearBankMovement(registro){
-  // Mapeia movimentos bancários avulsos (AV.SN) para Contas Pagas
-  var resultado=[];
+  if(registro.operationType!=='S')return[];
   var dataStr=registro.movementDate?registro.movementDate.substring(0,10):'';
   var dp=parseDt(formatDt(dataStr));
-  // Só saídas (operationType=S)
-  if(registro.operationType!=='S')return[];
   var cc=(registro.costCenters&&registro.costCenters.length)?registro.costCenters[0].costCenterName||'':'';
-  var obra=(registro.buildings&&registro.buildings.length)?registro.buildings[0].buildingName||cc:'';
+  var obra=(registro.buildings&&registro.buildings.length)?registro.buildings[0].buildingName||cc:cc;
   var uc=(registro.buildings&&registro.buildings.length)?registro.buildings[0].buildingUnitName||'':'';
-  resultado.push({
-    data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
-    conta:registro.accountNumber||'',cc:cc,
-    codFin:String(registro.financialCategoryId||''),
-    descFin:registro.financialCategoryName||registro.historicName||'',
-    valFin:registro.amount||0,
+  return[{data:formatDt(dataStr),ano:dp?dp.getFullYear():null,mes:dp?dp.getMonth()+1:null,
+    conta:registro.accountNumber||'',cc:cc,codFin:String(registro.financialCategoryId||''),
+    descFin:registro.financialCategoryName||registro.historicName||'',valFin:registro.amount||0,
     obra:obra,uc:uc,codOrc:'',descOrc:'',valObra:registro.amount||0,
-    credor:registro.historicName||'',tipoOp:'Movimento Bancário',porBens:false
-  });
-  return resultado;
-}
-  var resp=await fetch(url,{headers:{'Accept':'application/json'}});
-  if(!resp.ok){var e=await resp.json().catch(function(){return{};});throw new Error(e.error||resp.status);}
-  return resp.json();
+    credor:registro.historicName||'',tipoOp:'Movimento Bancário',porBens:false}];
 }
 
 async function fetchSienge(url){
@@ -2092,26 +2080,25 @@ async function executarSyncSienge(){
     showMsg('siengeMsg','Informe as datas.','warn');return;
   }
   function toISO(d){var p=d.split('/');return p.length===3?p[2]+'-'+p[1]+'-'+p[0]:d;}
-  var start=toISO(startRaw);
-  var end=toISO(endRaw);
+  var start=toISO(startRaw);var end=toISO(endRaw);
   var btn=document.getElementById('btnSiengeExec');
   btn.disabled=true;btn.innerHTML='Sincronizando...';
   document.getElementById('siengeMsg').style.display='none';
 
   try{
-    // PASSO 1 — Contas Pagas (/outcome)
+    // PASSO 1 — Contas Pagas
     setSiengeProgress(10,'1/3 — Buscando Contas Pagas...');
     var jsonOut=await fetchSienge(SIENGE.proxy+'/sienge/outcome?start='+start+'&end='+end);
     var novosOut=[];
     (jsonOut.data||[]).forEach(function(r){novosOut=novosOut.concat(mapearOutcome(r));});
 
-    // PASSO 2 — Contas a Receber (/income)
+    // PASSO 2 — Contas a Receber
     setSiengeProgress(40,'2/3 — Buscando Contas a Receber...');
     var jsonInc=await fetchSienge(SIENGE.proxy+'/sienge/income?start='+start+'&end='+end);
     var novosAR=[];
     (jsonInc.data||[]).forEach(function(r){novosAR=novosAR.concat(mapearIncome(r));});
 
-    // PASSO 3 — Movimentos bancários avulsos (/bank-movement)
+    // PASSO 3 — Movimentos bancários avulsos
     setSiengeProgress(65,'3/3 — Buscando Movimentos Bancários...');
     var jsonBM=await fetchSienge(SIENGE.proxy+'/sienge/bank-movement?start='+start+'&end='+end);
     var novosBM=[];
