@@ -2025,29 +2025,48 @@ function mapearOutcome(registro){
 }
 
 function mapearIncome(registro){
-  // Mapeia /income para o formato de Contas Recebidas
+  // Mapeia /income para o formato de Contas a Receber
   var resultado=[];
+  var payCategs=registro.paymentsCategories||[];
+  var cc=payCategs.length?(payCategs[0].costCenterName||''):'';
+
+  // Caminho 1: registro com baixa (payments[]) — parcela já recebida dentro do range
   var payments=(registro.payments||[]).filter(function(p){
-    // Só baixas reais: Recebimento(1), Por Bens(11), Outros tipos válidos
     return p.operationTypeId===1||p.operationTypeId===11||p.operationTypeId===2;
   });
-  if(!payments.length)return[];
-  payments.forEach(function(pag){
-    var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
-    var payCategs=registro.paymentsCategories||[];
-    var cc=payCategs.length?(payCategs[0].costCenterName||''):'';
-    var codCond=registro.conditionTypeId||'';
-    var tipoBaixa=pag.operationTypeName||'Recebimento';
-    var titulo=String(registro.billId||'');
-    resultado.push({
-      obra:cc,
-      cliente:registro.customerName||registro.creditorName||'',
-      dtBaixa:formatDt(dataStr),
-      codCond:codCond,
-      tipoBaixa:tipoBaixa,
-      liquido:pag.netAmount||0,
-      titulo:titulo
+  if(payments.length){
+    payments.forEach(function(pag){
+      var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
+      resultado.push({
+        obra:cc,
+        cliente:registro.customerName||registro.creditorName||'',
+        dtBaixa:formatDt(dataStr),
+        codCond:registro.conditionTypeId||'',
+        tipoBaixa:pag.operationTypeName||'Recebimento',
+        liquido:pag.netAmount||0,
+        titulo:String(registro.billId||'')
+      });
     });
+    return resultado;
+  }
+
+  // Caminho 2: parcela EM ABERTO (sem baixa) — usa vencimento/saldo do próprio título
+  // Tenta variações comuns de nome de campo do Sienge, na falta de payload real para confirmar
+  var dueRaw=registro.dueDate||registro.installmentDueDate||registro.billDueDate||registro.dtVencto||'';
+  var dueStr=dueRaw?String(dueRaw).substring(0,10):'';
+  var valor=registro.balanceAmount!=null?registro.balanceAmount:
+            (registro.correctedBalanceAmount!=null?registro.correctedBalanceAmount:
+            (registro.originalAmount!=null?registro.originalAmount:
+            (registro.netAmount||0)));
+  if(!dueStr)return[]; // sem data de vencimento reconhecível, não dá pra classificar inadimplência
+  resultado.push({
+    obra:cc,
+    cliente:registro.customerName||registro.creditorName||'',
+    dtBaixa:formatDt(dueStr), // aqui representa VENCIMENTO (parcela em aberto), usado por fixDates p/ inadimplência
+    codCond:registro.conditionTypeId||'',
+    tipoBaixa:'Em Aberto',
+    liquido:valor,
+    titulo:String(registro.billId||registro.installmentId||'')
   });
   return resultado;
 }
