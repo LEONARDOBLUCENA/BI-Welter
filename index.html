@@ -2031,76 +2031,48 @@ function firstNonEmpty(){
   }
   return '';
 }
-function extrairObraIncome(registro){
-  // Testa os nomes de array de categoria/centro de custo mais prováveis, na ordem
-  var candidatos=[registro.paymentsCategories,registro.installmentsCategories,
-    registro.categories,registro.financialCategories,registro.costCenters];
-  for(var i=0;i<candidatos.length;i++){
-    var arr=candidatos[i];
-    if(arr&&arr.length){
-      var c=arr[0];
-      var nome=firstNonEmpty(c.costCenterName,c.buildingName,c.name);
-      if(nome)return nome;
-    }
-  }
-  return '';
-}
-function extrairClienteIncome(registro){
-  var direto=firstNonEmpty(registro.customerName,registro.clientName,registro.payerName,
-    registro.debtorName,registro.creditorName);
-  if(direto)return direto;
-  // Testa arrays de cliente/pagador mais prováveis
-  var candidatos=[registro.customers,registro.clients,registro.payers,registro.debtors];
-  for(var i=0;i<candidatos.length;i++){
-    var arr=candidatos[i];
-    if(arr&&arr.length){
-      var c=arr[0];
-      var nome=firstNonEmpty(c.customerName,c.clientName,c.payerName,c.debtorName,c.name);
-      if(nome)return nome;
-    }
-  }
-  return '';
-}
 function mapearIncome(registro){
-  // Mapeia /income para o formato de Contas a Receber
-  var resultado=[];
-  var cc=extrairObraIncome(registro);
-  var cliente=extrairClienteIncome(registro);
+  // Mapeia /income para Contas a Receber — nomes de campo confirmados via BI Rossa
+  var OP_ACEITA=[1,2,11]; // Pagamento, Outros, Por Bens
+  var pays=registro.payments||[];
+  // Se já tem histórico de pagamento mas nenhum é de tipo aceito (ex: só Cancelamento), descarta
+  if(pays.length&&!pays.some(function(p){return OP_ACEITA.indexOf(p.operationTypeId)!==-1;}))return[];
 
-  // Caminho 1: registro com baixa (payments[]) — parcela já recebida dentro do range
-  var payments=(registro.payments||[]).filter(function(p){
-    return p.operationTypeId===1||p.operationTypeId===11||p.operationTypeId===2;
-  });
-  if(payments.length){
-    payments.forEach(function(pag){
-      var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
+  var cliente=firstNonEmpty(registro.clientName,registro.customerName,registro.creditorName);
+  var dueStr=registro.dueDate?String(registro.dueDate).substring(0,10):'';
+  if(!dueStr)return[]; // sem vencimento não dá pra classificar inadimplência
+
+  var saldo=firstNonEmpty(registro.balanceAmount,registro.correctedBalanceAmount)||0;
+  var titulo=registro.documentNumber||((registro.billId||'')+'-'+(registro.installmentId||''));
+  var categs=registro.receiptsCategories||registro.paymentsCategories||[];
+  var resultado=[];
+
+  if(!categs.length){
+    resultado.push({
+      obra:'',
+      cliente:cliente,
+      dtBaixa:formatDt(dueStr), // representa VENCIMENTO aqui, usado por fixDates p/ inadimplência
+      codCond:registro.conditionTypeId||'',
+      tipoBaixa:'Em Aberto',
+      liquido:saldo,
+      titulo:String(titulo),
+      siengeId:(registro.billId||'')+'-'+(registro.installmentId||'')+'-0'
+    });
+  } else {
+    categs.forEach(function(c,idx){
+      var valor=Math.round(saldo*(c.financialCategoryRate||100)/100*100)/100;
       resultado.push({
-        obra:cc,
+        obra:c.costCenterName||'',
         cliente:cliente,
-        dtBaixa:formatDt(dataStr),
+        dtBaixa:formatDt(dueStr),
         codCond:registro.conditionTypeId||'',
-        tipoBaixa:pag.operationTypeName||'Recebimento',
-        liquido:pag.netAmount||0,
-        titulo:String(registro.billId||'')
+        tipoBaixa:'Em Aberto',
+        liquido:valor,
+        titulo:String(titulo),
+        siengeId:(registro.billId||'')+'-'+(registro.installmentId||'')+'-'+idx
       });
     });
-    return resultado;
   }
-
-  // Caminho 2: parcela EM ABERTO (sem baixa) — usa vencimento/saldo do próprio título
-  var dueStr=firstNonEmpty(registro.dueDate,registro.installmentDueDate,registro.billDueDate,registro.dtVencto);
-  dueStr=dueStr?String(dueStr).substring(0,10):'';
-  var valor=firstNonEmpty(registro.balanceAmount,registro.correctedBalanceAmount,registro.originalAmount,registro.netAmount)||0;
-  if(!dueStr)return[]; // sem data de vencimento reconhecível, não dá pra classificar inadimplência
-  resultado.push({
-    obra:cc,
-    cliente:cliente,
-    dtBaixa:formatDt(dueStr), // aqui representa VENCIMENTO (parcela em aberto), usado por fixDates p/ inadimplência
-    codCond:registro.conditionTypeId||'',
-    tipoBaixa:'Em Aberto',
-    liquido:valor,
-    titulo:String(registro.billId||registro.installmentId||'')
-  });
   return resultado;
 }
 
@@ -2177,6 +2149,7 @@ async function executarSyncSienge(){
     // PASSO 2 — Contas a Receber
     setSiengeProgress(40,'2/3 — Buscando Contas a Receber...');
     var jsonInc=await fetchSienge(SIENGE.proxy+'/sienge/income?start='+start+'&end='+end);
+    window.__siengeDebugIncome=jsonInc; // debug: acesse no console após o sync
     var novosAR=[];
     (jsonInc.data||[]).forEach(function(r){novosAR=novosAR.concat(mapearIncome(r));});
 
