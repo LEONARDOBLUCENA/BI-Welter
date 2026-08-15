@@ -2024,11 +2024,48 @@ function mapearOutcome(registro){
   return resultado;
 }
 
+function firstNonEmpty(){
+  for(var i=0;i<arguments.length;i++){
+    var v=arguments[i];
+    if(v!==undefined&&v!==null&&v!=='')return v;
+  }
+  return '';
+}
+function extrairObraIncome(registro){
+  // Testa os nomes de array de categoria/centro de custo mais prováveis, na ordem
+  var candidatos=[registro.paymentsCategories,registro.installmentsCategories,
+    registro.categories,registro.financialCategories,registro.costCenters];
+  for(var i=0;i<candidatos.length;i++){
+    var arr=candidatos[i];
+    if(arr&&arr.length){
+      var c=arr[0];
+      var nome=firstNonEmpty(c.costCenterName,c.buildingName,c.name);
+      if(nome)return nome;
+    }
+  }
+  return '';
+}
+function extrairClienteIncome(registro){
+  var direto=firstNonEmpty(registro.customerName,registro.clientName,registro.payerName,
+    registro.debtorName,registro.creditorName);
+  if(direto)return direto;
+  // Testa arrays de cliente/pagador mais prováveis
+  var candidatos=[registro.customers,registro.clients,registro.payers,registro.debtors];
+  for(var i=0;i<candidatos.length;i++){
+    var arr=candidatos[i];
+    if(arr&&arr.length){
+      var c=arr[0];
+      var nome=firstNonEmpty(c.customerName,c.clientName,c.payerName,c.debtorName,c.name);
+      if(nome)return nome;
+    }
+  }
+  return '';
+}
 function mapearIncome(registro){
   // Mapeia /income para o formato de Contas a Receber
   var resultado=[];
-  var payCategs=registro.paymentsCategories||[];
-  var cc=payCategs.length?(payCategs[0].costCenterName||''):'';
+  var cc=extrairObraIncome(registro);
+  var cliente=extrairClienteIncome(registro);
 
   // Caminho 1: registro com baixa (payments[]) — parcela já recebida dentro do range
   var payments=(registro.payments||[]).filter(function(p){
@@ -2039,7 +2076,7 @@ function mapearIncome(registro){
       var dataStr=pag.paymentDate?pag.paymentDate.substring(0,10):'';
       resultado.push({
         obra:cc,
-        cliente:registro.customerName||registro.creditorName||'',
+        cliente:cliente,
         dtBaixa:formatDt(dataStr),
         codCond:registro.conditionTypeId||'',
         tipoBaixa:pag.operationTypeName||'Recebimento',
@@ -2051,17 +2088,13 @@ function mapearIncome(registro){
   }
 
   // Caminho 2: parcela EM ABERTO (sem baixa) — usa vencimento/saldo do próprio título
-  // Tenta variações comuns de nome de campo do Sienge, na falta de payload real para confirmar
-  var dueRaw=registro.dueDate||registro.installmentDueDate||registro.billDueDate||registro.dtVencto||'';
-  var dueStr=dueRaw?String(dueRaw).substring(0,10):'';
-  var valor=registro.balanceAmount!=null?registro.balanceAmount:
-            (registro.correctedBalanceAmount!=null?registro.correctedBalanceAmount:
-            (registro.originalAmount!=null?registro.originalAmount:
-            (registro.netAmount||0)));
+  var dueStr=firstNonEmpty(registro.dueDate,registro.installmentDueDate,registro.billDueDate,registro.dtVencto);
+  dueStr=dueStr?String(dueStr).substring(0,10):'';
+  var valor=firstNonEmpty(registro.balanceAmount,registro.correctedBalanceAmount,registro.originalAmount,registro.netAmount)||0;
   if(!dueStr)return[]; // sem data de vencimento reconhecível, não dá pra classificar inadimplência
   resultado.push({
     obra:cc,
-    cliente:registro.customerName||registro.creditorName||'',
+    cliente:cliente,
     dtBaixa:formatDt(dueStr), // aqui representa VENCIMENTO (parcela em aberto), usado por fixDates p/ inadimplência
     codCond:registro.conditionTypeId||'',
     tipoBaixa:'Em Aberto',
@@ -2168,6 +2201,7 @@ async function executarSyncSienge(){
 
     // Contas a Receber: substitui completamente (snapshot atual)
     areceber=novosAR;
+    fixDates(areceber,true); // calcula ano/mes/inadimplente a partir de dtBaixa (vencimento)
 
     salvar();
     updateHdr();setSel('fAno',anos(dados),'Todos');
