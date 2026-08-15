@@ -2024,6 +2024,9 @@ function mapearOutcome(registro){
   return resultado;
 }
 
+function normCC(s){
+  return s?String(s).trim():''; // só trim — NÃO uppercase, pra não quebrar o match com Contas Pagas/Recebidas
+}
 function firstNonEmpty(){
   for(var i=0;i<arguments.length;i++){
     var v=arguments[i];
@@ -2062,7 +2065,7 @@ function mapearIncome(registro){
     categs.forEach(function(c,idx){
       var valor=Math.round(saldo*(c.financialCategoryRate||100)/100*100)/100;
       resultado.push({
-        obra:c.costCenterName||'',
+        obra:normCC(c.costCenterName),
         cliente:cliente,
         dtBaixa:formatDt(dueStr),
         codCond:registro.conditionTypeId||'',
