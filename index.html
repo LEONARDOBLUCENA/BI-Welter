@@ -510,45 +510,11 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
     </div>
   </div>
 
-  <!-- Gráfico de Saldo Acumulado -->
-  <div class="card">
-    <div class="ct">
-      <span>Saldo de Caixa Acumulado</span>
-      <span style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;font-size:10px;">Linha tracejada = R$ 0 · trechos em vermelho indicam caixa projetado negativo</span>
-    </div>
-    <div class="chart-wrap" style="height:300px;"><canvas id="fluxoSaldoChart"></canvas></div>
-  </div>
-
-  <!-- Tabela resumida -->
+  <!-- Tabela -->
   <div class="card" style="padding:0;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">
-      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção</span>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-sm" id="btnFluxoToggle" onclick="toggleFluxoDetalhado()">&#128269; Ver detalhamento completo</button>
-        <button class="btn btn-sm" onclick="exportFluxo()">&#8595; Exportar Excel</button>
-      </div>
-    </div>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead>
-          <tr style="background:var(--bg3);">
-            <th style="padding:10px 12px;text-align:left;color:var(--accent);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;border-bottom:1px solid var(--gold);white-space:nowrap;">Período</th>
-            <th style="padding:10px 12px;text-align:right;color:var(--green);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Total Faturamento</th>
-            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Total Custo</th>
-            <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;color:var(--accent2);">Saldo do Mês</th>
-            <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;color:var(--accent2);">Saldo Acumulado</th>
-          </tr>
-        </thead>
-        <tbody id="tbFluxoBodySimple"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Tabela detalhada (modo avançado) -->
-  <div class="card" id="fluxoDetalhadoWrap" style="padding:0;display:none;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);">
-      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção — Detalhamento Completo</span>
-      <span style="font-size:10px;color:var(--text3);">Todas as variáveis do cálculo, mês a mês</span>
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção</span>
+      <button class="btn btn-sm" onclick="exportFluxo()">&#8595; Exportar Excel</button>
     </div>
     <div style="overflow-x:auto;">
       <table id="tbFluxo" style="width:100%;border-collapse:collapse;font-size:11px;min-width:1100px;">
@@ -1938,78 +1904,6 @@ function renderFluxo(){
       +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
       +'</tr>';
   }).join('');
-
-  // ── Tabela resumida (colunas essenciais) ──
-  var bodySimple=document.getElementById('tbFluxoBodySimple');
-  if(bodySimple){
-    bodySimple.innerHTML=rows.map(function(r){
-      var acCl=r.saldoAcum>=0?'fc-acum-pos':'fc-acum-neg';
-      return'<tr>'
-        +'<td>'+r.label+'</td>'
-        +'<td style="text-align:right">'+fRev(r.totalFat)+'</td>'
-        +'<td style="text-align:right">'+fCost(r.totalCusto)+'</td>'
-        +'<td style="text-align:right">'+fC(r.saldoMes)+'</td>'
-        +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
-        +'</tr>';
-    }).join('');
-  }
-
-  // ── Gráfico de saldo acumulado (linha/área, com destaque vermelho quando negativo) ──
-  var chartEl=document.getElementById('fluxoSaldoChart');
-  if(chartEl&&typeof Chart!=='undefined'){
-    if(window._fluxoSaldoChart)window._fluxoSaldoChart.destroy();
-    var GREEN='#1A7A3C', RED='#922B21';
-    window._fluxoSaldoChart=new Chart(chartEl,{
-      type:'line',
-      data:{
-        labels:rows.map(function(r){return r.label;}),
-        datasets:[
-          {
-            label:'Saldo Acumulado',
-            data:rows.map(function(r){return r.saldoAcum;}),
-            borderWidth:2,
-            pointRadius:0,
-            pointHoverRadius:4,
-            tension:0.15,
-            fill:{target:'origin'},
-            backgroundColor:'rgba(26,122,60,0.08)',
-            segment:{
-              borderColor:function(ctx){return(ctx.p0.parsed.y<0||ctx.p1.parsed.y<0)?RED:GREEN;}
-            },
-            pointBackgroundColor:function(ctx){return ctx.parsed&&ctx.parsed.y<0?RED:GREEN;}
-          },
-          {
-            label:'Referência R$ 0',
-            data:rows.map(function(){return 0;}),
-            borderColor:'#9E8E7A',
-            borderDash:[5,5],
-            borderWidth:1,
-            pointRadius:0,
-            fill:false
-          }
-        ]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{mode:'index',intersect:false,callbacks:{label:function(c){return(c.dataset.label?c.dataset.label+': ':'')+fBRL(c.parsed.y);}}}
-        },
-        scales:{
-          x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#4a4744',font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:24}},
-          y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#4a4744',font:{size:10},callback:function(v){return v>=1e6||v<=-1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3||v<=-1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
-        }
-      }
-    });
-  }
-}
-function toggleFluxoDetalhado(){
-  var wrap=document.getElementById('fluxoDetalhadoWrap');
-  var btn=document.getElementById('btnFluxoToggle');
-  if(!wrap)return;
-  var open=wrap.style.display!=='none';
-  wrap.style.display=open?'none':'block';
-  if(btn)btn.innerHTML=open?'&#128269; Ver detalhamento completo':'&#10005; Ocultar detalhamento completo';
 }
 function exportFluxo(){
   var header=['Período','Fat. L\'Adret','Fat. Monte Sollaro','Fat. Lavi','Total Faturamento',
