@@ -100,10 +100,20 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 .badge-r{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--red-light);color:var(--red);}
 /* CHART COLORS */
 .chart-wrap{position:relative;width:100%;height:260px;}
+/* HEADER ACTIONS (responsive) */
+.hdr-kebab{display:none;font-size:16px;line-height:1;padding:6px 10px;}
+.hdr-actions{display:flex;gap:8px;align-items:center;}
+
 /* MOBILE */
 @media(max-width:768px){
   aside{display:none;}
   main{padding:16px 16px 80px;}
+  header{padding:0 12px;}
+  .logo-sub{display:none;}
+  .hdr-kebab{display:inline-flex;}
+  .hdr-actions{display:none;position:absolute;top:56px;right:10px;left:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 8px 24px rgba(0,0,0,.18);padding:10px;z-index:400;flex-direction:column;align-items:stretch;gap:8px;}
+  .hdr-actions.open{display:flex;}
+  .hdr-actions .btn{width:100%;justify-content:center;}
   .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:300;box-shadow:0 -2px 8px rgba(0,0,0,.08);}
   .mn-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:var(--text2);cursor:pointer;border:none;background:none;font-family:var(--font);gap:3px;}
   .mn-btn.active{color:var(--accent);}
@@ -160,38 +170,41 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
   <div class="logo">
     <span class="logo-name">Welter</span>
     <div class="logo-sep"></div>
-    <span class="logo-sub">Dashboard Executivo</span>
+    <span class="logo-sub" id="hdrPageTitle">Dashboard de Obra</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <span id="hdrRec" style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(185,148,90,0.1);color:var(--accent);border:1px solid var(--gold);display:none;"></span>
-    <span id="saveInd" style="font-size:10px;padding:3px 10px;border-radius:20px;display:none;"></span>
-    <button class="btn btn-sm" onclick="salvarSessao()">&#8595; Salvar</button>
-    <button class="btn btn-sm" onclick="document.getElementById('loadFile').click()">&#8593; Carregar</button>
-    <input type="file" id="loadFile" accept=".json" style="display:none" onchange="carregarSessao(this)">
-    <button class="btn btn-sm" onclick="abrirNuvem()" title="Nuvem">&#9729; Nuvem</button>
-    <button class="btn btn-sm" id="btnSiengeHdr" onclick="abrirSienge()" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;">&#8635; Sync Sienge</button>
+    <span id="hdrRec" class="hdr-badge" style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(185,148,90,0.1);color:var(--accent);border:1px solid var(--gold);display:none;"></span>
+    <button class="btn btn-sm hdr-kebab" id="hdrKebab" onclick="toggleHdrActions()" title="Mais ações">&#8942;</button>
+    <div class="hdr-actions" id="hdrActions">
+      <span id="saveInd" style="font-size:10px;padding:3px 10px;border-radius:20px;display:none;"></span>
+      <button class="btn btn-sm" onclick="salvarSessao()">&#8595; Salvar</button>
+      <button class="btn btn-sm" onclick="document.getElementById('loadFile').click()">&#8593; Carregar</button>
+      <input type="file" id="loadFile" accept=".json" style="display:none" onchange="carregarSessao(this)">
+      <button class="btn btn-sm" onclick="abrirNuvem()" title="Nuvem">&#9729; Nuvem</button>
+      <button class="btn btn-sm" id="btnSiengeHdr" onclick="abrirSienge()" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;">&#8635; Sync Sienge</button>
+    </div>
   </div>
 </header>
 
 <div class="layout">
 <aside>
-  <div class="ns">Dados</div>
-  <div class="ni active" id="tab0" onclick="goTab(0)"><span class="ni-icon">&#128203;</span><span class="ni-label">Contas Pagas</span></div>
+  <div class="ns">Área de Gestão</div>
+  <div class="ni" id="tab7" onclick="goTab(7)"><span class="ni-icon">&#11088;</span><span class="ni-label">Dashboard Executivo</span></div>
+  <div class="ni active" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#127959;</span><span class="ni-label">Dashboard Obra</span></div>
+  <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Operacional</span></div>
+  <div class="ni" id="tab9" onclick="goTab(9)"><span class="ni-icon">&#128181;</span><span class="ni-label">Fluxo de Caixa</span></div>
+  <div class="nd"></div>
+  <div class="ns">Área de Importação de Dados</div>
+  <div class="ni" id="tab0" onclick="goTab(0)"><span class="ni-icon">&#128203;</span><span class="ni-label">Contas Pagas</span></div>
   <div class="ni" id="tab2" onclick="goTab(2)"><span class="ni-icon">&#9989;</span><span class="ni-label">Contas Recebidas</span></div>
   <div class="ni" id="tab3" onclick="goTab(3)"><span class="ni-icon">&#128197;</span><span class="ni-label">Contas a Receber</span></div>
   <div class="ni" id="tab4" onclick="goTab(4)"><span class="ni-icon">&#128196;</span><span class="ni-label">Orcamento de Obra</span></div>
   <div class="ni" id="tab8" onclick="goTab(8)"><span class="ni-icon">&#128230;</span><span class="ni-label">Estoque</span></div>
-  <div class="nd"></div>
-  <div class="ns">Dashboards</div>
-  <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Operacional</span></div>
-  <div class="ni" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#127959;</span><span class="ni-label">Dashboard Obra</span></div>
-  <div class="ni" id="tab7" onclick="goTab(7)"><span class="ni-icon">&#11088;</span><span class="ni-label">Dashboard Executivo</span></div>
-  <div class="ni" id="tab9" onclick="goTab(9)"><span class="ni-icon">&#128181;</span><span class="ni-label">Fluxo de Caixa</span></div>
 </aside>
 
 <main>
 <!-- P0: CONTAS PAGAS -->
-<div class="page active" id="page0">
+<div class="page" id="page0">
   <div class="st">Contas Pagas</div>
   <div class="sd">Cole dados do Excel com cabecalho. Cada colagem adiciona aos registros.</div>
   <div class="card">
@@ -360,7 +373,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 </div>
 
 <!-- P6: DASHBOARD OBRA -->
-<div class="page" id="page6">
+<div class="page active" id="page6">
   <div class="st">Dashboard de Obra</div>
   <div class="sd">Obras: L'adret, Monte Sollaro, Lavi, You, Le Monde.</div>
   <div id="obraEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
@@ -497,11 +510,45 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
     </div>
   </div>
 
-  <!-- Tabela -->
+  <!-- Gráfico de Saldo Acumulado -->
+  <div class="card">
+    <div class="ct">
+      <span>Saldo de Caixa Acumulado</span>
+      <span style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;font-size:10px;">Linha tracejada = R$ 0 · trechos em vermelho indicam caixa projetado negativo</span>
+    </div>
+    <div class="chart-wrap" style="height:300px;"><canvas id="fluxoSaldoChart"></canvas></div>
+  </div>
+
+  <!-- Tabela resumida -->
   <div class="card" style="padding:0;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">
       <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção</span>
-      <button class="btn btn-sm" onclick="exportFluxo()">&#8595; Exportar Excel</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" id="btnFluxoToggle" onclick="toggleFluxoDetalhado()">&#128269; Ver detalhamento completo</button>
+        <button class="btn btn-sm" onclick="exportFluxo()">&#8595; Exportar Excel</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:var(--bg3);">
+            <th style="padding:10px 12px;text-align:left;color:var(--accent);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;border-bottom:1px solid var(--gold);white-space:nowrap;">Período</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--green);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Total Faturamento</th>
+            <th style="padding:10px 12px;text-align:right;color:var(--red);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;">Total Custo</th>
+            <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;color:var(--accent2);">Saldo do Mês</th>
+            <th style="padding:10px 12px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;border-bottom:1px solid var(--gold);white-space:nowrap;color:var(--accent2);">Saldo Acumulado</th>
+          </tr>
+        </thead>
+        <tbody id="tbFluxoBodySimple"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tabela detalhada (modo avançado) -->
+  <div class="card" id="fluxoDetalhadoWrap" style="padding:0;display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:var(--accent);">Projeção — Detalhamento Completo</span>
+      <span style="font-size:10px;color:var(--text3);">Todas as variáveis do cálculo, mês a mês</span>
     </div>
     <div style="overflow-x:auto;">
       <table id="tbFluxo" style="width:100%;border-collapse:collapse;font-size:11px;min-width:1100px;">
@@ -766,6 +813,7 @@ function getMsdVals(id){
 // Close dropdowns on outside click
 document.addEventListener('click',function(e){
   if(!e.target.closest('.msd'))document.querySelectorAll('.msd.open').forEach(function(m){m.classList.remove('open');});
+  if(!e.target.closest('.hdr-actions')&&!e.target.closest('.hdr-kebab'))closeHdrActions();
 });
 // Legacy compat: getSelVals now delegates to getMsdVals when msd exists, else native select
 function getSelVals(id){
@@ -857,6 +905,7 @@ function carregarSessao(input){
 // TABS
 // ============================================================
 var TABS=[0,2,3,4,5,6,7,8,9];
+var TAB_TITLES={0:'Contas Pagas',2:'Contas Recebidas',3:'Contas a Receber',4:'Orçamento de Obra',5:'Dashboard Operacional',6:'Dashboard de Obra',7:'Dashboard Executivo',8:'Estoque',9:'Fluxo de Caixa'};
 function goTab(i){
   TABS.forEach(function(j){
     var t=document.getElementById('tab'+j);var p=document.getElementById('page'+j);
@@ -864,11 +913,22 @@ function goTab(i){
     if(p)p.classList.toggle('active',i===j);
   });
   [5,6,7].forEach(function(t){var el=document.getElementById('mnTab'+t);if(el)el.classList.toggle('active',i===t);});
+  var hdrTitle=document.getElementById('hdrPageTitle');
+  if(hdrTitle)hdrTitle.textContent=TAB_TITLES[i]||'Welter';
+  closeHdrActions();
   if(i===5)renderAdm();
   if(i===6)renderObra();
   if(i===7)renderExec();
   if(i===8)renderEstoque();
   if(i===9)renderFluxo();
+}
+function toggleHdrActions(){
+  var el=document.getElementById('hdrActions');
+  if(el)el.classList.toggle('open');
+}
+function closeHdrActions(){
+  var el=document.getElementById('hdrActions');
+  if(el)el.classList.remove('open');
 }
 
 // ============================================================
@@ -1878,6 +1938,78 @@ function renderFluxo(){
       +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
       +'</tr>';
   }).join('');
+
+  // ── Tabela resumida (colunas essenciais) ──
+  var bodySimple=document.getElementById('tbFluxoBodySimple');
+  if(bodySimple){
+    bodySimple.innerHTML=rows.map(function(r){
+      var acCl=r.saldoAcum>=0?'fc-acum-pos':'fc-acum-neg';
+      return'<tr>'
+        +'<td>'+r.label+'</td>'
+        +'<td style="text-align:right">'+fRev(r.totalFat)+'</td>'
+        +'<td style="text-align:right">'+fCost(r.totalCusto)+'</td>'
+        +'<td style="text-align:right">'+fC(r.saldoMes)+'</td>'
+        +'<td style="text-align:right"><span class="'+acCl+'">'+fBRL(r.saldoAcum)+'</span></td>'
+        +'</tr>';
+    }).join('');
+  }
+
+  // ── Gráfico de saldo acumulado (linha/área, com destaque vermelho quando negativo) ──
+  var chartEl=document.getElementById('fluxoSaldoChart');
+  if(chartEl&&typeof Chart!=='undefined'){
+    if(window._fluxoSaldoChart)window._fluxoSaldoChart.destroy();
+    var GREEN='#1A7A3C', RED='#922B21';
+    window._fluxoSaldoChart=new Chart(chartEl,{
+      type:'line',
+      data:{
+        labels:rows.map(function(r){return r.label;}),
+        datasets:[
+          {
+            label:'Saldo Acumulado',
+            data:rows.map(function(r){return r.saldoAcum;}),
+            borderWidth:2,
+            pointRadius:0,
+            pointHoverRadius:4,
+            tension:0.15,
+            fill:{target:'origin'},
+            backgroundColor:'rgba(26,122,60,0.08)',
+            segment:{
+              borderColor:function(ctx){return(ctx.p0.parsed.y<0||ctx.p1.parsed.y<0)?RED:GREEN;}
+            },
+            pointBackgroundColor:function(ctx){return ctx.parsed&&ctx.parsed.y<0?RED:GREEN;}
+          },
+          {
+            label:'Referência R$ 0',
+            data:rows.map(function(){return 0;}),
+            borderColor:'#9E8E7A',
+            borderDash:[5,5],
+            borderWidth:1,
+            pointRadius:0,
+            fill:false
+          }
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{mode:'index',intersect:false,callbacks:{label:function(c){return(c.dataset.label?c.dataset.label+': ':'')+fBRL(c.parsed.y);}}}
+        },
+        scales:{
+          x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#4a4744',font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:24}},
+          y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#4a4744',font:{size:10},callback:function(v){return v>=1e6||v<=-1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3||v<=-1e3?'R$'+Math.round(v/1e3)+'k':'R$'+v;}}}
+        }
+      }
+    });
+  }
+}
+function toggleFluxoDetalhado(){
+  var wrap=document.getElementById('fluxoDetalhadoWrap');
+  var btn=document.getElementById('btnFluxoToggle');
+  if(!wrap)return;
+  var open=wrap.style.display!=='none';
+  wrap.style.display=open?'none':'block';
+  if(btn)btn.innerHTML=open?'&#128269; Ver detalhamento completo':'&#10005; Ocultar detalhamento completo';
 }
 function exportFluxo(){
   var header=['Período','Fat. L\'Adret','Fat. Monte Sollaro','Fat. Lavi','Total Faturamento',
@@ -1946,6 +2078,7 @@ function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
   renderDados();renderRec();renderAR();renderTitCC();renderOrc();renderEstoque();
   renderAdm();renderObra();renderExec();carregarFluxoConfig();renderFluxo();
+  goTab(6);
 }
 // ============================================================
 // INTEGRAÇÃO SIENGE API — SYNC UNIFICADO
