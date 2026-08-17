@@ -100,20 +100,10 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 .badge-r{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--red-light);color:var(--red);}
 /* CHART COLORS */
 .chart-wrap{position:relative;width:100%;height:260px;}
-/* HEADER ACTIONS (responsive) */
-.hdr-kebab{display:none;font-size:16px;line-height:1;padding:6px 10px;}
-.hdr-actions{display:flex;gap:8px;align-items:center;}
-
 /* MOBILE */
 @media(max-width:768px){
   aside{display:none;}
   main{padding:16px 16px 80px;}
-  header{padding:0 12px;}
-  .logo-sub{display:none;}
-  .hdr-kebab{display:inline-flex;}
-  .hdr-actions{display:none;position:absolute;top:56px;right:10px;left:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 8px 24px rgba(0,0,0,.18);padding:10px;z-index:400;flex-direction:column;align-items:stretch;gap:8px;}
-  .hdr-actions.open{display:flex;}
-  .hdr-actions .btn{width:100%;justify-content:center;}
   .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:300;box-shadow:0 -2px 8px rgba(0,0,0,.08);}
   .mn-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:var(--text2);cursor:pointer;border:none;background:none;font-family:var(--font);gap:3px;}
   .mn-btn.active{color:var(--accent);}
@@ -170,41 +160,38 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
   <div class="logo">
     <span class="logo-name">Welter</span>
     <div class="logo-sep"></div>
-    <span class="logo-sub" id="hdrPageTitle">Dashboard de Obra</span>
+    <span class="logo-sub">Dashboard Executivo</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <span id="hdrRec" class="hdr-badge" style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(185,148,90,0.1);color:var(--accent);border:1px solid var(--gold);display:none;"></span>
-    <button class="btn btn-sm hdr-kebab" id="hdrKebab" onclick="toggleHdrActions()" title="Mais ações">&#8942;</button>
-    <div class="hdr-actions" id="hdrActions">
-      <span id="saveInd" style="font-size:10px;padding:3px 10px;border-radius:20px;display:none;"></span>
-      <button class="btn btn-sm" onclick="salvarSessao()">&#8595; Salvar</button>
-      <button class="btn btn-sm" onclick="document.getElementById('loadFile').click()">&#8593; Carregar</button>
-      <input type="file" id="loadFile" accept=".json" style="display:none" onchange="carregarSessao(this)">
-      <button class="btn btn-sm" onclick="abrirNuvem()" title="Nuvem">&#9729; Nuvem</button>
-      <button class="btn btn-sm" id="btnSiengeHdr" onclick="abrirSienge()" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;">&#8635; Sync Sienge</button>
-    </div>
+    <span id="hdrRec" style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(185,148,90,0.1);color:var(--accent);border:1px solid var(--gold);display:none;"></span>
+    <span id="saveInd" style="font-size:10px;padding:3px 10px;border-radius:20px;display:none;"></span>
+    <button class="btn btn-sm" onclick="salvarSessao()">&#8595; Salvar</button>
+    <button class="btn btn-sm" onclick="document.getElementById('loadFile').click()">&#8593; Carregar</button>
+    <input type="file" id="loadFile" accept=".json" style="display:none" onchange="carregarSessao(this)">
+    <button class="btn btn-sm" onclick="abrirNuvem()" title="Nuvem">&#9729; Nuvem</button>
+    <button class="btn btn-sm" id="btnSiengeHdr" onclick="abrirSienge()" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;">&#8635; Sync Sienge</button>
   </div>
 </header>
 
 <div class="layout">
 <aside>
-  <div class="ns">Área de Gestão</div>
-  <div class="ni" id="tab7" onclick="goTab(7)"><span class="ni-icon">&#11088;</span><span class="ni-label">Dashboard Executivo</span></div>
-  <div class="ni active" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#127959;</span><span class="ni-label">Dashboard Obra</span></div>
-  <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Operacional</span></div>
-  <div class="ni" id="tab9" onclick="goTab(9)"><span class="ni-icon">&#128181;</span><span class="ni-label">Fluxo de Caixa</span></div>
-  <div class="nd"></div>
-  <div class="ns">Área de Importação de Dados</div>
-  <div class="ni" id="tab0" onclick="goTab(0)"><span class="ni-icon">&#128203;</span><span class="ni-label">Contas Pagas</span></div>
+  <div class="ns">Dados</div>
+  <div class="ni active" id="tab0" onclick="goTab(0)"><span class="ni-icon">&#128203;</span><span class="ni-label">Contas Pagas</span></div>
   <div class="ni" id="tab2" onclick="goTab(2)"><span class="ni-icon">&#9989;</span><span class="ni-label">Contas Recebidas</span></div>
   <div class="ni" id="tab3" onclick="goTab(3)"><span class="ni-icon">&#128197;</span><span class="ni-label">Contas a Receber</span></div>
   <div class="ni" id="tab4" onclick="goTab(4)"><span class="ni-icon">&#128196;</span><span class="ni-label">Orcamento de Obra</span></div>
   <div class="ni" id="tab8" onclick="goTab(8)"><span class="ni-icon">&#128230;</span><span class="ni-label">Estoque</span></div>
+  <div class="nd"></div>
+  <div class="ns">Dashboards</div>
+  <div class="ni" id="tab5" onclick="goTab(5)"><span class="ni-icon">&#128200;</span><span class="ni-label">Dashboard Operacional</span></div>
+  <div class="ni" id="tab6" onclick="goTab(6)"><span class="ni-icon">&#127959;</span><span class="ni-label">Dashboard Obra</span></div>
+  <div class="ni" id="tab7" onclick="goTab(7)"><span class="ni-icon">&#11088;</span><span class="ni-label">Dashboard Executivo</span></div>
+  <div class="ni" id="tab9" onclick="goTab(9)"><span class="ni-icon">&#128181;</span><span class="ni-label">Fluxo de Caixa</span></div>
 </aside>
 
 <main>
 <!-- P0: CONTAS PAGAS -->
-<div class="page" id="page0">
+<div class="page active" id="page0">
   <div class="st">Contas Pagas</div>
   <div class="sd">Cole dados do Excel com cabecalho. Cada colagem adiciona aos registros.</div>
   <div class="card">
@@ -226,7 +213,6 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
       <div class="fdiv"></div>
       <input type="text" id="fBusca" placeholder="Buscar..." style="width:130px;padding:6px 9px;" oninput="renderDados()">
     </div>
-    <div id="dadosKpiWrap" class="kpi-row" style="margin-bottom:16px;"></div>
     <div id="dadosEmpty" class="nodata" style="display:none;"><p>Nenhum dado. Cole acima.</p></div>
     <div class="tbl-wrap" id="dadosWrap" style="display:none;">
       <table><thead><tr><th>Data</th><th>Credor</th><th>Tipo Operação</th><th>Conta Corr.</th><th>Centro Custo</th><th>Cod Plano Fin.</th><th>Desc Plano Fin.</th><th style="text-align:right">Val Fin.</th><th>Obra</th><th>Unid Constr.</th><th>Cod Orc.</th><th>Desc Orc.</th><th style="text-align:right">Val Obra</th></tr></thead>
@@ -373,7 +359,7 @@ tfoot td{padding:9px 14px;font-weight:700;border-top:2px solid var(--border);col
 </div>
 
 <!-- P6: DASHBOARD OBRA -->
-<div class="page active" id="page6">
+<div class="page" id="page6">
   <div class="st">Dashboard de Obra</div>
   <div class="sd">Obras: L'adret, Monte Sollaro, Lavi, You, Le Monde.</div>
   <div id="obraEmpty" class="nodata"><p>Importe dados em Contas Pagas.</p><button class="btn btn-accent" style="margin-top:12px;" onclick="goTab(0)">Ir para Contas Pagas</button></div>
@@ -779,7 +765,6 @@ function getMsdVals(id){
 // Close dropdowns on outside click
 document.addEventListener('click',function(e){
   if(!e.target.closest('.msd'))document.querySelectorAll('.msd.open').forEach(function(m){m.classList.remove('open');});
-  if(!e.target.closest('.hdr-actions')&&!e.target.closest('.hdr-kebab'))closeHdrActions();
 });
 // Legacy compat: getSelVals now delegates to getMsdVals when msd exists, else native select
 function getSelVals(id){
@@ -871,7 +856,6 @@ function carregarSessao(input){
 // TABS
 // ============================================================
 var TABS=[0,2,3,4,5,6,7,8,9];
-var TAB_TITLES={0:'Contas Pagas',2:'Contas Recebidas',3:'Contas a Receber',4:'Orçamento de Obra',5:'Dashboard Operacional',6:'Dashboard de Obra',7:'Dashboard Executivo',8:'Estoque',9:'Fluxo de Caixa'};
 function goTab(i){
   TABS.forEach(function(j){
     var t=document.getElementById('tab'+j);var p=document.getElementById('page'+j);
@@ -879,22 +863,11 @@ function goTab(i){
     if(p)p.classList.toggle('active',i===j);
   });
   [5,6,7].forEach(function(t){var el=document.getElementById('mnTab'+t);if(el)el.classList.toggle('active',i===t);});
-  var hdrTitle=document.getElementById('hdrPageTitle');
-  if(hdrTitle)hdrTitle.textContent=TAB_TITLES[i]||'Welter';
-  closeHdrActions();
   if(i===5)renderAdm();
   if(i===6)renderObra();
   if(i===7)renderExec();
   if(i===8)renderEstoque();
   if(i===9)renderFluxo();
-}
-function toggleHdrActions(){
-  var el=document.getElementById('hdrActions');
-  if(el)el.classList.toggle('open');
-}
-function closeHdrActions(){
-  var el=document.getElementById('hdrActions');
-  if(el)el.classList.remove('open');
 }
 
 // ============================================================
@@ -1012,21 +985,6 @@ function renderDados(){
   setSelMulti('fCC',unicos(dados,'cc'),'Todos',renderDados);
   if(!_msdData['msd-fMes'])initMsd('msd-fMes',MESES_ITEMS,'Todos',renderDados);
   var data=getFilteredDados();
-  // KPIs por Tipo Operacao (Pagamento inclui Adiantamento/Movimento Bancario, conforme confirmado)
-  var totalPago=data.reduce(function(s,r){return s+r.valFin;},0);
-  var TIPOS_PG=['Pagamento','Outros','Por Bens'];
-  function tipoOpCat(r){
-    if(r.porBens||r.tipoOp==='Por Bens')return'Por Bens';
-    if(r.tipoOp==='Outros')return'Outros';
-    return'Pagamento';
-  }
-  var kpiHtmlPg=TIPOS_PG.map(function(t){
-    var v=data.filter(function(r){return tipoOpCat(r)===t;}).reduce(function(s,r){return s+r.valFin;},0);
-    var pct=totalPago>0?Math.round(v/totalPago*100):0;
-    return'<div class="kpi" style="--kc:var(--accent)"><div class="kpi-label">'+t+'</div><div class="kpi-value">'+fBRL(v)+'</div><div class="kpi-sub">'+pct+'% do total</div></div>';
-  }).join('');
-  var dadosKpi=document.getElementById('dadosKpiWrap');
-  if(dadosKpi)dadosKpi.innerHTML='<div class="kpi" style="--kc:var(--red)"><div class="kpi-label">Total Pago</div><div class="kpi-value">'+fBRL(totalPago)+'</div><div class="kpi-sub">'+data.length+' registros</div></div>'+kpiHtmlPg;
   document.getElementById('dadosEmpty').style.display=dados.length?'none':'block';
   document.getElementById('dadosWrap').style.display=dados.length?'block':'none';
   document.getElementById('dadosCount').textContent='('+dados.length+' total)';
@@ -1222,7 +1180,6 @@ function renderAR(){
   var hoje=new Date();var hAno=hoje.getFullYear(),hMes=hoje.getMonth()+1;var hMs=hoje.getTime();
   var data=areceber.filter(function(r){
     r.inadimplente=r.ano&&r.mes?((r.ano<hAno)||(r.ano===hAno&&r.mes<hMes)):false;
-    if(!r.liquido)return false; // titulos com valor R$0 nao devem aparecer (nem em A Receber, nem em Inadimplente)
     if(!selMatch(anos2,r.ano))return false;
     if(!selMatch(meses,r.mes))return false;
     if(obras2.indexOf('all')===-1&&obras2.indexOf(r.obra)===-1)return false;
@@ -1972,7 +1929,6 @@ function init(){
   updateHdr();setSel('fAno',anos(dados),'Todos');
   renderDados();renderRec();renderAR();renderTitCC();renderOrc();renderEstoque();
   renderAdm();renderObra();renderExec();carregarFluxoConfig();renderFluxo();
-  goTab(6);
 }
 // ============================================================
 // INTEGRAÇÃO SIENGE API — SYNC UNIFICADO
@@ -2227,9 +2183,12 @@ async function executarSyncSienge(){
     updateHdr();setSel('fAno',anos(dados),'Todos');
     renderDados();renderRec();renderAR();renderObra();renderAdm();renderExec();
 
+    setSiengeProgress(95,'Salvando no GitHub...');
+    await ghubSave(); // espera o commit real terminar — evita corrida com o autosave debounced
+
     setSiengeProgress(100,'Concluído!');
     var m=document.getElementById('siengeMsg');m.style.display='block';
-    var totalMsg='&#10003; '+novosOut.length+' pagamentos | '+novosBM.length+' mov. bancários | '+novosAR.length+' a receber ('+startRaw+' → '+endRaw+')';
+    var totalMsg='&#10003; '+novosOut.length+' pagamentos | '+novosBM.length+' mov. bancários | '+novosAR.length+' a receber ('+startRaw+' → '+endRaw+') — salvo no GitHub';
     showMsg('siengeMsg',totalMsg,'ok');
 
   }catch(e){
@@ -2240,6 +2199,12 @@ async function executarSyncSienge(){
   btn.disabled=false;btn.innerHTML='&#8635; Sincronizar';
 }
 
+window.addEventListener('beforeunload',function(e){
+  if(_ghubSaving||_ghubDirty){
+    e.preventDefault();e.returnValue='Salvamento no GitHub ainda em andamento. Tem certeza que quer sair?';
+    return e.returnValue;
+  }
+});
 carregar();
 init();
 // Auto-load do GitHub na abertura
