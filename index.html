@@ -1096,8 +1096,31 @@ function processarRec(){
   var txt=document.getElementById('pasteRec').value.trim();
   if(!txt){showMsg('recMsg','Cole os dados primeiro.','warn');return;}
   var rows=parsePaste(txt);if(!rows||!rows.length){showMsg('recMsg','Dados insuficientes.','warn');return;}
-  var novos=normRec(rows);fixEncodingArr(novos);recebidas=recebidas.concat(novos);salvar();
-  document.getElementById('pasteRec').value='';renderRec();showMsg('recMsg','&#10003; '+novos.length+' adicionados! Total: '+recebidas.length,'ok');
+  var novos=normRec(rows);fixEncodingArr(novos);
+  if(!novos.length){showMsg('recMsg','Nenhuma linha válida encontrada.','warn');return;}
+  // Substitui pelo PERÍODO dos dados colados — mesma lógica do Contas Pagas:
+  // detecta o intervalo (menor e maior Dt. Baixa) da colagem atual, remove de
+  // `recebidas` tudo que já existia nesse intervalo exato, e insere os novos.
+  // Isso cobre duplicação (o que já existia no intervalo some e é substituído
+  // pela versão mais recente colada) e atualização de valor (a linha nova
+  // simplesmente ocupa o lugar da antiga) com uma lógica só, sem chave sintética.
+  var comData=novos.filter(function(r){return r.dtMs!=null;});
+  var antes=recebidas.length;
+  if(comData.length){
+    var minMs=Math.min.apply(null,comData.map(function(r){return r.dtMs;}));
+    var maxMs=Math.max.apply(null,comData.map(function(r){return r.dtMs;}));
+    recebidas=recebidas.filter(function(r){
+      if(r.dtMs==null)return true; // sem data reconhecível, mantém (não mexe)
+      return r.dtMs<minMs||r.dtMs>maxMs;
+    });
+  }
+  var substituidos=antes-recebidas.length;
+  recebidas=recebidas.concat(novos);
+  salvar();
+  document.getElementById('pasteRec').value='';renderRec();
+  var msg='&#10003; '+novos.length+' processados! Total: '+recebidas.length;
+  if(substituidos)msg+=' &mdash; '+substituidos+' registro'+(substituidos>1?'s':'')+' do período substituído'+(substituidos>1?'s':'');
+  showMsg('recMsg',msg,'ok');
 }
 function exportRec(){
   if(!recebidas.length){alert('Nenhum dado.');return;}
