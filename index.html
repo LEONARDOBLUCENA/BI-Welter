@@ -589,6 +589,7 @@ var dados=[], depara=[], recebidas=[], areceber=[], orcamento=[], estoque=[], ti
 var dataEntregaGlobal='', obrasEntregaVisiveis={};
 var GHUB={token:['ghp_5tGd4SUCfRc','I2vWgZiK5LH4Ui','Uf1yH2kUrpo'].join(''),repo:'LEONARDOBLUCENA/BI-Welter',file:'data.json',raw:'https://raw.githubusercontent.com/LEONARDOBLUCENA/BI-Welter/main/data.json'};
 var _ghubSaving=false,_ghubDirty=false,_ghubSha=null;
+var _ghubQueue=null,_ghubPending=0; // fila única de salvamentos (ver ghubEnqueueSave)
 var admCI=null, obraCI=null, _fatChartObra=null, _fatChartMes=null, _obraChartObra=null;
 var OBRAS_OK=["l'adret","monte sollaro","lavi","you","le monde"];
 var MESES_S=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -1615,25 +1616,64 @@ function showGhubMsg(txt,type){
   el.innerHTML=txt;
 }
 function sanitizeObj(obj){return JSON.parse(JSON.stringify(obj,function(k,v){return typeof v==='number'&&!isFinite(v)?0:v;}));}
-async function ghubSave(){
-  showGhubMsg('Salvando...','warn');
-  try{
-    // Busca SHA atual
+// Operação real de salvamento: busca o SHA atual do arquivo, faz o PUT, e se o
+// PUT falhar por SHA desatualizado (corrida com outro salvamento — exatamente o
+// "does not match" que estava ocorrendo), busca o SHA de novo e tenta 1x antes
+// de reportar erro. Não mexe no mutex/fila — isso é responsabilidade de quem chama.
+async function ghubDoSave(){
+  var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,fluxoConfig:fluxoConfig,dataEntregaGlobal:dataEntregaGlobal});
+  var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
+  function putOnce(sha){
+    var body={message:'BI Welter update '+new Date().toISOString(),content:content};
+    if(sha)body.sha=sha;
+    return fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
+      {method:'PUT',headers:{'Authorization':'token '+GHUB.token,'Content-Type':'application/json','User-Agent':'bi-welter'},
+      body:JSON.stringify(body)});
+  }
+  async function fetchSha(){
     var rr=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
       {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
     if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
-    // Monta payload
-    var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,fluxoConfig:fluxoConfig,dataEntregaGlobal:dataEntregaGlobal});
-    var content=btoa(unescape(encodeURIComponent(JSON.stringify(sessao))));
-    var body={message:'BI Welter update '+new Date().toISOString(),content:content};
-    if(_ghubSha)body.sha=_ghubSha;
-    var r=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
-      {method:'PUT',headers:{'Authorization':'token '+GHUB.token,'Content-Type':'application/json','User-Agent':'bi-welter'},
-      body:JSON.stringify(body)});
-    var j=await r.json();
-    if(r.ok){_ghubSha=j.content&&j.content.sha||_ghubSha;showGhubMsg('&#10003; Salvo com sucesso!','ok');}
-    else{showGhubMsg('Erro: '+(j.message||'Falha ao salvar'),'error');}
-  }catch(e){showGhubMsg('Erro: '+e.message,'error');}
+  }
+  await fetchSha();
+  var r=await putOnce(_ghubSha);
+  var j=await r.json().catch(function(){return{};});
+  if(r.ok){_ghubSha=j.content&&j.content.sha||_ghubSha;return{ok:true};}
+  var isShaConflict=r.status===409||(j.message&&/does not match|sha/i.test(j.message));
+  if(isShaConflict){
+    try{
+      await fetchSha();
+      var r2=await putOnce(_ghubSha);
+      var j2=await r2.json().catch(function(){return{};});
+      if(r2.ok){_ghubSha=j2.content&&j2.content.sha||_ghubSha;return{ok:true,retried:true};}
+      return{ok:false,message:(j2.message||r2.status)+' (apos nova tentativa)'};
+    }catch(e2){
+      return{ok:false,message:e2.message+' (apos nova tentativa)'};
+    }
+  }
+  return{ok:false,message:j.message||r.status};
+}
+// Fila única de salvamentos: garante que o botão manual (ghubSave), o autosave
+// debounced (ghubAutoSave) e o Sync do Sienge NUNCA façam GET-sha + PUT ao mesmo
+// tempo — era essa corrida que causava "Erro GitHub: data.json does not match ...".
+// Toda chamada passa por aqui e roda em sequência, nunca em paralelo.
+function ghubEnqueueSave(){
+  _ghubPending++;_ghubDirty=true;
+  var run=function(){
+    _ghubSaving=true;
+    return ghubDoSave().catch(function(e){return{ok:false,message:e.message};}).then(function(res){
+      _ghubSaving=false;_ghubPending--;_ghubDirty=_ghubPending>0;
+      return res;
+    });
+  };
+  _ghubQueue=(_ghubQueue||Promise.resolve()).then(run,run);
+  return _ghubQueue;
+}
+async function ghubSave(){
+  showGhubMsg('Salvando...','warn');
+  var result=await ghubEnqueueSave();
+  if(result.ok)showGhubMsg('&#10003; Salvo com sucesso!'+(result.retried?' (SHA estava desatualizado, corrigido automaticamente)':''),'ok');
+  else showGhubMsg('Erro: '+result.message,'error');
 }
 async function importarDoGist(){
   showGhubMsg('Importando do Gist...','warn');
@@ -1933,33 +1973,14 @@ var _ghubAutoTimer=null;
 function ghubAutoSave(){
   clearTimeout(_ghubAutoTimer);
   _ghubAutoTimer=setTimeout(async function(){
-    if(_ghubSaving){_ghubDirty=true;return;}
-    _ghubSaving=true;_ghubDirty=false;
     var ind=document.getElementById('saveInd');
-    try{
-      var rr=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
-        {headers:{'Authorization':'token '+GHUB.token,'User-Agent':'bi-welter'}});
-      if(rr.ok){var jj=await rr.json();_ghubSha=jj.sha;}
-      var sessao=sanitizeObj({v:9,dados:dados,depara:depara,recebidas:recebidas,areceber:areceber,orcamento:orcamento,estoque:estoque,titCC:titCC,fluxoConfig:fluxoConfig,dataEntregaGlobal:dataEntregaGlobal});
-      var jsonStr=JSON.stringify(sessao);
-      var content=btoa(unescape(encodeURIComponent(jsonStr)));
-      var body={message:'BI Welter autosave '+new Date().toISOString(),content:content};
-      if(_ghubSha)body.sha=_ghubSha;
-      var r=await fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file,
-        {method:'PUT',headers:{'Authorization':'token '+GHUB.token,'Content-Type':'application/json','User-Agent':'bi-welter'},
-        body:JSON.stringify(body)});
-      if(r.ok){
-        var j=await r.json();_ghubSha=j.content&&j.content.sha||_ghubSha;
-        if(ind){ind.style.display='inline';ind.style.background='var(--green-light)';ind.style.color='var(--green)';ind.style.border='1px solid var(--green)';ind.textContent='&#9729; Salvo';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},3000);}
-      } else {
-        var err=await r.json().catch(function(){return{};});
-        if(ind){ind.style.display='inline';ind.style.background='var(--red-light)';ind.style.color='var(--red)';ind.style.border='1px solid var(--red)';ind.textContent='Erro GitHub: '+(err.message||r.status);}
-      }
-    }catch(e){
-      if(ind){ind.style.display='inline';ind.style.background='var(--red-light)';ind.style.color='var(--red)';ind.style.border='1px solid var(--red)';ind.textContent='Erro GitHub: '+e.message;}
+    var result=await ghubEnqueueSave(); // mesma fila do ghubSave() manual e do Sync — nunca roda em paralelo
+    if(!ind)return;
+    if(result.ok){
+      ind.style.display='inline';ind.style.background='var(--green-light)';ind.style.color='var(--green)';ind.style.border='1px solid var(--green)';ind.textContent='&#9729; Salvo'+(result.retried?' (SHA corrigido)':'');clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.display='none';},3000);
+    } else {
+      ind.style.display='inline';ind.style.background='var(--red-light)';ind.style.color='var(--red)';ind.style.border='1px solid var(--red)';ind.textContent='Erro GitHub: '+result.message;
     }
-    _ghubSaving=false;
-    if(_ghubDirty)ghubAutoSave();
   },2000);
 }
 // ============================================================
