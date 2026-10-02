@@ -1854,10 +1854,16 @@ function renderFluxo(){
   var arLavi=arPorObraMs("lavi");
 
   // ── SALDO ORÇADO MONTE SOLLARO (manual) ──
+  // msMesesRest = quantidade de meses que efetivamente recebem a parcela (ver "Saldo MS"
+  // abaixo: diffMS>=0 inclui o mês atual E o mês de entrega). +1 porque a diferença em
+  // meses entre duas datas é exclusiva (ex: out/2026 a out/2027 = 12), mas o período
+  // aplicado é inclusivo nas duas pontas (out/2026 até out/2027 = 13 meses). Sem o +1,
+  // o valor mensal era calculado para 12 parcelas mas distribuído em 13 — sobrava 1
+  // parcela inteira além do saldo a executar.
   var msSaldoMensal=0;
   if(msEntrega){
     var msSaldo=parseVal(document.getElementById('fcMSSaldo').value);
-    var msMesesRest=(msEntrega.ano-hAno)*12+(msEntrega.mes-hMes);
+    var msMesesRest=(msEntrega.ano-hAno)*12+(msEntrega.mes-hMes)+1;
     if(msMesesRest>0&&msSaldo>0)msSaldoMensal=msSaldo/msMesesRest;
   }
 
