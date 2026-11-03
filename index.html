@@ -1062,6 +1062,13 @@ function exportDados(){
 // P2: CONTAS RECEBIDAS
 // ============================================================
 var TIPOS_BAIXA_OK=['recebimento','outros','por bens'];
+// Faturamento: baixa "Por Bens"/"Outros" entra no total, mas é Permuta (sem
+// movimentar dinheiro) — "Recebimento" (inclui Chaves, dado baixa) é Caixa.
+// Mesmo critério usado no KPI de Despesas (sumUC/isPermuta) para Contas Pagas.
+function isPermutaRec(r){
+  var tb=(r.tipoBaixa||'').toLowerCase();
+  return tb.indexOf('por bens')!==-1||tb.indexOf('outros')!==-1;
+}
 function normRec(rows){
   if(!rows.length)return[];
   var k=Object.keys(rows[0]);
@@ -1440,6 +1447,8 @@ function renderObra(){
     return true;
   });
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
+  var fatP=recF.filter(isPermutaRec).reduce(function(s,r){return s+r.liquido;},0);
+  var fatC=fatVal-fatP;
   // Apropriacoes
   var ter=sumUC(data,'TERRENO');var terP=sumUC(data,'TERRENO','P');var terC=ter-terP;
   var emp=sumUC(data,'EMPREENDIMENTO');var empP=sumUC(data,'EMPREENDIMENTO','P');var empC=emp-empP;
@@ -1460,7 +1469,7 @@ function renderObra(){
   document.getElementById('obraKpi').innerHTML=
     '<span class="kpi-section">Faturamento</span>'+
     '<div class="kpi-row">'+
-      kpiHtml('var(--green)','Faturamento',fBRL(fatVal),recF.length+' titulos')+
+      kpiHtml('var(--green)','Faturamento',fBRL(fatVal),recF.length+' titulos | Caixa: '+fBRL(fatC)+' | Permuta: '+fBRL(fatP))+
       kpiHtml('var(--red)','Inadimplencia',fBRL(inadVal),inadF.length+' titulo'+(inadF.length!==1?'s':'')+' em atraso')+
     '</div>'+
     '<span class="kpi-section">Apropriacoes</span>'+
@@ -1561,6 +1570,8 @@ function renderExec(){
   });
   arF.forEach(function(r){r.inadimplente=r.ano&&r.mes?((r.ano<hAno)||(r.ano===hAno&&r.mes<hMes)):false;});
   var fatVal=recF.reduce(function(s,r){return s+r.liquido;},0);
+  var fatP=recF.filter(isPermutaRec).reduce(function(s,r){return s+r.liquido;},0);
+  var fatC=fatVal-fatP;
   var aRecVal=arF.filter(function(r){return!r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
   var inadVal=arF.filter(function(r){return r.inadimplente;}).reduce(function(s,r){return s+r.liquido;},0);
   var estVal=estoque.filter(function(r){return obraF==='all'||r.obra===obraF;}).reduce(function(s,r){return s+r.valor;},0);
@@ -1581,7 +1592,7 @@ function renderExec(){
   var col1=
     '<div class="kpi-section">Faturamento</div>'+
     kpiV('var(--green)','Faturamento Total',fBRL(fatTotal),inclEstoque?'Inclui estoque '+fBRL(estVal):'Rec + A Rec + Inadimp')+
-    kpiV('var(--green)','Faturamento',fBRL(fatVal),recF.length+' titulos')+
+    kpiV('var(--green)','Faturamento',fBRL(fatVal),recF.length+' titulos | Caixa: '+fBRL(fatC)+' | Permuta: '+fBRL(fatP))+
     kpiV('var(--blue)','A Receber',fBRL(aRecVal),arF.filter(function(r){return!r.inadimplente;}).length+' titulos'+(dtEntMs?' ate '+dataEntregaGlobal:''))+
     kpiV('var(--red)','Inadimplencia',fBRL(inadVal),arF.filter(function(r){return r.inadimplente;}).length+' titulos')+
     kpiV('var(--accent)','Estoque',fBRL(estVal),estoque.filter(function(r){return obraF==='all'||r.obra===obraF;}).length+' unidades');
