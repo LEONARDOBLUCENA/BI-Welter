@@ -1753,10 +1753,16 @@ async function importarDoGist(){
     showGhubMsg('&#10003; '+dados.length+' registros importados! Clique em Salvar no GitHub.','ok');
   }catch(e){showGhubMsg('Erro: '+e.message,'error');}
 }
+// Leitura SEM cache do data.json: raw.githubusercontent.com fica em cache de CDN (~5 min) e devolvia a versao antiga
+// logo apos um Sync; como o auto-load chama salvar(), a versao velha era regravada por cima. A API de contents nao passa por esse cache.
+function ghubFetchData(){
+  return fetch('https://api.github.com/repos/'+GHUB.repo+'/contents/'+GHUB.file+'?ref=main&t='+Date.now(),
+    {cache:'no-store',headers:{'Authorization':'token '+GHUB.token,'Accept':'application/vnd.github.raw','User-Agent':'bi-welter'}});
+}
 async function ghubLoad(){
   showGhubMsg('Carregando...','warn');
   try{
-    var resp=await fetch(GHUB.raw+'?t='+Date.now());
+    var resp=await ghubFetchData();
     if(!resp.ok)throw new Error('Arquivo nao encontrado ('+resp.status+')');
     var s=await resp.json();
     dados=s.dados||[];depara=s.depara||[];recebidas=s.recebidas||[];areceber=s.areceber||[];
@@ -2329,7 +2335,7 @@ init();
   try{
     var ind=document.getElementById('saveInd');
     if(ind){ind.style.display='inline';ind.style.background='var(--blue-light)';ind.style.color='var(--blue)';ind.style.border='1px solid var(--blue)';ind.textContent='Sincronizando...';}
-    var resp=await fetch(GHUB.raw+'?t='+Date.now());
+    var resp=await ghubFetchData();
     if(!resp.ok)return;
     var s=await resp.json();
     // Substitui sempre que GitHub tiver dados (é a fonte de verdade)
